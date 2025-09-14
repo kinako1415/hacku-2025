@@ -1,98 +1,133 @@
-# Implementation Plan: AI駆動手首・母指可動域リハビリテーションアプリ
+<!-- @format -->
 
-**Branch**: `001-ai-mediapipe-google` | **Date**: 2025年9月14日 | **Spec**: [spec.md](./spec.md)
+<!# 実装計画: AI 駆動手首・母指可動域リハビリテーションアプリ
+
+**ブランチ**: `001-ai-mediapipe-google` | **日付**: 2025 年 9 月 14 日 | **仕様書**: [spec.md](./spec.md)
+**入力**: `/specs/001-ai-mediapipe-google/spec.md`からの機能仕様書 format -->
+
+# Implementation Plan: AI 駆動手首・母指可動域リハビリテーションアプリ
+
+**Branch**: `001-ai-mediapipe-google` | **Date**: 2025 年 9 月 14 日 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-ai-mediapipe-google/spec.md`
 
-## Execution Flow (/plan command scope)
+## 実行フロー (/plan コマンドの範囲)
+
 ```
-1. Load feature spec from Input path
-   → If not found: ERROR "No feature spec at {path}"
-2. Fill Technical Context (scan for NEEDS CLARIFICATION)
-   → Detect Project Type from context (web=frontend+backend, mobile=app+api)
-   → Set Structure Decision based on project type
-3. Evaluate Constitution Check section below
-   → If violations exist: Document in Complexity Tracking
-   → If no justification possible: ERROR "Simplify approach first"
-   → Update Progress Tracking: Initial Constitution Check
-4. Execute Phase 0 → research.md
-   → If NEEDS CLARIFICATION remain: ERROR "Resolve unknowns"
-5. Execute Phase 1 → contracts, data-model.md, quickstart.md, agent-specific template file (e.g., `CLAUDE.md` for Claude Code, `.github/copilot-instructions.md` for GitHub Copilot, or `GEMINI.md` for Gemini CLI).
-6. Re-evaluate Constitution Check section
-   → If new violations: Refactor design, return to Phase 1
-   → Update Progress Tracking: Post-Design Constitution Check
-7. Plan Phase 2 → Describe task generation approach (DO NOT create tasks.md)
-8. STOP - Ready for /tasks command
+1. 入力パスから機能仕様書を読み込み
+   → 見つからない場合: ERROR "No feature spec at {path}"
+2. 技術コンテキストを記入（NEEDS CLARIFICATIONをスキャン）
+   → コンテキストからプロジェクトタイプを検出（web=frontend+backend, mobile=app+api）
+   → プロジェクトタイプに基づいて構造決定を設定
+3. 以下の憲法チェックセクションを評価
+   → 違反が存在する場合: 複雑性追跡に文書化
+   → 正当化不可能な場合: ERROR "Simplify approach first"
+   → 進捗追跡を更新: 初期憲法チェック
+4. Phase 0実行 → research.md
+   → NEEDS CLARIFICATIONが残っている場合: ERROR "Resolve unknowns"
+5. Phase 1実行 → contracts, data-model.md, quickstart.md, エージェント固有テンプレートファイル
+6. 憲法チェックセクションを再評価
+   → 新しい違反がある場合: 設計をリファクタリング、Phase 1に戻る
+   → 進捗追跡を更新: 設計後憲法チェック
+7. Phase 2を計画 → タスク生成アプローチを記述（tasks.mdは作成しない）
+8. 停止 - /tasksコマンドの準備完了
 ```
 
-**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands:
-- Phase 2: /tasks command creates tasks.md
-- Phase 3-4: Implementation execution (manual or via tools)
+**重要**: /plan コマンドはステップ 7 で停止します。Phase 2-4 は他のコマンドで実行されます：
 
-## Summary
-手首・母指の可動域をカメラとAI骨格推定で自動測定し、毎日の記録をカレンダー形式で管理するリハビリテーション支援Webアプリケーション。Next.js、TypeScript、MediaPipe Handsを使用して、±5°精度での可動域測定と進捗追跡を実現。
+- Phase 2: /tasks コマンドが tasks.md を作成
+- Phase 3-4: 実装実行（手動またはツール経由）
 
-## Technical Context
+## 概要
+
+手首・母指の可動域をカメラと AI 骨格推定で自動測定し、毎日の記録をカレンダー形式で管理するリハビリテーション支援 Web アプリケーション。Next.js、TypeScript、MediaPipe Hands を使用して、±5° 精度での可動域測定と進捗追跡を実現。
+
+## 技術コンテキスト
+
+**言語/バージョン**: TypeScript, Node.js 18+, React 18+  
+**主要依存関係**: Next.js (App Router), MediaPipe Hands/Pose (JS), jotai, module.scss  
+**ストレージ**: IndexedDB, Web Storage (LocalStorage/SessionStorage)  
+**テスト**: Jest, React Testing Library, Playwright (E2E)  
+**対象プラットフォーム**: Web (Chrome/Safari/Firefox, モバイル対応)
+**プロジェクトタイプ**: web (frontend + backend API routes)  
+**パフォーマンス目標**: リアルタイム動作追跡 (30fps), 測定精度 ±5°, 応答時間<200ms  
+**制約**: カメラアクセス必須, オフライン対応, PWA 対応推奨  
+**規模/範囲**: 個人利用アプリ, 長期データ保存対応, 医療データプライバシー準拠
+
+## 憲法チェック
+
+_ゲート: Phase 0 調査前に合格必須。Phase 1 設計後に再チェック。_
+
 **Language/Version**: TypeScript, Node.js 18+, React 18+  
 **Primary Dependencies**: Next.js (App Router), MediaPipe Hands/Pose (JS), jotai, module.scss  
 **Storage**: IndexedDB, Web Storage (LocalStorage/SessionStorage)  
 **Testing**: Jest, React Testing Library, Playwright (E2E)  
 **Target Platform**: Web (Chrome/Safari/Firefox, モバイル対応)
 **Project Type**: web (frontend + backend API routes)  
-**Performance Goals**: リアルタイム動作追跡 (30fps), 測定精度±5°, 応答時間<200ms  
-**Constraints**: カメラアクセス必須, オフライン対応, PWA対応推奨  
+**Performance Goals**: リアルタイム動作追跡 (30fps), 測定精度 ±5°, 応答時間<200ms  
+**Constraints**: カメラアクセス必須, オフライン対応, PWA 対応推奨  
 **Scale/Scope**: 個人利用アプリ, 長期データ保存対応, 医療データプライバシー準拠
 
 ## Constitution Check
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Simplicity**:
-- Projects: 1 (Next.js app with API routes)
-- Using framework directly? Yes (Next.js App Router直接使用)
-- Single data model? Yes (測定データ統一モデル)
-- Avoiding patterns? Yes (複雑な抽象化を避ける)
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-**Architecture**:
-- EVERY feature as library? Yes
-- Libraries listed: 
+**シンプルさ**:
+
+- プロジェクト数: 1 (API ルート付き Next.js アプリ)
+- フレームワーク直接使用?: Yes (Next.js App Router 直接使用)
+- 単一データモデル?: Yes (測定データ統一モデル)
+- パターンを避ける?: Yes (複雑な抽象化を避ける)
+
+**アーキテクチャ**:
+
+- すべての機能をライブラリ化?: Yes
+- ライブラリ一覧:
   - mediapipe-motion-capture (動作測定)
   - motion-data-manager (データ管理)
   - calendar-tracker (カレンダー記録)
-- CLI per library: Yes (--help/--version/--format対応)
-- Library docs: llms.txt format planned? Yes
+- ライブラリ毎の CLI: Yes (--help/--version/--format 対応)
+- ライブラリドキュメント: llms.txt 形式計画済み? Yes
 
-**Testing (NON-NEGOTIABLE)**:
-- RED-GREEN-Refactor cycle enforced? Yes
-- Git commits show tests before implementation? Yes
-- Order: Contract→Integration→E2E→Unit strictly followed? Yes
-- Real dependencies used? Yes (実際のIndexedDB使用)
-- Integration tests for: 新ライブラリ、契約変更、共有スキーマ? Yes
+**テスト (交渉不可)**:
 
-**Observability**:
-- Structured logging included? Yes (console構造化ログ)
-- Frontend logs → backend? Yes (統一ログストリーム)
-- Error context sufficient? Yes
+- RED-GREEN-Refactor サイクル強制?: Yes
+- Git コミットで実装前にテスト?: Yes
+- 順序: Contract→Integration→E2E→Unit 厳密遵守? Yes
+- 実際の依存関係使用?: Yes (実際の IndexedDB 使用)
+- 統合テスト対象: 新ライブラリ、契約変更、共有スキーマ? Yes
 
-**Versioning**:
-- Version number assigned? 1.0.0
-- BUILD increments on every change? Yes
-- Breaking changes handled? Yes (並行テスト、移行計画)
+**可観測性**:
 
-## Project Structure
+- 構造化ログ含む?: Yes (console 構造化ログ)
+- フロントエンドログ → バックエンド?: Yes (統一ログストリーム)
+- エラーコンテキスト十分?: Yes
 
-### Documentation (this feature)
+**バージョニング**:
+
+- バージョン番号割り当て?: 1.0.0
+- 変更毎に BUILD 増分?: Yes
+- 破壊的変更処理?: Yes (並行テスト、移行計画)
+
+## プロジェクト構造
+
+### ドキュメント (この機能)
+
 ```
 specs/[###-feature]/
-├── plan.md              # This file (/plan command output)
-├── research.md          # Phase 0 output (/plan command)
-├── data-model.md        # Phase 1 output (/plan command)
-├── quickstart.md        # Phase 1 output (/plan command)
-├── contracts/           # Phase 1 output (/plan command)
-└── tasks.md             # Phase 2 output (/tasks command - NOT created by /plan)
+├── plan.md              # このファイル (/planコマンド出力)
+├── research.md          # Phase 0出力 (/planコマンド)
+├── data-model.md        # Phase 1出力 (/planコマンド)
+├── quickstart.md        # Phase 1出力 (/planコマンド)
+├── contracts/           # Phase 1出力 (/planコマンド)
+└── tasks.md             # Phase 2出力 (/tasksコマンド - /planでは作成されない)
 ```
 
+### ソースコード (リポジトリルート)
+
 ### Source Code (repository root)
+
 ```
-# Option 1: Single project (DEFAULT)
+# オプション1: 単一プロジェクト (デフォルト)
 src/
 ├── models/
 ├── services/
@@ -104,7 +139,7 @@ tests/
 ├── integration/
 └── unit/
 
-# Option 2: Web application (when "frontend" + "backend" detected)
+# オプション2: Webアプリケーション ("frontend" + "backend"検出時)
 backend/
 ├── src/
 │   ├── models/
@@ -119,145 +154,148 @@ frontend/
 │   └── services/
 └── tests/
 
-# Option 3: Mobile + API (when "iOS/Android" detected)
+# オプション3: モバイル + API ("iOS/Android"検出時)
 api/
-└── [same as backend above]
+└── [上記backendと同じ]
 
 ios/ or android/
-└── [platform-specific structure]
+└── [プラットフォーム固有構造]
 ```
 
-**Structure Decision**: Option 2 (Web application) - frontend + backend API routes
+**構造決定**: オプション 2 (Web アプリケーション) - frontend + backend API ルート
 
-## Phase 0: Outline & Research
-1. **Extract unknowns from Technical Context** above:
-   - For each NEEDS CLARIFICATION → research task
-   - For each dependency → best practices task
-   - For each integration → patterns task
+## Phase 0: 概要・調査
 
-2. **Generate and dispatch research agents**:
+1. **上記技術コンテキストから不明点を抽出**:
+
+   - NEEDS CLARIFICATION 毎 → 調査タスク
+   - 依存関係毎 → ベストプラクティスタスク
+   - 統合毎 → パターンタスク
+
+2. **調査エージェント生成・派遣**:
+
    ```
-   For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
-   For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
+   技術コンテキストの不明点毎:
+     タスク: "{機能コンテキスト}用の{不明点}を調査"
+   技術選択毎:
+     タスク: "{ドメイン}での{技術}ベストプラクティスを見つける"
    ```
 
-3. **Consolidate findings** in `research.md` using format:
-   - Decision: [what was chosen]
-   - Rationale: [why chosen]
-   - Alternatives considered: [what else evaluated]
+3. **調査結果を統合** `research.md`に以下形式で:
+   - 決定: [選択された内容]
+   - 根拠: [選択理由]
+   - 検討した代替案: [評価した他の選択肢]
 
-**Output**: research.md with all NEEDS CLARIFICATION resolved
+**出力**: NEEDS CLARIFICATION 全て解決済みの research.md
 
-## Phase 1: Design & Contracts
-*Prerequisites: research.md complete*
+## Phase 1: 設計・契約
 
-1. **Extract entities from feature spec** → `data-model.md`:
-   - Entity name, fields, relationships
-   - Validation rules from requirements
-   - State transitions if applicable
+_前提条件: research.md 完了_
 
-2. **Generate API contracts** from functional requirements:
-   - For each user action → endpoint
-   - Use standard REST/GraphQL patterns
-   - Output OpenAPI/GraphQL schema to `/contracts/`
+1. **機能仕様からエンティティ抽出** → `data-model.md`:
 
-3. **Generate contract tests** from contracts:
-   - One test file per endpoint
-   - Assert request/response schemas
-   - Tests must fail (no implementation yet)
+   - エンティティ名、フィールド、関係性
+   - 要件からのバリデーションルール
+   - 該当する場合は状態遷移
 
-4. **Extract test scenarios** from user stories:
-   - Each story → integration test scenario
-   - Quickstart test = story validation steps
+2. **機能要件から API 契約生成**:
 
-5. **Update agent file incrementally** (O(1) operation):
-   - Run `/scripts/bash/update-agent-context.sh copilot` for your AI assistant
-   - If exists: Add only NEW tech from current plan
-   - Preserve manual additions between markers
-   - Update recent changes (keep last 3)
-   - Keep under 150 lines for token efficiency
-   - Output to repository root
+   - ユーザーアクション毎 → エンドポイント
+   - 標準 REST/GraphQL パターン使用
+   - OpenAPI/GraphQL スキーマを`/contracts/`に出力
 
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+3. **契約からコントラクトテスト生成**:
 
-## Phase 2: Task Planning Approach
-*This section describes what the /tasks command will do - DO NOT execute during /plan*
+   - エンドポイント毎に 1 テストファイル
+   - リクエスト/レスポンススキーマをアサート
+   - テストは失敗必須（まだ実装なし）
 
-**Task Generation Strategy**:
-- Load `/templates/tasks-template.md` as base template
-- Generate from Phase 1 artifacts: API contracts, data model, quickstart scenarios
-- Each API endpoint → contract test task [P]
-- Each entity (User, MotionMeasurement, CalendarRecord, ProgressData) → model creation task [P]
-- Each user story from quickstart → integration test task
-- MediaPipe integration → specialized tasks for camera, pose detection, angle calculation
-- Implementation tasks ordered to make tests pass (TDD approach)
+4. **ユーザーストーリーからテストシナリオ抽出**:
 
-**Ordering Strategy**:
-- **Phase 1 Tasks**: Infrastructure & Contracts
-  1. Project setup (Next.js, TypeScript, dependencies)
-  2. Contract test creation (API spec validation)
-  3. Data model implementation (TypeScript types + Dexie schema)
-  
-- **Phase 2 Tasks**: Core Libraries [P]
-  4. MediaPipe integration library (camera, hands/pose detection)
-  5. Motion calculation library (angle computation, validation)
-  6. Data management library (IndexedDB operations, CRUD)
-  7. Calendar tracking library (date operations, memo management)
-  
-- **Phase 3 Tasks**: Integration & UI
-  8. Integration tests (MediaPipe + data flow)
-  9. React components (measurement UI, calendar UI, progress UI)
-  10. State management (Jotai atoms for measurement, calendar states)
-  
-- **Phase 4 Tasks**: E2E & Polish
-  11. End-to-end tests (quickstart scenario automation)
-  12. Error handling & edge cases
-  13. PWA setup & optimization
-  14. Documentation & deployment preparation
+   - ストーリー毎 → 統合テストシナリオ
+   - クイックスタートテスト = ストーリー検証ステップ
 
-**Parallel Execution Markers [P]**:
-- Independent libraries can be developed in parallel
-- Component development can proceed alongside library implementation
-- Contract tests can run independently
+5. **エージェントファイルを増分更新** (O(1)操作):
+   - AI アシスタント用に`/scripts/bash/update-agent-context.sh copilot`実行
+   - 存在する場合: 現在の計画から新技術のみ追加
+   - マーカー間の手動追加を保持
+   - 最近の変更を更新（最新 3 つ保持）
+   - トークン効率のため 150 行以下に維持
+   - リポジトリルートに出力
 
-**Estimated Output**: 30-35 numbered, dependency-ordered tasks in tasks.md following TDD principles
+**出力**: data-model.md, /contracts/\*, 失敗テスト, quickstart.md, エージェント固有ファイル
 
-**IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
+## Phase 2: タスク計画アプローチ
 
-## Phase 3+: Future Implementation
-*These phases are beyond the scope of the /plan command*
+_このセクションは/tasks コマンドが実行する内容を記述 - /plan では実行しない_
 
-**Phase 3**: Task execution (/tasks command creates tasks.md)  
-**Phase 4**: Implementation (execute tasks.md following constitutional principles)  
-**Phase 5**: Validation (run tests, execute quickstart.md, performance validation)
+**タスク生成戦略**:
 
-## Complexity Tracking
-*Fill ONLY if Constitution Check has violations that must be justified*
+- `/templates/tasks-template.md`をベーステンプレートとして読み込み
+- Phase 1 成果物から生成: API 契約、データモデル、クイックスタートシナリオ
+- API エンドポイント毎 → コントラクトテストタスク [P]
+- エンティティ毎（User, MotionMeasurement, CalendarRecord, ProgressData） → モデル作成タスク [P]
+- クイックスタートからのユーザーストーリー毎 → 統合テストタスク
+- MediaPipe 統合 → カメラ、ポーズ検出、角度計算用専門タスク
+- テストを通すための実装タスクを順序付け（TDD アプローチ）
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+**順序戦略**:
 
+- **Phase 1 タスク**: インフラ・契約
+  1. プロジェクトセットアップ（Next.js, TypeScript, 依存関係）
+  2. コントラクトテスト作成（API 仕様検証）
+  3. データモデル実装（TypeScript 型 + Dexie スキーマ）
+- **Phase 2 タスク**: コアライブラリ [P] 4. MediaPipe 統合ライブラリ（カメラ、hands/pose デテクション） 5. 動作計算ライブラリ（角度計算、検証） 6. データ管理ライブラリ（IndexedDB 操作、CRUD） 7. カレンダー追跡ライブラリ（日付操作、メモ管理）
+- **Phase 3 タスク**: 統合・UI 8. 統合テスト（MediaPipe + データフロー） 9. React コンポーネント（測定 UI、カレンダー UI、進捗 UI） 10. 状態管理（測定・カレンダー状態用 Jotai アトム）
+- **Phase 4 タスク**: E2E・仕上げ 11. エンドツーエンドテスト（クイックスタートシナリオ自動化） 12. エラーハンドリング・エッジケース 13. PWA セットアップ・最適化 14. ドキュメント・デプロイ準備
 
-## Progress Tracking
-*This checklist is updated during execution flow*
+**並列実行マーカー [P]**:
 
-**Phase Status**:
-- [x] Phase 0: Research complete (/plan command)
-- [x] Phase 1: Design complete (/plan command)
-- [x] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
-- [ ] Phase 4: Implementation complete
-- [ ] Phase 5: Validation passed
+- 独立ライブラリは並列開発可能
+- コンポーネント開発はライブラリ実装と並行可能
+- コントラクトテストは独立実行可能
 
-**Gate Status**:
-- [x] Initial Constitution Check: PASS
-- [x] Post-Design Constitution Check: PASS
-- [x] All NEEDS CLARIFICATION resolved
-- [x] Complexity deviations documented (None required)
+**推定出力**: TDD 原則に従った 30-35 の番号付き依存関係順タスクを tasks.md に
+
+**重要**: この Phase は/tasks コマンドで実行、/plan では実行しない
+
+## Phase 3+: 今後の実装
+
+_/plan コマンドの範囲を超えた Phase_
+
+**Phase 3**: タスク実行（/tasks コマンドが tasks.md 作成）  
+**Phase 4**: 実装（憲法原則に従って tasks.md 実行）  
+**Phase 5**: 検証（テスト実行、quickstart.md 実行、パフォーマンス検証）
+
+## 複雑性追跡
+
+_憲法チェックに正当化が必要な違反がある場合のみ記入_
+
+| 違反                       | 必要な理由     | 却下されたシンプルな代替案とその理由 |
+| -------------------------- | -------------- | ------------------------------------ |
+| [例: 4 番目のプロジェクト] | [現在のニーズ] | [3 プロジェクトが不十分な理由]       |
+| [例: Repository パターン]  | [具体的問題]   | [直接 DB アクセスが不十分な理由]     |
+
+## 進捗追跡
+
+_このチェックリストは実行フロー中に更新される_
+
+**Phase 状況**:
+
+- [x] Phase 0: 調査完了（/plan コマンド）
+- [x] Phase 1: 設計完了（/plan コマンド）
+- [x] Phase 2: タスク計画完了（/plan コマンド - アプローチ記述のみ）
+- [ ] Phase 3: タスク生成完了（/tasks コマンド）
+- [ ] Phase 4: 実装完了
+- [ ] Phase 5: 検証合格
+
+**ゲート状況**:
+
+- [x] 初期憲法チェック: 合格
+- [x] 設計後憲法チェック: 合格
+- [x] 全 NEEDS CLARIFICATION 解決済み
+- [x] 複雑性逸脱文書化済み（要求なし）
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+
+_Based on Constitution v2.1.1 - See `/memory/constitution.md`_

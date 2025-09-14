@@ -1,3 +1,5 @@
+# @format
+
 openapi: 3.0.3
 info:
   title: AI駆動手首・母指可動域リハビリアプリ API
@@ -14,20 +16,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateMeasurementRequest'
+              $ref: "#/components/schemas/CreateMeasurementRequest"
       responses:
-        '201':
+        "201":
           description: 測定データ保存成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MotionMeasurement'
-        '400':
+                $ref: "#/components/schemas/MotionMeasurement"
+        "400":
           description: バリデーションエラー
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     get:
       summary: 測定履歴を取得
@@ -54,7 +56,7 @@ paths:
             type: integer
             default: 30
       responses:
-        '200':
+        "200":
           description: 測定履歴取得成功
           content:
             application/json:
@@ -64,7 +66,7 @@ paths:
                   measurements:
                     type: array
                     items:
-                      $ref: '#/components/schemas/MotionMeasurement'
+                      $ref: "#/components/schemas/MotionMeasurement"
                   total:
                     type: integer
 
@@ -78,13 +80,13 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: 測定データ取得成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MotionMeasurement'
-        '404':
+                $ref: "#/components/schemas/MotionMeasurement"
+        "404":
           description: 測定データが見つからない
 
   /api/calendar:
@@ -110,7 +112,7 @@ paths:
             minimum: 1
             maximum: 12
       responses:
-        '200':
+        "200":
           description: カレンダー記録取得成功
           content:
             application/json:
@@ -120,7 +122,7 @@ paths:
                   records:
                     type: array
                     items:
-                      $ref: '#/components/schemas/CalendarRecord'
+                      $ref: "#/components/schemas/CalendarRecord"
 
     post:
       summary: カレンダー記録を作成・更新
@@ -130,14 +132,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCalendarRecordRequest'
+              $ref: "#/components/schemas/CreateCalendarRecordRequest"
       responses:
-        '201':
+        "201":
           description: カレンダー記録保存成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CalendarRecord'
+                $ref: "#/components/schemas/CalendarRecord"
 
   /api/progress/{userId}:
     get:
@@ -150,12 +152,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: 進捗データ取得成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProgressData'
+                $ref: "#/components/schemas/ProgressData"
 
   /api/users:
     post:
@@ -165,14 +167,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              $ref: "#/components/schemas/CreateUserRequest"
       responses:
-        '201':
+        "201":
           description: ユーザー作成成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
   /api/users/{id}:
     get:
@@ -184,12 +186,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: ユーザー情報取得成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
     put:
       summary: ユーザー情報を更新
@@ -204,14 +206,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
+              $ref: "#/components/schemas/UpdateUserRequest"
       responses:
-        '200':
+        "200":
           description: ユーザー情報更新成功
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
 components:
   schemas:
@@ -231,7 +233,7 @@ components:
           maximum: 5
         preferredHand:
           type: string
-          enum: ['left', 'right']
+          enum: ["left", "right"]
         createdAt:
           type: string
           format: date-time
@@ -287,9 +289,9 @@ components:
           maximum: 1
         handUsed:
           type: string
-          enum: ['left', 'right']
+          enum: ["left", "right"]
         comparisonResult:
-          $ref: '#/components/schemas/MotionComparisonResult'
+          $ref: "#/components/schemas/MotionComparisonResult"
         createdAt:
           type: string
           format: date-time
@@ -298,24 +300,24 @@ components:
       type: object
       properties:
         wristFlexion:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         wristExtension:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         wristUlnarDeviation:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         wristRadialDeviation:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         thumbFlexion:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         thumbExtension:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         thumbAdduction:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         thumbAbduction:
-          $ref: '#/components/schemas/ComparisonStatus'
+          $ref: "#/components/schemas/ComparisonStatus"
         overallStatus:
           type: string
-          enum: ['normal', 'below_normal', 'above_normal']
+          enum: ["normal", "below_normal", "above_normal"]
 
     ComparisonStatus:
       oneOf:
@@ -323,7 +325,7 @@ components:
           properties:
             status:
               type: string
-              enum: ['normal']
+              enum: ["normal"]
             within_range:
               type: boolean
               const: true
@@ -331,14 +333,14 @@ components:
           properties:
             status:
               type: string
-              enum: ['below_normal']
+              enum: ["below_normal"]
             deficit_degrees:
               type: number
         - type: object
           properties:
             status:
               type: string
-              enum: ['above_normal']
+              enum: ["above_normal"]
             excess_degrees:
               type: number
 
@@ -387,13 +389,13 @@ components:
           type: string
           format: date-time
         weeklyStats:
-          $ref: '#/components/schemas/WeeklyProgressStats'
+          $ref: "#/components/schemas/WeeklyProgressStats"
         monthlyStats:
-          $ref: '#/components/schemas/MonthlyProgressStats'
+          $ref: "#/components/schemas/MonthlyProgressStats"
         recoveryRate:
-          $ref: '#/components/schemas/RecoveryRateData'
+          $ref: "#/components/schemas/RecoveryRateData"
         predictedRecovery:
-          $ref: '#/components/schemas/PredictionData'
+          $ref: "#/components/schemas/PredictionData"
         createdAt:
           type: string
           format: date-time
@@ -410,7 +412,7 @@ components:
           type: number
         improvement_trend:
           type: string
-          enum: ['improving', 'stable', 'declining']
+          enum: ["improving", "stable", "declining"]
 
     MonthlyProgressStats:
       type: object
@@ -527,7 +529,7 @@ components:
           maximum: 1
         handUsed:
           type: string
-          enum: ['left', 'right']
+          enum: ["left", "right"]
 
     CreateCalendarRecordRequest:
       type: object
@@ -580,7 +582,7 @@ components:
           maximum: 5
         preferredHand:
           type: string
-          enum: ['left', 'right']
+          enum: ["left", "right"]
 
     UpdateUserRequest:
       type: object
@@ -595,7 +597,7 @@ components:
           maximum: 5
         preferredHand:
           type: string
-          enum: ['left', 'right']
+          enum: ["left", "right"]
 
     Error:
       type: object

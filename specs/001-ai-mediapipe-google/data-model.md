@@ -1,53 +1,60 @@
-# Data Model: AI駆動手首・母指可動域リハビリテーションアプリ
+<!-- @format -->
+
+# Data Model: AI 駆動手首・母指可動域リハビリテーションアプリ
 
 ## Core Entities
 
 ### User
+
 患者の基本情報と設定
+
 ```typescript
 interface User {
-  id: string;                    // UUID
-  name: string;                  // 患者名
-  rehabStartDate: Date;          // リハビリ開始日
+  id: string; // UUID
+  name: string; // 患者名
+  rehabStartDate: Date; // リハビリ開始日
   currentSymptomLevel: 1 | 2 | 3 | 4 | 5; // 症状レベル(1=軽微, 5=重症)
-  preferredHand: 'left' | 'right'; // 主測定手
+  preferredHand: "left" | "right"; // 主測定手
   createdAt: Date;
   updatedAt: Date;
 }
 ```
 
 **Validation Rules:**
-- name: 1-50文字、空文字不可
+
+- name: 1-50 文字、空文字不可
 - rehabStartDate: 未来日不可
-- currentSymptomLevel: 1-5の整数のみ
+- currentSymptomLevel: 1-5 の整数のみ
 
 ### MotionMeasurement
+
 可動域測定の個別記録
+
 ```typescript
 interface MotionMeasurement {
-  id: string;                    // UUID
-  userId: string;                // User.id参照
-  measurementDate: Date;         // 測定日時
-  
+  id: string; // UUID
+  userId: string; // User.id参照
+  measurementDate: Date; // 測定日時
+
   // 手首可動域 (degrees)
-  wristFlexion: number;          // 掌屈 0-90°
-  wristExtension: number;        // 背屈 0-70°
-  wristUlnarDeviation: number;   // 尺屈 0-55°
-  wristRadialDeviation: number;  // 橈屈 0-25°
-  
-  // 母指可動域 (degrees)  
-  thumbFlexion: number;          // 屈曲 0-90°
-  thumbExtension: number;        // 伸展 0°(基準)
-  thumbAdduction: number;        // 内転 0°(基準)
-  thumbAbduction: number;        // 外転 0-60°
-  
+  wristFlexion: number; // 掌屈 0-90°
+  wristExtension: number; // 背屈 0-70°
+  wristUlnarDeviation: number; // 尺屈 0-55°
+  wristRadialDeviation: number; // 橈屈 0-25°
+
+  // 母指可動域 (degrees)
+  thumbFlexion: number; // 屈曲 0-90°
+  thumbExtension: number; // 伸展 0°(基準)
+  thumbAdduction: number; // 内転 0°(基準)
+  thumbAbduction: number; // 外転 0-60°
+
   // 測定メタデータ
-  accuracyScore: number;         // 測定精度スコア 0-1
-  handUsed: 'left' | 'right';    // 測定対象手
-  
+  accuracyScore: number; // 測定精度スコア 0-1
+  handUsed: "left" | "right"; // 測定対象手
+
   // 正常範囲比較結果
   comparisonResult: MotionComparisonResult;
-  
+
   createdAt: Date;
 }
 
@@ -60,65 +67,71 @@ interface MotionComparisonResult {
   thumbExtension: ComparisonStatus;
   thumbAdduction: ComparisonStatus;
   thumbAbduction: ComparisonStatus;
-  overallStatus: 'normal' | 'below_normal' | 'above_normal';
+  overallStatus: "normal" | "below_normal" | "above_normal";
 }
 
-type ComparisonStatus = 
-  | { status: 'normal'; within_range: true }
-  | { status: 'below_normal'; deficit_degrees: number }
-  | { status: 'above_normal'; excess_degrees: number };
+type ComparisonStatus =
+  | { status: "normal"; within_range: true }
+  | { status: "below_normal"; deficit_degrees: number }
+  | { status: "above_normal"; excess_degrees: number };
 ```
 
 **Validation Rules:**
-- 全角度値: 0以上、各関節の最大正常値以下
-- accuracyScore: 0-1の範囲
+
+- 全角度値: 0 以上、各関節の最大正常値以下
+- accuracyScore: 0-1 の範囲
 - measurementDate: 未来日不可
 
 ### CalendarRecord
+
 日記形式の記録エントリ
+
 ```typescript
 interface CalendarRecord {
-  id: string;                    // UUID
-  userId: string;                // User.id参照
-  recordDate: Date;              // 記録日（日付のみ、時刻なし）
-  
+  id: string; // UUID
+  userId: string; // User.id参照
+  recordDate: Date; // 記録日（日付のみ、時刻なし）
+
   // 測定実施情報
   measurementCompleted: boolean; // 測定実施フラグ
-  measurementId?: string;        // MotionMeasurement.id参照（測定実施時）
-  
+  measurementId?: string; // MotionMeasurement.id参照（測定実施時）
+
   // ユーザーメモ
   physicalConditionNote?: string; // 体調メモ (最大500文字)
-  moodNote?: string;             // 気分メモ (最大300文字)
-  rehabNote?: string;            // リハビリメモ (最大500文字)
-  
+  moodNote?: string; // 気分メモ (最大300文字)
+  rehabNote?: string; // リハビリメモ (最大500文字)
+
   createdAt: Date;
   updatedAt: Date;
 }
 ```
 
 **Validation Rules:**
-- recordDate: ユニーク制約（ユーザー毎に1日1記録）
-- 各Note: 指定文字数以下、HTMLタグ不可
-- measurementCompleted=trueの場合、measurementId必須
+
+- recordDate: ユニーク制約（ユーザー毎に 1 日 1 記録）
+- 各 Note: 指定文字数以下、HTML タグ不可
+- measurementCompleted=true の場合、measurementId 必須
 
 ### ProgressData
+
 統計・進捗データ（計算値キャッシュ）
+
 ```typescript
 interface ProgressData {
-  id: string;                    // UUID
-  userId: string;                // User.id参照
-  calculatedDate: Date;          // 計算実施日
-  
+  id: string; // UUID
+  userId: string; // User.id参照
+  calculatedDate: Date; // 計算実施日
+
   // 期間統計
   weeklyStats: WeeklyProgressStats;
   monthlyStats: MonthlyProgressStats;
-  
+
   // 回復率計算
   recoveryRate: RecoveryRateData;
-  
+
   // 予測データ
   predictedRecovery: PredictionData;
-  
+
   createdAt: Date;
 }
 
@@ -126,7 +139,7 @@ interface WeeklyProgressStats {
   week_start: Date;
   measurement_count: number;
   average_accuracy: number;
-  improvement_trend: 'improving' | 'stable' | 'declining';
+  improvement_trend: "improving" | "stable" | "declining";
 }
 
 interface MonthlyProgressStats {
@@ -163,7 +176,7 @@ interface PredictionData {
 
 ```
 User (1) ←→ (N) MotionMeasurement
-User (1) ←→ (N) CalendarRecord  
+User (1) ←→ (N) CalendarRecord
 User (1) ←→ (N) ProgressData
 CalendarRecord (1) ←→ (0..1) MotionMeasurement
 ```
@@ -173,17 +186,17 @@ CalendarRecord (1) ←→ (0..1) MotionMeasurement
 ```typescript
 const NORMAL_RANGES = {
   wrist: {
-    flexion: { min: 0, max: 90 },      // 掌屈
-    extension: { min: 0, max: 70 },    // 背屈
+    flexion: { min: 0, max: 90 }, // 掌屈
+    extension: { min: 0, max: 70 }, // 背屈
     ulnarDeviation: { min: 0, max: 55 }, // 尺屈
-    radialDeviation: { min: 0, max: 25 } // 橈屈
+    radialDeviation: { min: 0, max: 25 }, // 橈屈
   },
   thumb: {
-    flexion: { min: 0, max: 90 },      // 屈曲
-    extension: { min: 0, max: 0 },     // 伸展（基準位置）
-    adduction: { min: 0, max: 0 },     // 内転（基準位置）
-    abduction: { min: 0, max: 60 }     // 外転
-  }
+    flexion: { min: 0, max: 90 }, // 屈曲
+    extension: { min: 0, max: 0 }, // 伸展（基準位置）
+    adduction: { min: 0, max: 0 }, // 内転（基準位置）
+    abduction: { min: 0, max: 60 }, // 外転
+  },
 } as const;
 
 const MEASUREMENT_PRECISION_THRESHOLD = 5; // ±5°
@@ -192,15 +205,17 @@ const MEASUREMENT_PRECISION_THRESHOLD = 5; // ±5°
 ## State Transitions
 
 ### MotionMeasurement Lifecycle
+
 1. **MEASURING**: カメラ測定中
-2. **PROCESSING**: 角度計算・検証中  
+2. **PROCESSING**: 角度計算・検証中
 3. **COMPLETED**: 測定完了・保存済み
-4. **ARCHIVED**: 古い記録（90日以上経過）
+4. **ARCHIVED**: 古い記録（90 日以上経過）
 
 ### CalendarRecord Updates
-- 日次作成: recordDateベースでupsert
-- 測定完了時: measurementCompleted=true, measurementId設定
-- メモ更新: いつでも可能、updatedAt更新
+
+- 日次作成: recordDate ベースで upsert
+- 測定完了時: measurementCompleted=true, measurementId 設定
+- メモ更新: いつでも可能、updatedAt 更新
 
 ## IndexedDB Schema
 
@@ -213,12 +228,12 @@ class RehabDatabase extends Dexie {
   progressData!: Table<ProgressData>;
 
   constructor() {
-    super('RehabDatabase');
+    super("RehabDatabase");
     this.version(1).stores({
-      users: 'id, name, rehabStartDate',
-      motionMeasurements: 'id, userId, measurementDate, handUsed',
-      calendarRecords: 'id, userId, recordDate, measurementCompleted',
-      progressData: 'id, userId, calculatedDate'
+      users: "id, name, rehabStartDate",
+      motionMeasurements: "id, userId, measurementDate, handUsed",
+      calendarRecords: "id, userId, recordDate, measurementCompleted",
+      progressData: "id, userId, calculatedDate",
     });
   }
 }
