@@ -1,0 +1,533 @@
+/**
+ * 測定ページのスタイル
+ */
+
+.measurementPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー */
+.header {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+}
+
+.titleIcon {
+  font-size: 2rem;
+}
+
+.navigation {
+  display: flex;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+}
+
+/* エラー表示 */
+.errorContainer {
+  padding: 16px 24px;
+}
+
+.errorMessage {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.errorIcon {
+  font-size: 1.5rem;
+}
+
+.errorResetButton {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #c53030;
+  }
+}
+
+/* メインコンテンツ */
+.mainContent {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 16px;
+  }
+}
+
+/* カメラセクション */
+.cameraSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cameraContainer {
+  position: relative;
+  background: #000000;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  max-width: 640px;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.cameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cameraError,
+.cameraLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #ffffff;
+  text-align: center;
+  gap: 16px;
+
+  span {
+    font-size: 4rem;
+    opacity: 0.6;
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+}
+
+.angleOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 測定状況表示 */
+.measurementStatus {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.recordingDot {
+  width: 8px;
+  height: 8px;
+  background: #e53e3e;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.accuracyDisplay {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #68d391;
+}
+
+/* 測定結果セクション */
+.resultsSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+}
+
+.resultsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+  }
+}
+
+.viewAllLink {
+  color: #3182ce;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #2c5aa0;
+  }
+}
+
+.measurementsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.measurementItem {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.measurementHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.handBadge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  &.right {
+    background: #bee3f8;
+    color: #2b6cb0;
+  }
+
+  &.left {
+    background: #fbb6ce;
+    color: #b83280;
+  }
+}
+
+.measurementTime {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.angleData {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.angleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.angleLabel {
+  font-size: 0.8rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.angleValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+
+  &.accuracy {
+    color: #38a169;
+  }
+}
+
+.noResults {
+  text-align: center;
+  padding: 48px 24px;
+  color: #718096;
+}
+
+.noResultsIcon {
+  font-size: 4rem;
+  opacity: 0.5;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.noResults h3 {
+  font-size: 1.2rem;
+  color: #4a5568;
+  margin: 0 0 8px 0;
+}
+
+.noResults p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ローディング */
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loadingSpinner {
+  text-align: center;
+  color: #ffffff;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 24px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingSpinner h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.loadingSpinner p {
+  font-size: 1rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* フッター */
+.footer {
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 32px 24px;
+  margin-top: auto;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+
+  a {
+    color: #81e6d9;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #4fd1c7;
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 16px;
+  }
+
+  .cameraContainer {
+    aspect-ratio: 1;
+  }
+
+  .resultsSection {
+    padding: 16px;
+  }
+
+  .measurementStatus {
+    position: static;
+    margin-top: 16px;
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .measurementPage {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  }
+
+  .header {
+    background: #2d3748;
+    border-bottom: 1px solid #4a5568;
+  }
+
+  .title {
+    color: #f7fafc;
+  }
+
+  .navLink {
+    color: #cbd5e0;
+
+    &:hover {
+      background: #4a5568;
+      color: #f7fafc;
+    }
+  }
+
+  .resultsSection {
+    background: #2d3748;
+    color: #f7fafc;
+  }
+
+  .resultsHeader h2 {
+    color: #f7fafc;
+  }
+
+  .measurementItem {
+    background: #4a5568;
+    border-color: #718096;
+  }
+
+  .angleItem {
+    background: #2d3748;
+    border-color: #718096;
+  }
+
+  .angleLabel {
+    color: #cbd5e0;
+  }
+
+  .angleValue {
+    color: #f7fafc;
+  }
+}
