@@ -8,6 +8,11 @@ export type ComparisonStatus =
   | { status: 'below_normal'; deficit_degrees: number }
   | { status: 'above_normal'; excess_degrees: number };
 
+/**
+ * 手の種類の型定義
+ */
+export type HandType = 'left' | 'right';
+
 export interface MotionComparisonResult {
   wristFlexion: ComparisonStatus;
   wristExtension: ComparisonStatus;
@@ -39,7 +44,7 @@ export interface MotionMeasurement {
 
   // 測定メタデータ
   accuracyScore: number; // 測定精度スコア 0-1
-  handUsed: 'left' | 'right'; // 測定対象手
+  handUsed: HandType; // 測定対象手
 
   // 正常範囲比較結果
   comparisonResult: MotionComparisonResult;
@@ -59,7 +64,7 @@ export interface CreateMeasurementInput {
   thumbAdduction: number;
   thumbAbduction: number;
   accuracyScore: number;
-  handUsed: 'left' | 'right';
+  handUsed: HandType;
 }
 
 /**
@@ -260,6 +265,53 @@ export const validateMeasurement = (data: CreateMeasurementInput): string[] => {
   }
 
   return errors;
+};
+
+/**
+ * 測定エンティティの作成（新しいインターフェース）
+ * 測定ページで使用される簡単な角度データから測定エンティティを作成
+ */
+export interface CreateMotionMeasurementInput {
+  userId: string;
+  handUsed: HandType;
+  wristAngles: {
+    flexion: number;
+    extension: number;
+    radialDeviation: number;
+    ulnarDeviation: number;
+  };
+  thumbAngles: {
+    flexion: number;
+    extension: number;
+    adduction: number;
+    abduction: number;
+  };
+  accuracy: number;
+  duration?: number; // 測定時間（秒）
+}
+
+/**
+ * 新しいインターフェースで測定エンティティを作成
+ */
+export const createMotionMeasurement = (
+  input: CreateMotionMeasurementInput
+): MotionMeasurement => {
+  const measurementInput: CreateMeasurementInput = {
+    userId: input.userId,
+    measurementDate: new Date(),
+    wristFlexion: input.wristAngles.flexion,
+    wristExtension: input.wristAngles.extension,
+    wristUlnarDeviation: input.wristAngles.ulnarDeviation,
+    wristRadialDeviation: input.wristAngles.radialDeviation,
+    thumbFlexion: input.thumbAngles.flexion,
+    thumbExtension: input.thumbAngles.extension,
+    thumbAdduction: input.thumbAngles.adduction,
+    thumbAbduction: input.thumbAngles.abduction,
+    accuracyScore: input.accuracy,
+    handUsed: input.handUsed,
+  };
+
+  return createMeasurement(measurementInput);
 };
 
 /**
