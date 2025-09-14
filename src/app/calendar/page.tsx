@@ -15,6 +15,7 @@ import type {
   CreateCalendarRecordInput,
   UpdateCalendarRecordInput,
 } from '@/lib/data-manager/models/calendar-record';
+import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
@@ -54,27 +55,35 @@ export default function CalendarPage(): React.JSX.Element {
   }, [currentMonth]);
 
   /**
-   * カレンダー記録を読み込み
+   * カレンダー記録を読み込み（実際のデータベースから）
    */
-  const loadCalendarRecords = async (): Promise<void> => {
+  const loadCalendarRecords = async (
+    userId: string = 'default-user'
+  ): Promise<void> => {
     try {
-      // ローカルストレージからデータを読み込み（モック実装）
-      const savedRecords = localStorage.getItem('calendarRecords');
-      if (savedRecords) {
-        const parsedRecords = JSON.parse(savedRecords).map((record: any) => ({
-          ...record,
-          recordDate: new Date(record.recordDate),
-          createdAt: new Date(record.createdAt),
-          updatedAt: new Date(record.updatedAt),
-        }));
-        setCalendarRecords(parsedRecords);
-      } else {
-        // 初期データが無い場合は空配列
-        setCalendarRecords([]);
+      // 現在の月の範囲を計算
+      const startOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        1
+      );
+      const endOfMonth = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth() + 1,
+        0
+      );
 
-        // サンプルデータを生成（デモ用）
-        await generateSampleData();
-      }
+      // データベースから記録を取得
+      const records = await db.records
+        .where('userId')
+        .equals(userId)
+        .and((record) => {
+          const recordDate = record.recordDate;
+          return recordDate >= startOfMonth && recordDate <= endOfMonth;
+        })
+        .toArray();
+
+      setCalendarRecords(records);
     } catch (err) {
       console.error('カレンダー記録読み込みエラー:', err);
       throw err;
@@ -82,288 +91,214 @@ export default function CalendarPage(): React.JSX.Element {
   };
 
   /**
-   * サンプルデータ生成（デモ用）
+   * 新しい記録を作成
    */
-  const generateSampleData = async (): Promise<void> => {
-    const sampleRecords: CalendarRecord[] = [];
-    const today = new Date();
+  const createRecord = async (
+    input: CreateCalendarRecordInput
+  ): Promise<CalendarRecord> => {
+    try {
+      const now = new Date();
+      const newRecord: CalendarRecord = {
+        id: `record_${now.getTime()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: input.userId || 'default-user',
+        recordDate: input.recordDate,
+        rehabCompleted: input.rehabCompleted || false,
+        measurementCompleted: input.measurementCompleted || false,
+        performanceLevel: input.performanceLevel || 3,
+        painLevel: input.painLevel || 3,
+        motivationLevel: input.motivationLevel || 3,
+        notes: input.notes || '',
+        createdAt: now,
+        updatedAt: now,
+      };
 
-    // 過去30日間のランダムな記録を生成
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
+      // データベースに保存
+      await db.records.add(newRecord);
 
-      // 70%の確率で記録を作成
-      if (Math.random() > 0.3) {
-        const record: CalendarRecord = {
-          id: `record_${date.getTime()}`,
-          userId: 'demo_user',
-          recordDate: date,
-          rehabCompleted: Math.random() > 0.3,
-          measurementCompleted: Math.random() > 0.4,
-          performanceLevel: (Math.floor(Math.random() * 5) + 1) as
-            | 1
-            | 2
-            | 3
-            | 4
-            | 5,
-          painLevel: (Math.floor(Math.random() * 5) + 1) as 1 | 2 | 3 | 4 | 5,
-          motivationLevel: (Math.floor(Math.random() * 5) + 1) as
-            | 1
-            | 2
-            | 3
-            | 4
-            | 5,
-          ...(i % 5 === 0 && { notes: `${i}日前の記録メモ` }),
-          createdAt: date,
-          updatedAt: date,
-        };
-        sampleRecords.push(record);
-      }
+      // 状態を更新
+      setCalendarRecords((prev) => [...prev, newRecord]);
+
+      return newRecord;
+    } catch (err) {
+      console.error('記録作成エラー:', err);
+      throw err;
     }
-
-    setCalendarRecords(sampleRecords);
-    // ローカルストレージに保存
-    localStorage.setItem('calendarRecords', JSON.stringify(sampleRecords));
   };
 
   /**
-   * 日付選択ハンドラ
+   * 記録を更新
+   */
+  const updateRecord = async (
+    id: string,
+    input: UpdateCalendarRecordInput
+  ): Promise<CalendarRecord> => {
+    try {
+      const updateData = {
+        ...input,
+        updatedAt: new Date(),
+      };
+
+      // データベースを更新
+      await db.records.update(id, updateData);
+
+      // 更新された記録を取得
+      const updatedRecord = await db.records.get(id);
+      if (!updatedRecord) {
+        throw new Error('更新後の記録が見つかりません');
+      }
+
+      // 状態を更新
+      setCalendarRecords((prev) =>
+        prev.map((record) => (record.id === id ? updatedRecord : record))
+      );
+
+      return updatedRecord;
+    } catch (err) {
+      console.error('記録更新エラー:', err);
+      throw err;
+    }
+  };
+
+  /**
+   * 記録を削除
+   */
+  const deleteRecord = async (id: string): Promise<void> => {
+    try {
+      // データベースから削除
+      await db.records.delete(id);
+
+      // 状態を更新
+      setCalendarRecords((prev) => prev.filter((record) => record.id !== id));
+    } catch (err) {
+      console.error('記録削除エラー:', err);
+      throw err;
+    }
+  };
+
+  /**
+   * 日付選択ハンドラー
    */
   const handleDateSelect = useCallback(
     (date: Date): void => {
       setSelectedDate(date);
 
-      // 選択された日付の記録を検索
-      const record = calendarRecords.find(
-        (r) => r.recordDate.toDateString() === date.toDateString()
-      );
+      // 選択した日付に対応する記録を探す
+      const recordForDate = calendarRecords.find((record) => {
+        const recordDate = new Date(record.recordDate);
+        return (
+          recordDate.getFullYear() === date.getFullYear() &&
+          recordDate.getMonth() === date.getMonth() &&
+          recordDate.getDate() === date.getDate()
+        );
+      });
 
-      setSelectedRecord(record);
+      setSelectedRecord(recordForDate);
       setIsDetailOpen(true);
     },
     [calendarRecords]
   );
 
   /**
-   * 月変更ハンドラ
+   * 月変更ハンドラー
    */
-  const handleMonthChange = useCallback((date: Date): void => {
-    setCurrentMonth(date);
+  const handleMonthChange = useCallback((newMonth: Date): void => {
+    setCurrentMonth(newMonth);
   }, []);
 
   /**
-   * 記録保存ハンドラ
+   * 記録保存ハンドラー
    */
-  const handleSaveRecord = useCallback(
-    async (
-      data: CreateCalendarRecordInput | UpdateCalendarRecordInput
-    ): Promise<void> => {
-      try {
-        setIsLoading(true);
-
-        if (selectedRecord) {
-          // 更新
-          const updateData = data as UpdateCalendarRecordInput;
-          const updatedRecord: CalendarRecord = {
-            ...selectedRecord,
-            ...updateData,
-            updatedAt: new Date(),
-          };
-
-          const updatedRecords = calendarRecords.map((r) =>
-            r.id === selectedRecord.id ? updatedRecord : r
-          );
-
-          setCalendarRecords(updatedRecords);
-          setSelectedRecord(updatedRecord);
-          localStorage.setItem(
-            'calendarRecords',
-            JSON.stringify(updatedRecords)
-          );
-        } else {
-          // 新規作成
-          const createData = data as CreateCalendarRecordInput;
-          const newRecord: CalendarRecord = {
-            id: `record_${Date.now()}`,
-            userId: 'demo_user', // 実際の実装ではユーザーIDを使用
-            recordDate: selectedDate,
-            rehabCompleted: createData.rehabCompleted,
-            measurementCompleted: createData.measurementCompleted,
-            ...(createData.performanceLevel !== undefined && {
-              performanceLevel: createData.performanceLevel,
-            }),
-            ...(createData.painLevel !== undefined && {
-              painLevel: createData.painLevel,
-            }),
-            ...(createData.motivationLevel !== undefined && {
-              motivationLevel: createData.motivationLevel,
-            }),
-            ...(createData.notes && { notes: createData.notes }),
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-
-          const updatedRecords = [...calendarRecords, newRecord];
-          setCalendarRecords(updatedRecords);
-          setSelectedRecord(newRecord);
-          localStorage.setItem(
-            'calendarRecords',
-            JSON.stringify(updatedRecords)
-          );
-        }
-
-        setIsLoading(false);
-      } catch (err) {
-        console.error('記録保存エラー:', err);
-        setError('記録の保存に失敗しました');
-        setIsLoading(false);
+  const handleSaveRecord = async (
+    input: CreateCalendarRecordInput | UpdateCalendarRecordInput
+  ): Promise<void> => {
+    try {
+      if (selectedRecord) {
+        // 既存記録の更新
+        await updateRecord(
+          selectedRecord.id,
+          input as UpdateCalendarRecordInput
+        );
+      } else {
+        // 新規記録の作成
+        const createInput: CreateCalendarRecordInput = {
+          ...(input as CreateCalendarRecordInput),
+          recordDate: selectedDate,
+        };
+        const newRecord = await createRecord(createInput);
+        setSelectedRecord(newRecord);
       }
-    },
-    [selectedRecord, selectedDate, calendarRecords]
-  );
+    } catch (err) {
+      console.error('記録保存エラー:', err);
+      setError('記録の保存に失敗しました');
+    }
+  };
 
   /**
-   * 記録削除ハンドラ
+   * 記録削除ハンドラー
    */
-  const handleDeleteRecord = useCallback(
-    async (recordId: string): Promise<void> => {
-      try {
-        const updatedRecords = calendarRecords.filter((r) => r.id !== recordId);
-        setCalendarRecords(updatedRecords);
-        setSelectedRecord(undefined);
-        setIsDetailOpen(false);
-        localStorage.setItem('calendarRecords', JSON.stringify(updatedRecords));
-      } catch (err) {
-        console.error('記録削除エラー:', err);
-        setError('記録の削除に失敗しました');
-      }
-    },
-    [calendarRecords]
-  );
+  const handleDeleteRecord = async (): Promise<void> => {
+    if (!selectedRecord) return;
+
+    try {
+      await deleteRecord(selectedRecord.id);
+      setSelectedRecord(undefined);
+      setIsDetailOpen(false);
+    } catch (err) {
+      console.error('記録削除エラー:', err);
+      setError('記録の削除に失敗しました');
+    }
+  };
 
   /**
-   * 詳細モーダルを閉じる
+   * 詳細画面を閉じる
    */
   const handleCloseDetail = useCallback((): void => {
     setIsDetailOpen(false);
-    setSelectedRecord(undefined);
-  }, []);
-
-  /**
-   * エラーリセット
-   */
-  const handleResetError = useCallback((): void => {
     setError(null);
   }, []);
 
   /**
-   * 今日の記録状況を取得
+   * 測定ページに移動
    */
-  const getTodayStatus = (): { hasRecord: boolean; completionRate: number } => {
-    const today = new Date();
-    const todayRecord = calendarRecords.find(
-      (r) => r.recordDate.toDateString() === today.toDateString()
-    );
+  const goToMeasurement = useCallback((): void => {
+    router.push('/measurement');
+  }, [router]);
 
-    if (!todayRecord) {
-      return { hasRecord: false, completionRate: 0 };
-    }
-
-    const completed =
-      Number(todayRecord.rehabCompleted) +
-      Number(todayRecord.measurementCompleted);
-    const completionRate = (completed / 2) * 100;
-
-    return { hasRecord: true, completionRate };
-  };
-
-  /**
-   * 月間統計を取得
-   */
-  const getMonthlyStats = () => {
-    const monthStart = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1
-    );
-    const monthEnd = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0
-    );
-
-    const monthRecords = calendarRecords.filter(
-      (r) => r.recordDate >= monthStart && r.recordDate <= monthEnd
-    );
-
-    const totalDays = monthEnd.getDate();
-    const recordedDays = monthRecords.length;
-    const rehabCompletedDays = monthRecords.filter(
-      (r) => r.rehabCompleted
-    ).length;
-    const measurementCompletedDays = monthRecords.filter(
-      (r) => r.measurementCompleted
-    ).length;
-
-    return {
-      totalDays,
-      recordedDays,
-      rehabCompletedDays,
-      measurementCompletedDays,
-      recordingRate: Math.round((recordedDays / totalDays) * 100),
-      rehabRate: Math.round((rehabCompletedDays / totalDays) * 100),
-      measurementRate: Math.round((measurementCompletedDays / totalDays) * 100),
-    };
-  };
-
-  const todayStatus = getTodayStatus();
-  const monthlyStats = getMonthlyStats();
-
-  // ローディング画面
-  if (isLoading && calendarRecords.length === 0) {
+  if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}>
-          <div className={styles.spinner}></div>
-          <h2>カレンダーデータを読み込み中...</h2>
-          <p>リハビリテーション記録を取得しています</p>
-        </div>
+        <div className={styles.spinner} />
+        <p>カレンダーデータを読み込んでいます...</p>
       </div>
     );
   }
 
   return (
     <div className={styles.calendarPage}>
-      {/* ヘッダー */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.title}>
             <span className={styles.titleIcon}>📅</span>
             リハビリカレンダー
           </h1>
-          <nav className={styles.navigation}>
-            <Link href="/measurement" className={styles.navLink}>
-              📐 測定
+          <div className={styles.headerActions}>
+            <Link href="/measurement" className={styles.measurementButton}>
+              今日の測定
             </Link>
-            <Link href="/progress" className={styles.navLink}>
-              📊 進捗
+            <Link href="/progress" className={styles.progressButton}>
+              進捗確認
             </Link>
-            <Link href="/setup" className={styles.navLink}>
-              ⚙️ 設定
-            </Link>
-          </nav>
+          </div>
         </div>
       </header>
 
-      {/* エラー表示 */}
       {error && (
         <div className={styles.errorContainer}>
           <div className={styles.errorMessage}>
             <span className={styles.errorIcon}>⚠️</span>
             <p>{error}</p>
             <button
-              onClick={handleResetError}
+              onClick={() => setError(null)}
               className={styles.errorResetButton}
             >
               閉じる
@@ -373,68 +308,7 @@ export default function CalendarPage(): React.JSX.Element {
       )}
 
       <main className={styles.mainContent}>
-        {/* 今日のステータス */}
-        <div className={styles.todayStatus}>
-          <h2>📋 今日の記録状況</h2>
-          <div className={styles.statusCard}>
-            {todayStatus.hasRecord ? (
-              <>
-                <div className={styles.statusIndicator}>
-                  <span className={styles.statusIcon}>✅</span>
-                  <span>記録済み</span>
-                </div>
-                <div className={styles.completionRate}>
-                  完了率: {todayStatus.completionRate}%
-                </div>
-              </>
-            ) : (
-              <>
-                <div className={styles.statusIndicator}>
-                  <span className={styles.statusIcon}>📝</span>
-                  <span>未記録</span>
-                </div>
-                <button
-                  className={styles.addRecordButton}
-                  onClick={() => handleDateSelect(new Date())}
-                >
-                  今日の記録を追加
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* カレンダーセクション */}
-        <div className={styles.calendarSection}>
-          <div className={styles.calendarHeader}>
-            <h2>📅 月間カレンダー</h2>
-            <div className={styles.monthNavigation}>
-              <button
-                className={styles.monthButton}
-                onClick={() => {
-                  const prevMonth = new Date(currentMonth);
-                  prevMonth.setMonth(currentMonth.getMonth() - 1);
-                  handleMonthChange(prevMonth);
-                }}
-              >
-                ◀ 前月
-              </button>
-              <span className={styles.currentMonth}>
-                {currentMonth.getFullYear()}年{currentMonth.getMonth() + 1}月
-              </span>
-              <button
-                className={styles.monthButton}
-                onClick={() => {
-                  const nextMonth = new Date(currentMonth);
-                  nextMonth.setMonth(currentMonth.getMonth() + 1);
-                  handleMonthChange(nextMonth);
-                }}
-              >
-                次月 ▶
-              </button>
-            </div>
-          </div>
-
+        <div className={styles.calendarContainer}>
           <CalendarGrid
             records={calendarRecords}
             currentDate={currentMonth}
@@ -443,82 +317,49 @@ export default function CalendarPage(): React.JSX.Element {
           />
         </div>
 
-        {/* 月間統計 */}
-        <div className={styles.statsSection}>
-          <h2>📊 月間統計</h2>
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📅</div>
-              <div className={styles.statContent}>
-                <span className={styles.statLabel}>記録日数</span>
-                <span className={styles.statValue}>
-                  {monthlyStats.recordedDays}/{monthlyStats.totalDays}日
-                </span>
-                <span className={styles.statRate}>
-                  {monthlyStats.recordingRate}%
-                </span>
-              </div>
-            </div>
+        {isDetailOpen && selectedDate && (
+          <RecordDetail
+            selectedDate={selectedDate}
+            {...(selectedRecord && { record: selectedRecord })}
+            onSave={handleSaveRecord}
+            {...(selectedRecord?.id && {
+              onDelete: (id: string) => deleteRecord(id),
+            })}
+            onClose={handleCloseDetail}
+          />
+        )}
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>🏃‍♂️</div>
-              <div className={styles.statContent}>
-                <span className={styles.statLabel}>リハビリ実施</span>
-                <span className={styles.statValue}>
-                  {monthlyStats.rehabCompletedDays}日
-                </span>
-                <span className={styles.statRate}>
-                  {monthlyStats.rehabRate}%
-                </span>
-              </div>
-            </div>
+        {calendarRecords.length === 0 && !isLoading && (
+          <div className={styles.noDataMessage}>
+            <p>まだ記録がありません。</p>
+            <p>測定を開始して記録を蓄積してください。</p>
+            <button onClick={goToMeasurement} className={styles.startButton}>
+              測定を開始
+            </button>
+          </div>
+        )}
 
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📐</div>
-              <div className={styles.statContent}>
-                <span className={styles.statLabel}>測定実施</span>
-                <span className={styles.statValue}>
-                  {monthlyStats.measurementCompletedDays}日
-                </span>
-                <span className={styles.statRate}>
-                  {monthlyStats.measurementRate}%
-                </span>
-              </div>
-            </div>
+        <div className={styles.summary}>
+          <div className={styles.summaryCard}>
+            <h3>今月の記録</h3>
+            <p className={styles.summaryValue}>{calendarRecords.length}日</p>
+          </div>
+
+          <div className={styles.summaryCard}>
+            <h3>リハビリ完了</h3>
+            <p className={styles.summaryValue}>
+              {calendarRecords.filter((r) => r.rehabCompleted).length}日
+            </p>
+          </div>
+
+          <div className={styles.summaryCard}>
+            <h3>測定完了</h3>
+            <p className={styles.summaryValue}>
+              {calendarRecords.filter((r) => r.measurementCompleted).length}日
+            </p>
           </div>
         </div>
       </main>
-
-      {/* 記録詳細モーダル */}
-      {isDetailOpen && (
-        <div className={styles.modalOverlay} onClick={handleCloseDetail}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <RecordDetail
-              selectedDate={selectedDate}
-              {...(selectedRecord && { record: selectedRecord })}
-              onSave={handleSaveRecord}
-              onDelete={handleDeleteRecord}
-              onClose={handleCloseDetail}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* フッター */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <p>AI駆動リハビリテーション支援システム</p>
-          <div className={styles.footerLinks}>
-            <Link href="/measurement">測定</Link>
-            <Link href="/progress">進捗分析</Link>
-            <Link href="/setup">設定</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

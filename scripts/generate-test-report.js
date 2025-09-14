@@ -2,7 +2,7 @@
 
 /**
  * テスト統計レポート生成スクリプト
- * 
+ *
  * 機能:
  * - E2Eテスト結果の集計
  * - ユニットテスト結果の集計
@@ -56,19 +56,20 @@ class TestReportGenerator {
     try {
       const results = await this.collectTestResults();
       const summary = this.generateSummary(results);
-      
+
       // JSON レポート保存
       await this.saveJsonReport(summary);
-      
+
       // HTML レポート生成
       await this.generateHtmlReport(summary);
-      
+
       // コンソール出力
       this.printSummaryToConsole(summary);
-      
+
       console.log('✅ テストレポート生成完了');
-      console.log(`📊 詳細レポート: ${path.join(REPORT_CONFIG.outputDir, REPORT_CONFIG.htmlReportFile)}`);
-      
+      console.log(
+        `📊 詳細レポート: ${path.join(REPORT_CONFIG.outputDir, REPORT_CONFIG.htmlReportFile)}`
+      );
     } catch (error) {
       console.error('❌ レポート生成エラー:', error);
       process.exit(1);
@@ -89,15 +90,18 @@ class TestReportGenerator {
   async collectUnitTestResults() {
     try {
       // Jest の結果ファイルを読み込み
-      const jestResultsPath = path.join(REPORT_CONFIG.outputDir, 'jest-results.json');
-      
+      const jestResultsPath = path.join(
+        REPORT_CONFIG.outputDir,
+        'jest-results.json'
+      );
+
       if (!fs.existsSync(jestResultsPath)) {
         console.warn('⚠️ Jest結果ファイルが見つかりません');
         return this.getDefaultUnitResults();
       }
 
       const jestResults = JSON.parse(fs.readFileSync(jestResultsPath, 'utf8'));
-      
+
       return {
         total: jestResults.numTotalTests || 0,
         passed: jestResults.numPassedTests || 0,
@@ -114,25 +118,37 @@ class TestReportGenerator {
   async collectE2ETestResults() {
     try {
       // Playwright の結果ファイルを読み込み
-      const playwrightResultsPath = path.join(REPORT_CONFIG.outputDir, 'results.json');
-      
+      const playwrightResultsPath = path.join(
+        REPORT_CONFIG.outputDir,
+        'results.json'
+      );
+
       if (!fs.existsSync(playwrightResultsPath)) {
         console.warn('⚠️ Playwright結果ファイルが見つかりません');
         return this.getDefaultE2EResults();
       }
 
-      const playwrightResults = JSON.parse(fs.readFileSync(playwrightResultsPath, 'utf8'));
-      
-      const browserResults = {};
-      let totalPassed = 0, totalFailed = 0, totalSkipped = 0;
+      const playwrightResults = JSON.parse(
+        fs.readFileSync(playwrightResultsPath, 'utf8')
+      );
 
-      playwrightResults.suites?.forEach(suite => {
-        suite.specs?.forEach(spec => {
-          spec.tests?.forEach(test => {
+      const browserResults = {};
+      let totalPassed = 0,
+        totalFailed = 0,
+        totalSkipped = 0;
+
+      playwrightResults.suites?.forEach((suite) => {
+        suite.specs?.forEach((spec) => {
+          spec.tests?.forEach((test) => {
             const projectName = test.projectName || 'unknown';
-            
+
             if (!browserResults[projectName]) {
-              browserResults[projectName] = { passed: 0, failed: 0, skipped: 0, avgDuration: 0 };
+              browserResults[projectName] = {
+                passed: 0,
+                failed: 0,
+                skipped: 0,
+                avgDuration: 0,
+              };
             }
 
             switch (test.status) {
@@ -168,18 +184,25 @@ class TestReportGenerator {
 
   async collectCompatibilityResults() {
     try {
-      const compatibilityPath = path.join(REPORT_CONFIG.outputDir, 'compatibility-report.json');
-      
+      const compatibilityPath = path.join(
+        REPORT_CONFIG.outputDir,
+        'compatibility-report.json'
+      );
+
       if (!fs.existsSync(compatibilityPath)) {
         console.warn('⚠️ 互換性レポートが見つかりません');
         return this.getDefaultCompatibilityResults();
       }
 
-      const compatibilityData = JSON.parse(fs.readFileSync(compatibilityPath, 'utf8'));
-      
+      const compatibilityData = JSON.parse(
+        fs.readFileSync(compatibilityPath, 'utf8')
+      );
+
       return {
         supportMatrix: compatibilityData.matrix || {},
-        overallScore: this.calculateOverallCompatibilityScore(compatibilityData.matrix || {}),
+        overallScore: this.calculateOverallCompatibilityScore(
+          compatibilityData.matrix || {}
+        ),
       };
     } catch (error) {
       console.warn('⚠️ 互換性データの収集でエラー:', error.message);
@@ -190,25 +213,33 @@ class TestReportGenerator {
   async collectPerformanceMetrics() {
     try {
       // パフォーマンステストの結果を収集
-      const performanceFiles = fs.readdirSync(REPORT_CONFIG.outputDir)
-        .filter(file => file.includes('performance') && file.endsWith('.json'));
+      const performanceFiles = fs
+        .readdirSync(REPORT_CONFIG.outputDir)
+        .filter(
+          (file) => file.includes('performance') && file.endsWith('.json')
+        );
 
       let totalLoadTime = 0;
       let totalTestTime = 0;
       let testCount = 0;
       const slowestTests = [];
 
-      performanceFiles.forEach(file => {
-        const data = JSON.parse(fs.readFileSync(path.join(REPORT_CONFIG.outputDir, file), 'utf8'));
-        
+      performanceFiles.forEach((file) => {
+        const data = JSON.parse(
+          fs.readFileSync(path.join(REPORT_CONFIG.outputDir, file), 'utf8')
+        );
+
         if (data.loadTime) {
           totalLoadTime += data.loadTime;
           testCount++;
         }
-        
+
         if (data.testDuration) {
           totalTestTime += data.testDuration;
-          slowestTests.push({ name: data.testName || file, duration: data.testDuration });
+          slowestTests.push({
+            name: data.testName || file,
+            duration: data.testDuration,
+          });
         }
       });
 
@@ -229,7 +260,7 @@ class TestReportGenerator {
     const totalTests = results.unit.total + results.e2e.total;
     const totalPassed = results.unit.passed + results.e2e.passed;
     const totalFailed = results.unit.failed + results.e2e.failed;
-    
+
     return {
       timestamp: new Date().toISOString(),
       overview: {
@@ -247,10 +278,14 @@ class TestReportGenerator {
     const recommendations = [];
 
     // 成功率チェック
-    const unitSuccessRate = results.unit.total > 0 ? 
-      (results.unit.passed / results.unit.total) * 100 : 100;
-    const e2eSuccessRate = results.e2e.total > 0 ? 
-      (results.e2e.passed / results.e2e.total) * 100 : 100;
+    const unitSuccessRate =
+      results.unit.total > 0
+        ? (results.unit.passed / results.unit.total) * 100
+        : 100;
+    const e2eSuccessRate =
+      results.e2e.total > 0
+        ? (results.e2e.passed / results.e2e.total) * 100
+        : 100;
 
     if (unitSuccessRate < 95) {
       recommendations.push({
@@ -307,15 +342,21 @@ class TestReportGenerator {
   }
 
   async saveJsonReport(summary) {
-    const jsonPath = path.join(REPORT_CONFIG.outputDir, REPORT_CONFIG.summaryFile);
+    const jsonPath = path.join(
+      REPORT_CONFIG.outputDir,
+      REPORT_CONFIG.summaryFile
+    );
     fs.writeFileSync(jsonPath, JSON.stringify(summary, null, 2));
     console.log(`💾 JSON レポート保存: ${jsonPath}`);
   }
 
   async generateHtmlReport(summary) {
     const htmlContent = this.generateHtmlContent(summary);
-    const htmlPath = path.join(REPORT_CONFIG.outputDir, REPORT_CONFIG.htmlReportFile);
-    
+    const htmlPath = path.join(
+      REPORT_CONFIG.outputDir,
+      REPORT_CONFIG.htmlReportFile
+    );
+
     fs.writeFileSync(htmlPath, htmlContent);
     console.log(`📄 HTML レポート生成: ${htmlPath}`);
   }
@@ -382,11 +423,15 @@ class TestReportGenerator {
 
         <div class="recommendations">
             <h2>📋 推奨事項</h2>
-            ${summary.recommendations.map(rec => `
+            ${summary.recommendations
+              .map(
+                (rec) => `
                 <div class="recommendation ${rec.type}">
                     <strong>${rec.category}:</strong> ${rec.message}
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
 
         <div class="details">
@@ -417,14 +462,18 @@ class TestReportGenerator {
                 <h4>ブラウザ別結果</h4>
                 <table>
                     <tr><th>ブラウザ</th><th>成功</th><th>失敗</th><th>スキップ</th></tr>
-                    ${Object.entries(summary.details.e2e.browsers).map(([browser, results]) => `
+                    ${Object.entries(summary.details.e2e.browsers)
+                      .map(
+                        ([browser, results]) => `
                         <tr>
                             <td>${browser}</td>
                             <td>${results.passed}</td>
                             <td>${results.failed}</td>
                             <td>${results.skipped}</td>
                         </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </table>
             </div>
 
@@ -457,18 +506,25 @@ class TestReportGenerator {
     console.log(`✅ 成功: ${summary.overview.totalPassed}`);
     console.log(`❌ 失敗: ${summary.overview.totalFailed}`);
     console.log('');
-    
-    summary.recommendations.forEach(rec => {
-      const icon = rec.type === 'success' ? '✅' : rec.type === 'warning' ? '⚠️' : '❌';
+
+    summary.recommendations.forEach((rec) => {
+      const icon =
+        rec.type === 'success' ? '✅' : rec.type === 'warning' ? '⚠️' : '❌';
       console.log(`${icon} ${rec.message}`);
     });
-    
+
     console.log('\n' + '='.repeat(60));
   }
 
   // デフォルト値とヘルパーメソッド
   getDefaultUnitResults() {
-    return { total: 0, passed: 0, failed: 0, skipped: 0, coverage: { lines: 0, functions: 0, branches: 0, statements: 0 } };
+    return {
+      total: 0,
+      passed: 0,
+      failed: 0,
+      skipped: 0,
+      coverage: { lines: 0, functions: 0, branches: 0, statements: 0 },
+    };
   }
 
   getDefaultE2EResults() {
@@ -487,7 +543,7 @@ class TestReportGenerator {
     const coverage = jestResults.coverageMap || {};
     // Jest カバレッジデータの解析（簡略化）
     return {
-      lines: 85,      // 実際の実装では正確な値を取得
+      lines: 85, // 実際の実装では正確な値を取得
       functions: 82,
       branches: 78,
       statements: 85,
@@ -501,9 +557,9 @@ class TestReportGenerator {
     let totalTests = 0;
     let passedTests = 0;
 
-    browsers.forEach(browser => {
+    browsers.forEach((browser) => {
       const browserResults = matrix[browser] || {};
-      Object.values(browserResults).forEach(passed => {
+      Object.values(browserResults).forEach((passed) => {
         totalTests++;
         if (passed) passedTests++;
       });

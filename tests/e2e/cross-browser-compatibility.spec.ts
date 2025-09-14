@@ -1,12 +1,12 @@
 /**
  * クロスブラウザ互換性テスト
- * 
+ *
  * 対象ブラウザ:
  * - Chrome/Chromium (デスクトップ・モバイル)
  * - Firefox (デスクトップ・モバイル)
  * - Safari (デスクトップ・モバイル)
  * - Edge (デスクトップ)
- * 
+ *
  * テスト項目:
  * - 基本機能
  * - MediaPipe互換性
@@ -15,7 +15,14 @@
  * - レスポンシブデザイン
  */
 
-import { test, expect, devices, Browser, BrowserContext, Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  devices,
+  Browser,
+  BrowserContext,
+  Page,
+} from '@playwright/test';
 
 // 型定義
 type BrowserFeatures = {
@@ -48,7 +55,7 @@ const BROWSER_CONFIGS = [
       pwa: true,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Chrome Mobile',
@@ -58,7 +65,7 @@ const BROWSER_CONFIGS = [
       pwa: true,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Firefox Desktop',
@@ -68,7 +75,7 @@ const BROWSER_CONFIGS = [
       pwa: false, // Firefoxでは制限あり
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Firefox Mobile',
@@ -78,7 +85,7 @@ const BROWSER_CONFIGS = [
       pwa: false,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Safari Desktop',
@@ -88,7 +95,7 @@ const BROWSER_CONFIGS = [
       pwa: true,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Safari Mobile',
@@ -98,7 +105,7 @@ const BROWSER_CONFIGS = [
       pwa: true,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
   {
     name: 'Edge Desktop',
@@ -108,7 +115,7 @@ const BROWSER_CONFIGS = [
       pwa: true,
       webgl: true,
       webrtc: true,
-    }
+    },
   },
 ];
 
@@ -128,55 +135,67 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
       await page.goto('/');
       await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
       await expect(page.locator('[data-testid="navigation"]')).toBeVisible();
-    }
+    },
   },
   {
     name: 'responsive-design',
     description: 'レスポンシブデザイン',
     test: async (page, config) => {
       await page.goto('/');
-      
+
       // ビューポートサイズに応じたレイアウト確認
       const isMobile = config.device.viewport.width < 768;
-      
+
       if (isMobile) {
         // モバイルレイアウト確認
-        await expect(page.locator('[data-testid="mobile-navigation"]')).toBeVisible();
-        await expect(page.locator('[data-testid="hamburger-menu"]')).toBeVisible();
+        await expect(
+          page.locator('[data-testid="mobile-navigation"]')
+        ).toBeVisible();
+        await expect(
+          page.locator('[data-testid="hamburger-menu"]')
+        ).toBeVisible();
       } else {
         // デスクトップレイアウト確認
-        await expect(page.locator('[data-testid="desktop-navigation"]')).toBeVisible();
+        await expect(
+          page.locator('[data-testid="desktop-navigation"]')
+        ).toBeVisible();
         await expect(page.locator('[data-testid="sidebar"]')).toBeVisible();
       }
-    }
+    },
   },
   {
     name: 'camera-access',
     description: 'カメラアクセス',
     test: async (page) => {
       await page.goto('/measurement');
-      
+
       // カメラ許可
       await page.click('[data-testid="start-camera"]');
-      
+
       // ユーザーメディア取得確認
       const hasCamera = await page.evaluate(async () => {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          stream.getTracks().forEach(track => track.stop());
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+          stream.getTracks().forEach((track) => track.stop());
           return true;
         } catch {
           return false;
         }
       });
-      
+
       if (hasCamera) {
-        await expect(page.locator('[data-testid="camera-stream"]')).toBeVisible();
+        await expect(
+          page.locator('[data-testid="camera-stream"]')
+        ).toBeVisible();
       } else {
-        await expect(page.locator('[data-testid="camera-error"]')).toBeVisible();
+        await expect(
+          page.locator('[data-testid="camera-error"]')
+        ).toBeVisible();
       }
     },
-    requiredFeatures: ['webrtc']
+    requiredFeatures: ['webrtc'],
   },
   {
     name: 'mediapipe-compatibility',
@@ -187,44 +206,47 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
         console.log(`MediaPipe not supported on ${config.name}`);
         return;
       }
-      
+
       await page.goto('/measurement');
-      
+
       // MediaPipe初期化
       await page.click('[data-testid="initialize-mediapipe"]');
-      
+
       // WASM読み込み確認
       const wasmSupported = await page.evaluate(() => {
         return typeof WebAssembly !== 'undefined';
       });
-      
+
       expect(wasmSupported).toBe(true);
-      
+
       // MediaPipe読み込み完了確認
-      await expect(page.locator('[data-testid="mediapipe-ready"]')).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('[data-testid="mediapipe-ready"]')).toBeVisible(
+        { timeout: 15000 }
+      );
     },
-    requiredFeatures: ['mediapipe']
+    requiredFeatures: ['mediapipe'],
   },
   {
     name: 'webgl-support',
     description: 'WebGL対応',
     test: async (page) => {
       await page.goto('/');
-      
+
       const webglSupported = await page.evaluate(() => {
         const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const gl =
+          canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         return !!gl;
       });
-      
+
       expect(webglSupported).toBe(true);
-      
+
       // WebGLコンテキスト情報取得
       const webglInfo = await page.evaluate(() => {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') as WebGLRenderingContext;
         if (!gl) return null;
-        
+
         return {
           vendor: gl.getParameter(gl.VENDOR),
           renderer: gl.getParameter(gl.RENDERER),
@@ -232,11 +254,11 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
           shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
         };
       });
-      
+
       expect(webglInfo).not.toBeNull();
       console.log('WebGL Info:', webglInfo);
     },
-    requiredFeatures: ['webgl']
+    requiredFeatures: ['webgl'],
   },
   {
     name: 'pwa-features',
@@ -246,14 +268,15 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
         console.log(`PWA not fully supported on ${config.name}`);
         return;
       }
-      
+
       await page.goto('/');
-      
+
       // Service Worker登録確認
       const serviceWorkerSupported = await page.evaluate(async () => {
         if ('serviceWorker' in navigator) {
           try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration =
+              await navigator.serviceWorker.register('/sw.js');
             return !!registration;
           } catch {
             return false;
@@ -261,24 +284,24 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
         }
         return false;
       });
-      
+
       expect(serviceWorkerSupported).toBe(true);
-      
+
       // Web App Manifest確認
       const manifestSupported = await page.evaluate(() => {
         return 'manifest' in document.documentElement;
       });
-      
+
       expect(manifestSupported).toBe(true);
     },
-    requiredFeatures: ['pwa']
+    requiredFeatures: ['pwa'],
   },
   {
     name: 'local-storage',
     description: 'ローカルストレージ',
     test: async (page) => {
       await page.goto('/');
-      
+
       // localStorage確認
       const localStorageTest = await page.evaluate(() => {
         try {
@@ -290,76 +313,97 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
           return false;
         }
       });
-      
+
       expect(localStorageTest).toBe(true);
-      
+
       // IndexedDB確認
       const indexedDBTest = await page.evaluate(() => {
         return 'indexedDB' in window;
       });
-      
+
       expect(indexedDBTest).toBe(true);
-    }
+    },
   },
   {
     name: 'css-features',
     description: 'CSS機能対応',
     test: async (page) => {
       await page.goto('/');
-      
+
       // CSS Grid対応確認
       const gridSupported = await page.evaluate(() => {
         return CSS.supports('display', 'grid');
       });
-      
+
       expect(gridSupported).toBe(true);
-      
+
       // CSS Flexbox対応確認
       const flexSupported = await page.evaluate(() => {
         return CSS.supports('display', 'flex');
       });
-      
+
       expect(flexSupported).toBe(true);
-      
+
       // CSS Custom Properties対応確認
       const customPropsSupported = await page.evaluate(() => {
         return CSS.supports('--custom-property', 'value');
       });
-      
+
       expect(customPropsSupported).toBe(true);
-    }
+    },
   },
   {
     name: 'javascript-features',
     description: 'JavaScript機能対応',
     test: async (page) => {
       await page.goto('/');
-      
+
       const jsFeatures = await page.evaluate(() => {
         return {
           es6Modules: 'import' in document.createElement('script'),
           asyncAwait: typeof (async () => {}) === 'function',
-          destructuring: (() => { try { eval('const {a} = {a:1}'); return true; } catch { return false; } })(),
-          arrowFunctions: (() => { try { eval('() => {}'); return true; } catch { return false; } })(),
-          templateLiterals: (() => { try { eval('`template`'); return true; } catch { return false; } })(),
+          destructuring: (() => {
+            try {
+              eval('const {a} = {a:1}');
+              return true;
+            } catch {
+              return false;
+            }
+          })(),
+          arrowFunctions: (() => {
+            try {
+              eval('() => {}');
+              return true;
+            } catch {
+              return false;
+            }
+          })(),
+          templateLiterals: (() => {
+            try {
+              eval('`template`');
+              return true;
+            } catch {
+              return false;
+            }
+          })(),
           promises: typeof Promise !== 'undefined',
           fetch: typeof fetch !== 'undefined',
         };
       });
-      
+
       expect(jsFeatures.asyncAwait).toBe(true);
       expect(jsFeatures.promises).toBe(true);
       expect(jsFeatures.fetch).toBe(true);
-      
+
       console.log('JavaScript Features:', jsFeatures);
-    }
+    },
   },
   {
     name: 'performance-baseline',
     description: 'パフォーマンスベースライン',
     test: async (page, config) => {
       await page.goto('/');
-      
+
       // ページロード時間計測
       const loadMetrics = await page.evaluate(() => {
         const timing = performance.timing;
@@ -369,21 +413,21 @@ const CROSS_BROWSER_TESTS: TestCase[] = [
           firstPaint: performance.getEntriesByType('paint')[0]?.startTime || 0,
         };
       });
-      
+
       // デバイス別パフォーマンス閾値
       const isMobile = config.device.viewport.width < 768;
       const maxLoadTime = isMobile ? 5000 : 3000; // モバイルは5秒、デスクトップは3秒
-      
+
       expect(loadMetrics.loadTime).toBeLessThan(maxLoadTime);
       expect(loadMetrics.domReady).toBeLessThan(maxLoadTime * 0.8);
-      
+
       console.log(`Performance on ${config.name}:`, loadMetrics);
-    }
-  }
+    },
+  },
 ];
 
 // 互換性テスト実行
-BROWSER_CONFIGS.forEach(config => {
+BROWSER_CONFIGS.forEach((config) => {
   test.describe(`${config.name} Compatibility Tests`, () => {
     let context: BrowserContext;
     let page: Page;
@@ -394,7 +438,7 @@ BROWSER_CONFIGS.forEach(config => {
         permissions: ['camera'],
       });
       page = await context.newPage();
-      
+
       // ブラウザ固有の設定
       await setupBrowserSpecificMocks(page, config);
     });
@@ -403,20 +447,21 @@ BROWSER_CONFIGS.forEach(config => {
       await context.close();
     });
 
-    CROSS_BROWSER_TESTS.forEach(testCase => {
+    CROSS_BROWSER_TESTS.forEach((testCase) => {
       test(`${testCase.name}: ${testCase.description}`, async () => {
         // 必要な機能の確認
         if (testCase.requiredFeatures) {
           const hasRequiredFeatures = testCase.requiredFeatures.every(
-            feature => config.features[feature as keyof typeof config.features]
+            (feature) =>
+              config.features[feature as keyof typeof config.features]
           );
-          
+
           if (!hasRequiredFeatures) {
             test.skip();
             return;
           }
         }
-        
+
         try {
           await testCase.test(page, config);
         } catch (error) {
@@ -436,14 +481,15 @@ BROWSER_CONFIGS.forEach(config => {
 // 統合互換性レポート生成
 test.describe('Cross-Browser Compatibility Report', () => {
   test('generate-compatibility-matrix', async ({ browser }) => {
-    const compatibilityMatrix: { [key: string]: { [key: string]: boolean } } = {};
-    
+    const compatibilityMatrix: { [key: string]: { [key: string]: boolean } } =
+      {};
+
     for (const config of BROWSER_CONFIGS) {
       const context = await browser.newContext(config.device);
       const page = await context.newPage();
-      
+
       compatibilityMatrix[config.name] = {};
-      
+
       for (const testCase of CROSS_BROWSER_TESTS) {
         try {
           await testCase.test(page, config);
@@ -456,23 +502,30 @@ test.describe('Cross-Browser Compatibility Report', () => {
           }
         }
       }
-      
+
       await context.close();
     }
-    
+
     // 結果をコンソールに出力
     console.table(compatibilityMatrix);
-    
+
     // 結果をファイルに保存
     const fs = require('fs');
     const reportPath = './test-results/compatibility-report.json';
-    
-    fs.writeFileSync(reportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      matrix: compatibilityMatrix,
-      summary: generateCompatibilitySummary(compatibilityMatrix)
-    }, null, 2));
-    
+
+    fs.writeFileSync(
+      reportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          matrix: compatibilityMatrix,
+          summary: generateCompatibilitySummary(compatibilityMatrix),
+        },
+        null,
+        2
+      )
+    );
+
     console.log(`Compatibility report saved to ${reportPath}`);
   });
 });
@@ -489,7 +542,7 @@ async function setupBrowserSpecificMocks(page: Page, config: any) {
       }
     });
   }
-  
+
   if (config.name.includes('Firefox')) {
     // Firefox固有の設定
     await page.addInitScript(() => {
@@ -513,7 +566,7 @@ async function testBrowserSpecificFeatures(page: Page, config: any) {
       isMobile: /Mobile|Android|iPhone|iPad/.test(ua),
     };
   });
-  
+
   // Chrome固有テスト
   if (browserInfo.isChrome) {
     const chromeFeatures = await page.evaluate(() => {
@@ -523,11 +576,11 @@ async function testBrowserSpecificFeatures(page: Page, config: any) {
         intersectionObserver: typeof IntersectionObserver !== 'undefined',
       };
     });
-    
+
     expect(chromeFeatures.webgl2).toBe(true);
     expect(chromeFeatures.intersectionObserver).toBe(true);
   }
-  
+
   // Firefox固有テスト
   if (browserInfo.isFirefox) {
     const firefoxFeatures = await page.evaluate(() => {
@@ -536,11 +589,11 @@ async function testBrowserSpecificFeatures(page: Page, config: any) {
         webglSupported: !!document.createElement('canvas').getContext('webgl'),
       };
     });
-    
+
     expect(firefoxFeatures.wasmSupported).toBe(true);
     expect(firefoxFeatures.webglSupported).toBe(true);
   }
-  
+
   // Safari固有テスト
   if (browserInfo.isSafari) {
     const safariFeatures = await page.evaluate(() => {
@@ -549,14 +602,16 @@ async function testBrowserSpecificFeatures(page: Page, config: any) {
         touchEvents: 'ontouchstart' in window,
       };
     });
-    
+
     if (browserInfo.isMobile) {
       expect(safariFeatures.touchEvents).toBe(true);
     }
   }
 }
 
-function generateCompatibilitySummary(matrix: { [key: string]: { [key: string]: boolean } }) {
+function generateCompatibilitySummary(matrix: {
+  [key: string]: { [key: string]: boolean };
+}) {
   const summary = {
     totalTests: 0,
     passedTests: 0,
@@ -564,24 +619,24 @@ function generateCompatibilitySummary(matrix: { [key: string]: { [key: string]: 
     browserSupport: {} as { [key: string]: number },
     featureSupport: {} as { [key: string]: number },
   };
-  
+
   const browsers = Object.keys(matrix);
   if (browsers.length === 0) return summary;
-  
+
   const firstBrowser = browsers[0];
   if (!firstBrowser) return summary;
-  
+
   const firstBrowserMatrix = matrix[firstBrowser];
   const features = firstBrowserMatrix ? Object.keys(firstBrowserMatrix) : [];
-  
+
   summary.totalTests = browsers.length * features.length;
-  
-  browsers.forEach(browser => {
+
+  browsers.forEach((browser) => {
     const browserMatrix = matrix[browser];
     if (!browserMatrix) return;
-    
+
     let browserPassed = 0;
-    features.forEach(feature => {
+    features.forEach((feature) => {
       const passed = browserMatrix[feature];
       if (passed) {
         summary.passedTests++;
@@ -589,7 +644,7 @@ function generateCompatibilitySummary(matrix: { [key: string]: { [key: string]: 
       } else {
         summary.failedTests++;
       }
-      
+
       if (!summary.featureSupport[feature]) {
         summary.featureSupport[feature] = 0;
       }
@@ -597,17 +652,17 @@ function generateCompatibilitySummary(matrix: { [key: string]: { [key: string]: 
         summary.featureSupport[feature]++;
       }
     });
-    
+
     summary.browserSupport[browser] = (browserPassed / features.length) * 100;
   });
-  
+
   // 機能別サポート率計算
-  Object.keys(summary.featureSupport).forEach(feature => {
+  Object.keys(summary.featureSupport).forEach((feature) => {
     const supportCount = summary.featureSupport[feature];
     if (supportCount !== undefined) {
       summary.featureSupport[feature] = (supportCount / browsers.length) * 100;
     }
   });
-  
+
   return summary;
 }

@@ -53,7 +53,11 @@ interface MotionMeasurement {
   userId: string;
   measurementDate: Date;
   handUsed: 'left' | 'right';
-  measurementType: 'wrist-flexion' | 'wrist-extension' | 'thumb-abduction' | 'thumb-adduction';
+  measurementType:
+    | 'wrist-flexion'
+    | 'wrist-extension'
+    | 'thumb-abduction'
+    | 'thumb-adduction';
   angleValue: number;
   accuracy: number;
   landmarks?: Array<{ x: number; y: number; z: number }>;
@@ -91,7 +95,9 @@ interface User {
 }
 
 // 検証関数の実装
-const validateMotionMeasurement = (data: any): { isValid: boolean; errors: string[] } => {
+const validateMotionMeasurement = (
+  data: any
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
   // nullやundefinedのチェック
@@ -111,7 +117,10 @@ const validateMotionMeasurement = (data: any): { isValid: boolean; errors: strin
 
   if (!data.measurementDate) {
     errors.push('Measurement date is required');
-  } else if (!(data.measurementDate instanceof Date) && isNaN(Date.parse(data.measurementDate))) {
+  } else if (
+    !(data.measurementDate instanceof Date) &&
+    isNaN(Date.parse(data.measurementDate))
+  ) {
     errors.push('Measurement date must be a valid date');
   }
 
@@ -119,9 +128,19 @@ const validateMotionMeasurement = (data: any): { isValid: boolean; errors: strin
     errors.push('Hand used must be either "left" or "right"');
   }
 
-  const validMeasurementTypes = ['wrist-flexion', 'wrist-extension', 'thumb-abduction', 'thumb-adduction'];
-  if (!data.measurementType || !validMeasurementTypes.includes(data.measurementType)) {
-    errors.push(`Measurement type must be one of: ${validMeasurementTypes.join(', ')}`);
+  const validMeasurementTypes = [
+    'wrist-flexion',
+    'wrist-extension',
+    'thumb-abduction',
+    'thumb-adduction',
+  ];
+  if (
+    !data.measurementType ||
+    !validMeasurementTypes.includes(data.measurementType)
+  ) {
+    errors.push(
+      `Measurement type must be one of: ${validMeasurementTypes.join(', ')}`
+    );
   }
 
   if (data.angleValue === undefined || data.angleValue === null) {
@@ -151,7 +170,7 @@ const validateMotionMeasurement = (data: any): { isValid: boolean; errors: strin
         if (!landmark || typeof landmark !== 'object') {
           errors.push(`Landmark ${index} must be an object`);
         } else {
-          ['x', 'y', 'z'].forEach(coord => {
+          ['x', 'y', 'z'].forEach((coord) => {
             if (typeof landmark[coord] !== 'number' || isNaN(landmark[coord])) {
               errors.push(`Landmark ${index}.${coord} must be a valid number`);
             }
@@ -164,7 +183,9 @@ const validateMotionMeasurement = (data: any): { isValid: boolean; errors: strin
   return { isValid: errors.length === 0, errors };
 };
 
-const validateCalendarRecord = (data: any): { isValid: boolean; errors: string[] } => {
+const validateCalendarRecord = (
+  data: any
+): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
   // nullやundefinedのチェック
@@ -184,7 +205,10 @@ const validateCalendarRecord = (data: any): { isValid: boolean; errors: string[]
 
   if (!data.recordDate) {
     errors.push('Record date is required');
-  } else if (!(data.recordDate instanceof Date) && isNaN(Date.parse(data.recordDate))) {
+  } else if (
+    !(data.recordDate instanceof Date) &&
+    isNaN(Date.parse(data.recordDate))
+  ) {
     errors.push('Record date must be a valid date');
   }
 
@@ -198,28 +222,40 @@ const validateCalendarRecord = (data: any): { isValid: boolean; errors: string[]
 
   if (!data.createdAt) {
     errors.push('Created at is required');
-  } else if (!(data.createdAt instanceof Date) && isNaN(Date.parse(data.createdAt))) {
+  } else if (
+    !(data.createdAt instanceof Date) &&
+    isNaN(Date.parse(data.createdAt))
+  ) {
     errors.push('Created at must be a valid date');
   }
 
   if (!data.updatedAt) {
     errors.push('Updated at is required');
-  } else if (!(data.updatedAt instanceof Date) && isNaN(Date.parse(data.updatedAt))) {
+  } else if (
+    !(data.updatedAt instanceof Date) &&
+    isNaN(Date.parse(data.updatedAt))
+  ) {
     errors.push('Updated at must be a valid date');
   }
 
   // オプションフィールドの検証
   const validLevels = [1, 2, 3, 4, 5];
-  
+
   if (data.painLevel !== undefined && !validLevels.includes(data.painLevel)) {
     errors.push('Pain level must be 1, 2, 3, 4, or 5');
   }
 
-  if (data.motivationLevel !== undefined && !validLevels.includes(data.motivationLevel)) {
+  if (
+    data.motivationLevel !== undefined &&
+    !validLevels.includes(data.motivationLevel)
+  ) {
     errors.push('Motivation level must be 1, 2, 3, 4, or 5');
   }
 
-  if (data.performanceLevel !== undefined && !validLevels.includes(data.performanceLevel)) {
+  if (
+    data.performanceLevel !== undefined &&
+    !validLevels.includes(data.performanceLevel)
+  ) {
     errors.push('Performance level must be 1, 2, 3, 4, or 5');
   }
 
@@ -262,13 +298,19 @@ const validateUser = (data: any): { isValid: boolean; errors: string[] } => {
 
   if (!data.createdAt) {
     errors.push('Created at is required');
-  } else if (!(data.createdAt instanceof Date) && isNaN(Date.parse(data.createdAt))) {
+  } else if (
+    !(data.createdAt instanceof Date) &&
+    isNaN(Date.parse(data.createdAt))
+  ) {
     errors.push('Created at must be a valid date');
   }
 
   if (!data.updatedAt) {
     errors.push('Updated at is required');
-  } else if (!(data.updatedAt instanceof Date) && isNaN(Date.parse(data.updatedAt))) {
+  } else if (
+    !(data.updatedAt instanceof Date) &&
+    isNaN(Date.parse(data.updatedAt))
+  ) {
     errors.push('Updated at must be a valid date');
   }
 
@@ -281,11 +323,17 @@ const validateUser = (data: any): { isValid: boolean; errors: string[] } => {
     }
   }
 
-  if (data.gender !== undefined && !['male', 'female', 'other'].includes(data.gender)) {
+  if (
+    data.gender !== undefined &&
+    !['male', 'female', 'other'].includes(data.gender)
+  ) {
     errors.push('Gender must be "male", "female", or "other"');
   }
 
-  if (data.handDominance !== undefined && !['left', 'right'].includes(data.handDominance)) {
+  if (
+    data.handDominance !== undefined &&
+    !['left', 'right'].includes(data.handDominance)
+  ) {
     errors.push('Hand dominance must be "left" or "right"');
   }
 
@@ -305,7 +353,10 @@ const validateUser = (data: any): { isValid: boolean; errors: string[] } => {
 };
 
 // バリデーション関数
-const sanitizeAndValidateData = <T>(data: any, validator: (data: any) => { isValid: boolean; errors: string[] }): T | null => {
+const sanitizeAndValidateData = <T>(
+  data: any,
+  validator: (data: any) => { isValid: boolean; errors: string[] }
+): T | null => {
   try {
     // nullやundefinedのチェック
     if (!data || typeof data !== 'object') {
@@ -314,25 +365,37 @@ const sanitizeAndValidateData = <T>(data: any, validator: (data: any) => { isVal
 
     // 日付文字列をDateオブジェクトに変換
     const sanitizedData = { ...data };
-    
-    if (sanitizedData.measurementDate && typeof sanitizedData.measurementDate === 'string') {
+
+    if (
+      sanitizedData.measurementDate &&
+      typeof sanitizedData.measurementDate === 'string'
+    ) {
       sanitizedData.measurementDate = new Date(sanitizedData.measurementDate);
     }
-    
-    if (sanitizedData.recordDate && typeof sanitizedData.recordDate === 'string') {
+
+    if (
+      sanitizedData.recordDate &&
+      typeof sanitizedData.recordDate === 'string'
+    ) {
       sanitizedData.recordDate = new Date(sanitizedData.recordDate);
     }
-    
-    if (sanitizedData.createdAt && typeof sanitizedData.createdAt === 'string') {
+
+    if (
+      sanitizedData.createdAt &&
+      typeof sanitizedData.createdAt === 'string'
+    ) {
       sanitizedData.createdAt = new Date(sanitizedData.createdAt);
     }
-    
-    if (sanitizedData.updatedAt && typeof sanitizedData.updatedAt === 'string') {
+
+    if (
+      sanitizedData.updatedAt &&
+      typeof sanitizedData.updatedAt === 'string'
+    ) {
       sanitizedData.updatedAt = new Date(sanitizedData.updatedAt);
     }
 
     const validation = validator(sanitizedData);
-    
+
     if (validation.isValid) {
       return sanitizedData as T;
     } else {
@@ -355,7 +418,9 @@ describe('データ検証テスト', () => {
         measurementType: 'wrist-flexion',
         angleValue: 45.5,
         accuracy: 0.95,
-        landmarks: Array(21).fill(0).map((_, i) => ({ x: i * 0.1, y: i * 0.1, z: 0 })),
+        landmarks: Array(21)
+          .fill(0)
+          .map((_, i) => ({ x: i * 0.1, y: i * 0.1, z: 0 })),
         metadata: {
           deviceInfo: 'iPhone 13',
           appVersion: '1.0.0',
@@ -399,7 +464,9 @@ describe('データ検証テスト', () => {
 
       const result = validateMotionMeasurement(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Angle value must be between 0 and 180 degrees');
+      expect(result.errors).toContain(
+        'Angle value must be between 0 and 180 degrees'
+      );
     });
 
     test('無効な精度値でエラーを返す', () => {
@@ -427,12 +494,16 @@ describe('データ検証テスト', () => {
         measurementType: 'wrist-flexion',
         angleValue: 45,
         accuracy: 0.95,
-        landmarks: Array(20).fill(0).map(() => ({ x: 0, y: 0, z: 0 })), // 不足
+        landmarks: Array(20)
+          .fill(0)
+          .map(() => ({ x: 0, y: 0, z: 0 })), // 不足
       };
 
       const result = validateMotionMeasurement(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Landmarks array must contain exactly 21 points');
+      expect(result.errors).toContain(
+        'Landmarks array must contain exactly 21 points'
+      );
     });
 
     test('無効な測定タイプでエラーを返す', () => {
@@ -448,7 +519,9 @@ describe('データ検証テスト', () => {
 
       const result = validateMotionMeasurement(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Measurement type must be one of: wrist-flexion, wrist-extension, thumb-abduction, thumb-adduction');
+      expect(result.errors).toContain(
+        'Measurement type must be one of: wrist-flexion, wrist-extension, thumb-abduction, thumb-adduction'
+      );
     });
   });
 
@@ -507,7 +580,9 @@ describe('データ検証テスト', () => {
       const result = validateCalendarRecord(invalidData);
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Pain level must be 1, 2, 3, 4, or 5');
-      expect(result.errors).toContain('Motivation level must be 1, 2, 3, 4, or 5');
+      expect(result.errors).toContain(
+        'Motivation level must be 1, 2, 3, 4, or 5'
+      );
     });
 
     test('長すぎるノートでエラーを返す', () => {
@@ -602,7 +677,9 @@ describe('データ検証テスト', () => {
 
       const result = validateUser(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Gender must be "male", "female", or "other"');
+      expect(result.errors).toContain(
+        'Gender must be "male", "female", or "other"'
+      );
     });
   });
 
@@ -618,7 +695,10 @@ describe('データ検証テスト', () => {
         accuracy: 0.95,
       };
 
-      const result = sanitizeAndValidateData<MotionMeasurement>(inputData, validateMotionMeasurement);
+      const result = sanitizeAndValidateData<MotionMeasurement>(
+        inputData,
+        validateMotionMeasurement
+      );
       expect(result).not.toBeNull();
       expect(result?.measurementDate).toBeInstanceOf(Date);
     });
@@ -629,7 +709,10 @@ describe('データ検証テスト', () => {
         userId: 'user-456',
       };
 
-      const result = sanitizeAndValidateData<MotionMeasurement>(invalidData, validateMotionMeasurement);
+      const result = sanitizeAndValidateData<MotionMeasurement>(
+        invalidData,
+        validateMotionMeasurement
+      );
       expect(result).toBeNull();
     });
   });

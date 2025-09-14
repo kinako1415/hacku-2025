@@ -14,6 +14,7 @@ import type {
   MotivationLevel,
   PerformanceLevel,
 } from '@/lib/data-manager/models/calendar-record';
+import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
@@ -22,441 +23,375 @@ import styles from './page.module.scss';
 type PeriodType = 'week' | 'month' | '3months' | '6months' | 'year';
 
 /**
- * サンプルデータ生成
+ * 実際のデータベースから測定データを取得
  */
-const generateSampleMeasurements = (): MotionMeasurement[] => {
-  const measurements: MotionMeasurement[] = [];
-  const today = new Date();
+const fetchMeasurements = async (
+  userId: string = 'default-user'
+): Promise<MotionMeasurement[]> => {
+  try {
+    const measurements = await db.measurements
+      .where('userId')
+      .equals(userId)
+      .reverse()
+      .toArray();
 
-  for (let i = 29; i >= 0; i--) {
-    const measurementDate = new Date(today);
-    measurementDate.setDate(today.getDate() - i);
-
-    // ランダムだが改善傾向のあるデータ
-    const progress = (30 - i) / 30; // 0から1の進捗
-    const baseFlexion = 45 + progress * 30; // 45度から75度に改善
-    const baseExtension = 20 + progress * 15; // 20度から35度に改善
-
-    if (Math.random() > 0.3) {
-      // 70%の確率で測定記録があるとする
-      measurements.push({
-        id: `measurement-${i}`,
-        userId: 'sample-user',
-        measurementDate: measurementDate,
-        handUsed: Math.random() > 0.5 ? 'right' : 'left',
-        wristFlexion: baseFlexion + (Math.random() - 0.5) * 10,
-        wristExtension: baseExtension + (Math.random() - 0.5) * 8,
-        thumbFlexion: 35 + progress * 20 + (Math.random() - 0.5) * 8,
-        thumbExtension: 25 + progress * 15 + (Math.random() - 0.5) * 6,
-        thumbAbduction: 30 + progress * 20 + (Math.random() - 0.5) * 8,
-        thumbAdduction: 0,
-        wristRadialDeviation: 15 + progress * 10 + (Math.random() - 0.5) * 5,
-        wristUlnarDeviation: 20 + progress * 15 + (Math.random() - 0.5) * 7,
-        accuracyScore: 0.7 + progress * 0.25 + (Math.random() - 0.5) * 0.1,
-        comparisonResult: {
-          overallStatus: 'normal',
-          wristFlexion: { status: 'normal', within_range: true },
-          wristExtension: { status: 'normal', within_range: true },
-          wristUlnarDeviation: { status: 'normal', within_range: true },
-          wristRadialDeviation: { status: 'normal', within_range: true },
-          thumbFlexion: { status: 'normal', within_range: true },
-          thumbExtension: { status: 'normal', within_range: true },
-          thumbAbduction: { status: 'normal', within_range: true },
-          thumbAdduction: { status: 'normal', within_range: true },
-        },
-        createdAt: measurementDate,
-      });
-    }
+    return measurements;
+  } catch (error) {
+    console.error('測定データの取得に失敗:', error);
+    return [];
   }
-
-  return measurements;
-};
-
-const generateSampleCalendarRecords = (): CalendarRecord[] => {
-  const records: CalendarRecord[] = [];
-  const today = new Date();
-
-  for (let i = 29; i >= 0; i--) {
-    const recordDate = new Date(today);
-    recordDate.setDate(today.getDate() - i);
-
-    if (Math.random() > 0.2) {
-      // 80%の確率で記録があるとする
-      const progress = (30 - i) / 30;
-
-      const recordData: CalendarRecord = {
-        id: `record-${i}`,
-        userId: 'sample-user',
-        recordDate: recordDate,
-        rehabCompleted: Math.random() > 0.15, // 85%の完了率
-        measurementCompleted: Math.random() > 0.2, // 80%の完了率
-        painLevel: Math.max(
-          1,
-          Math.min(5, Math.round(5 - progress * 3 + (Math.random() - 0.5) * 2))
-        ) as PainLevel, // 5から2に改善
-        motivationLevel: Math.max(
-          1,
-          Math.min(5, Math.round(3 + progress * 2 + (Math.random() - 0.5) * 1))
-        ) as MotivationLevel, // 3から5に改善
-        performanceLevel: Math.max(
-          1,
-          Math.min(5, Math.round(2 + progress * 3 + (Math.random() - 0.5) * 1))
-        ) as PerformanceLevel, // 2から5に改善
-        createdAt: recordDate,
-        updatedAt: recordDate,
-      };
-
-      if (i % 10 === 0) {
-        recordData.notes = '今日は頑張りました！';
-      }
-
-      records.push(recordData);
-    }
-  }
-
-  return records;
 };
 
 /**
- * 統計情報の計算
+ * 実際のデータベースからカレンダー記録を取得
  */
-const calculateStats = (
-  measurements: MotionMeasurement[],
+const fetchCalendarRecords = async (
+  userId: string = 'default-user'
+): Promise<CalendarRecord[]> => {
+  try {
+    const records = await db.records
+      .where('userId')
+      .equals(userId)
+      .reverse()
+      .toArray();
+
+    return records;
+  } catch (error) {
+    console.error('カレンダー記録の取得に失敗:', error);
+    return [];
+  }
+};
+
+/**
+ * 期間に基づいてデータをフィルタリング
+ */
+const filterDataByPeriod = <
+  T extends { measurementDate?: Date; recordDate?: Date; createdAt?: Date },
+>(
+  data: T[],
   period: PeriodType
-) => {
+): T[] => {
   const now = new Date();
-  const periodDays = {
-    week: 7,
-    month: 30,
-    '3months': 90,
-    '6months': 180,
-    year: 365,
-  };
+  let startDate: Date;
 
-  const cutoffDate = new Date(
-    now.getTime() - periodDays[period] * 24 * 60 * 60 * 1000
-  );
-  const filteredMeasurements = measurements.filter(
-    (m) => new Date(m.measurementDate) >= cutoffDate
-  );
+  switch (period) {
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'month':
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case '3months':
+      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      break;
+    case '6months':
+      startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+      break;
+    case 'year':
+      startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  }
 
-  if (filteredMeasurements.length === 0) {
+  return data.filter((item) => {
+    const itemDate = item.measurementDate || item.recordDate || item.createdAt;
+    return itemDate && itemDate >= startDate;
+  });
+};
+
+/**
+ * 統計情報計算
+ */
+interface ProgressStats {
+  totalMeasurements: number;
+  avgAccuracy: number;
+  improvementRate: number;
+  consistencyScore: number;
+  painTrend: 'improving' | 'stable' | 'worsening';
+  motivationTrend: 'improving' | 'stable' | 'worsening';
+}
+
+const calculateProgressStats = (
+  measurements: MotionMeasurement[],
+  records: CalendarRecord[]
+): ProgressStats => {
+  if (measurements.length === 0) {
     return {
       totalMeasurements: 0,
-      averageAccuracy: 0,
-      averageWristFlexion: 0,
-      averageWristExtension: 0,
-      averageThumbFlexion: 0,
+      avgAccuracy: 0,
       improvementRate: 0,
+      consistencyScore: 0,
+      painTrend: 'stable',
+      motivationTrend: 'stable',
     };
   }
 
-  const latest = filteredMeasurements[filteredMeasurements.length - 1];
-  const earliest = filteredMeasurements[0];
+  // 測定精度の平均
+  const avgAccuracy =
+    measurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
+    measurements.length;
 
+  // 改善率の計算（最初と最後の比較）
+  const firstMeasurement = measurements[measurements.length - 1];
+  const lastMeasurement = measurements[0];
   const improvementRate =
-    latest && earliest
-      ? ((latest.wristFlexion - earliest.wristFlexion) /
-          earliest.wristFlexion) *
+    lastMeasurement && firstMeasurement
+      ? (((lastMeasurement.wristFlexion || 0) -
+          (firstMeasurement.wristFlexion || 0)) /
+          (firstMeasurement.wristFlexion || 1)) *
         100
       : 0;
 
+  // 一貫性スコア（測定頻度）
+  const dayRange = 30; // 30日間
+  const consistencyScore = Math.min(
+    100,
+    (measurements.length / dayRange) * 100
+  );
+
+  // 痛みと意欲のトレンド分析
+  const recentRecords = records.slice(0, 7); // 最近7日間
+  const olderRecords = records.slice(7, 14); // その前の7日間
+
+  const avgRecentPain =
+    recentRecords.length > 0
+      ? recentRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
+        recentRecords.length
+      : 3;
+  const avgOlderPain =
+    olderRecords.length > 0
+      ? olderRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
+        olderRecords.length
+      : 3;
+
+  const avgRecentMotivation =
+    recentRecords.length > 0
+      ? recentRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
+        recentRecords.length
+      : 3;
+  const avgOlderMotivation =
+    olderRecords.length > 0
+      ? olderRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
+        olderRecords.length
+      : 3;
+
+  const painTrend =
+    avgRecentPain < avgOlderPain - 0.3
+      ? 'improving'
+      : avgRecentPain > avgOlderPain + 0.3
+        ? 'worsening'
+        : 'stable';
+
+  const motivationTrend =
+    avgRecentMotivation > avgOlderMotivation + 0.3
+      ? 'improving'
+      : avgRecentMotivation < avgOlderMotivation - 0.3
+        ? 'worsening'
+        : 'stable';
+
   return {
-    totalMeasurements: filteredMeasurements.length,
-    averageAccuracy:
-      filteredMeasurements.reduce((sum, m) => sum + m.accuracyScore, 0) /
-      filteredMeasurements.length,
-    averageWristFlexion:
-      filteredMeasurements.reduce((sum, m) => sum + m.wristFlexion, 0) /
-      filteredMeasurements.length,
-    averageWristExtension:
-      filteredMeasurements.reduce((sum, m) => sum + m.wristExtension, 0) /
-      filteredMeasurements.length,
-    averageThumbFlexion:
-      filteredMeasurements.reduce((sum, m) => sum + m.thumbFlexion, 0) /
-      filteredMeasurements.length,
-    improvementRate,
+    totalMeasurements: measurements.length,
+    avgAccuracy: Math.round(avgAccuracy * 100),
+    improvementRate: Math.round(improvementRate),
+    consistencyScore: Math.round(consistencyScore),
+    painTrend,
+    motivationTrend,
   };
 };
 
 /**
- * 進捗ページコンポーネント
+ * 進捗ページメインコンポーネント
  */
-export default function ProgressPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const ProgressPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('month');
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
   const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // データの初期化
+  // データ読み込み
   useEffect(() => {
-    const initializeData = async () => {
+    const loadData = async () => {
+      setLoading(true);
       try {
-        setIsLoading(true);
+        const [measurementData, recordData] = await Promise.all([
+          fetchMeasurements(),
+          fetchCalendarRecords(),
+        ]);
 
-        // 実際の実装では localStorage や IndexedDB からデータを読み込む
-        // ここではサンプルデータを使用
-        const sampleMeasurements = generateSampleMeasurements();
-        const sampleRecords = generateSampleCalendarRecords();
-
-        setMeasurements(sampleMeasurements);
-        setCalendarRecords(sampleRecords);
-
-        setError(null);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : '予期しないエラーが発生しました'
-        );
+        setMeasurements(measurementData);
+        setCalendarRecords(recordData);
+      } catch (error) {
+        console.error('データの読み込みに失敗:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    initializeData();
+    loadData();
   }, []);
 
-  // 統計情報の計算
-  const stats = useMemo(
-    () => calculateStats(measurements, selectedPeriod),
+  // 期間フィルタリング済みデータ
+  const filteredMeasurements = useMemo(
+    () => filterDataByPeriod(measurements, selectedPeriod),
     [measurements, selectedPeriod]
   );
 
-  // 期間変更ハンドラー
-  const handlePeriodChange = (period: PeriodType) => {
-    setSelectedPeriod(period);
+  const filteredRecords = useMemo(
+    () => filterDataByPeriod(calendarRecords, selectedPeriod),
+    [calendarRecords, selectedPeriod]
+  );
+
+  // 統計情報
+  const stats = useMemo(
+    () => calculateProgressStats(filteredMeasurements, filteredRecords),
+    [filteredMeasurements, filteredRecords]
+  );
+
+  const periodLabels: Record<PeriodType, string> = {
+    week: '1週間',
+    month: '1ヶ月',
+    '3months': '3ヶ月',
+    '6months': '6ヶ月',
+    year: '1年',
   };
 
-  // エラーリセット
-  const handleErrorReset = () => {
-    setError(null);
-    window.location.reload();
+  const getTrendIcon = (trend: 'improving' | 'stable' | 'worsening') => {
+    switch (trend) {
+      case 'improving':
+        return '📈';
+      case 'worsening':
+        return '📉';
+      default:
+        return '➡️';
+    }
   };
 
-  if (isLoading) {
+  const getTrendColor = (trend: 'improving' | 'stable' | 'worsening') => {
+    switch (trend) {
+      case 'improving':
+        return '#4caf50';
+      case 'worsening':
+        return '#f44336';
+      default:
+        return '#ff9800';
+    }
+  };
+
+  if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}>
-          <div className={styles.spinner}></div>
-          <h2>データを読み込んでいます</h2>
-          <p>進捗データを準備しています...</p>
-        </div>
+        <div className={styles.spinner} />
+        <p>データを読み込んでいます...</p>
       </div>
     );
   }
 
   return (
     <div className={styles.progressPage}>
-      {/* ヘッダー */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.title}>
             <span className={styles.titleIcon}>📊</span>
-            進捗分析
+            進捗レポート
           </h1>
-          <nav className={styles.navigation}>
-            <a href="/measurement" className={styles.navLink}>
-              <span>📏</span>
-              測定
-            </a>
-            <a href="/calendar" className={styles.navLink}>
-              <span>📅</span>
-              カレンダー
-            </a>
-            <a href="/setup" className={styles.navLink}>
-              <span>⚙️</span>
-              設定
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      {/* エラー表示 */}
-      {error && (
-        <div className={styles.errorContainer}>
-          <div className={styles.errorMessage}>
-            <span className={styles.errorIcon}>⚠️</span>
-            <span>エラー: {error}</span>
-            <button
-              onClick={handleErrorReset}
-              className={styles.errorResetButton}
-            >
-              再読み込み
-            </button>
-          </div>
-        </div>
-      )}
-
-      <main className={styles.mainContent}>
-        {/* 期間選択 */}
-        <section className={styles.periodSelector}>
-          <h2>分析期間</h2>
-          <div className={styles.periodButtons}>
-            {(
-              ['week', 'month', '3months', '6months', 'year'] as PeriodType[]
-            ).map((period) => (
+          <div className={styles.periodSelector}>
+            {Object.entries(periodLabels).map(([period, label]) => (
               <button
                 key={period}
-                onClick={() => handlePeriodChange(period)}
-                className={`${styles.periodButton} ${selectedPeriod === period ? styles.active : ''}`}
+                className={`${styles.periodButton} ${
+                  selectedPeriod === period ? styles.active : ''
+                }`}
+                onClick={() => setSelectedPeriod(period as PeriodType)}
               >
-                {period === 'week' && '1週間'}
-                {period === 'month' && '1ヶ月'}
-                {period === '3months' && '3ヶ月'}
-                {period === '6months' && '6ヶ月'}
-                {period === 'year' && '1年'}
+                {label}
               </button>
             ))}
           </div>
-        </section>
+        </div>
+      </header>
 
-        {/* 統計サマリー */}
-        <section className={styles.statsSection}>
-          <h2>統計サマリー</h2>
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>🎯</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>測定回数</div>
-                <div className={styles.statValue}>
-                  {stats.totalMeasurements}回
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📐</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>平均手首屈曲</div>
-                <div className={styles.statValue}>
-                  {stats.averageWristFlexion.toFixed(1)}°
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📏</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>平均手首伸展</div>
-                <div className={styles.statValue}>
-                  {stats.averageWristExtension.toFixed(1)}°
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>👍</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>測定精度</div>
-                <div className={styles.statValue}>
-                  {(stats.averageAccuracy * 100).toFixed(1)}%
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📈</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>改善率</div>
-                <div className={styles.statValue}>
-                  {stats.improvementRate > 0 ? '+' : ''}
-                  {stats.improvementRate.toFixed(1)}%
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>👆</div>
-              <div className={styles.statContent}>
-                <div className={styles.statLabel}>平均母指屈曲</div>
-                <div className={styles.statValue}>
-                  {stats.averageThumbFlexion.toFixed(1)}°
-                </div>
-              </div>
-            </div>
+      <main className={styles.mainContent}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <h3>測定回数</h3>
+            <p className={styles.statValue}>{stats.totalMeasurements}回</p>
+            <span className={styles.statDescription}>期間内の総測定回数</span>
           </div>
-        </section>
 
-        {/* 進捗チャート */}
-        <section className={styles.chartsSection}>
-          <h2>詳細分析</h2>
-          <ProgressCharts
-            measurements={measurements}
-            calendarRecords={calendarRecords}
-            selectedPeriod={selectedPeriod}
-            onPeriodChange={handlePeriodChange}
-            {...(styles.progressCharts && { className: styles.progressCharts })}
-          />
-        </section>
-
-        {/* インサイト */}
-        <section className={styles.insightsSection}>
-          <h2>📝 アドバイス</h2>
-          <div className={styles.insightCards}>
-            {stats.improvementRate > 5 && (
-              <div className={styles.insightCard}>
-                <div className={styles.insightIcon}>🎉</div>
-                <div className={styles.insightContent}>
-                  <h3>素晴らしい改善</h3>
-                  <p>
-                    可動域が{stats.improvementRate.toFixed(1)}
-                    %改善しています。この調子で続けましょう！
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {stats.averageAccuracy < 0.7 && (
-              <div className={styles.insightCard}>
-                <div className={styles.insightIcon}>💡</div>
-                <div className={styles.insightContent}>
-                  <h3>測定精度の向上</h3>
-                  <p>
-                    測定精度を向上させるため、照明を明るくし、背景を単色にしてみてください。
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {stats.totalMeasurements < 7 && selectedPeriod === 'week' && (
-              <div className={styles.insightCard}>
-                <div className={styles.insightIcon}>⏰</div>
-                <div className={styles.insightContent}>
-                  <h3>継続を心がけましょう</h3>
-                  <p>
-                    週に7回以上の測定を目標にしましょう。毎日の継続が改善への近道です。
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {stats.totalMeasurements >= 20 && selectedPeriod === 'month' && (
-              <div className={styles.insightCard}>
-                <div className={styles.insightIcon}>🏆</div>
-                <div className={styles.insightContent}>
-                  <h3>継続優秀</h3>
-                  <p>
-                    月間{stats.totalMeasurements}
-                    回の測定、素晴らしい継続力です！
-                  </p>
-                </div>
-              </div>
-            )}
+          <div className={styles.statCard}>
+            <h3>平均精度</h3>
+            <p className={styles.statValue}>{stats.avgAccuracy}%</p>
+            <span className={styles.statDescription}>測定精度の平均値</span>
           </div>
-        </section>
-      </main>
 
-      {/* フッター */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <p>AI駆動手首・母指可動域リハビリテーションアプリ</p>
-          <div className={styles.footerLinks}>
-            <a href="/privacy">プライバシーポリシー</a>
-            <a href="/terms">利用規約</a>
-            <a href="/help">ヘルプ</a>
+          <div className={styles.statCard}>
+            <h3>改善率</h3>
+            <p className={styles.statValue}>
+              {stats.improvementRate > 0 ? '+' : ''}
+              {stats.improvementRate}%
+            </p>
+            <span className={styles.statDescription}>可動域の変化率</span>
+          </div>
+
+          <div className={styles.statCard}>
+            <h3>継続性</h3>
+            <p className={styles.statValue}>{stats.consistencyScore}%</p>
+            <span className={styles.statDescription}>測定頻度のスコア</span>
+          </div>
+
+          <div className={styles.statCard}>
+            <h3>痛みレベル</h3>
+            <p
+              className={styles.statValue}
+              style={{ color: getTrendColor(stats.painTrend) }}
+            >
+              {getTrendIcon(stats.painTrend)}
+            </p>
+            <span className={styles.statDescription}>
+              {stats.painTrend === 'improving'
+                ? '改善中'
+                : stats.painTrend === 'worsening'
+                  ? '悪化傾向'
+                  : '安定'}
+            </span>
+          </div>
+
+          <div className={styles.statCard}>
+            <h3>意欲レベル</h3>
+            <p
+              className={styles.statValue}
+              style={{ color: getTrendColor(stats.motivationTrend) }}
+            >
+              {getTrendIcon(stats.motivationTrend)}
+            </p>
+            <span className={styles.statDescription}>
+              {stats.motivationTrend === 'improving'
+                ? '向上中'
+                : stats.motivationTrend === 'worsening'
+                  ? '低下傾向'
+                  : '安定'}
+            </span>
           </div>
         </div>
-      </footer>
+
+        <div className={styles.chartsContainer}>
+          <ProgressCharts
+            measurements={filteredMeasurements}
+            calendarRecords={filteredRecords}
+            selectedPeriod={selectedPeriod}
+          />
+        </div>
+
+        {filteredMeasurements.length === 0 && (
+          <div className={styles.noDataMessage}>
+            <p>選択した期間にデータがありません。</p>
+            <p>測定を開始してデータを蓄積してください。</p>
+          </div>
+        )}
+      </main>
     </div>
   );
-}
+};
+
+export default ProgressPage;

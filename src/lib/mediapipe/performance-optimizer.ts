@@ -1,6 +1,6 @@
 /**
  * MediaPipe処理パフォーマンス最適化
- * 
+ *
  * 機能:
  * - MediaPipeの処理効率向上
  * - フレームレート最適化
@@ -15,17 +15,17 @@ export interface MediaPipeOptimizationConfig {
   targetFrameRate: number;
   skipFrameThreshold: number;
   adaptiveFrameSkipping: boolean;
-  
+
   // 品質設定
   modelComplexity: 0 | 1;
   minDetectionConfidence: number;
   minTrackingConfidence: number;
-  
+
   // パフォーマンス設定
   maxProcessingTime: number;
   useWebWorker: boolean;
   enableGPUAcceleration: boolean;
-  
+
   // メモリ管理
   maxCachedFrames: number;
   enableFramePooling: boolean;
@@ -37,15 +37,15 @@ export const DEFAULT_OPTIMIZATION_CONFIG: MediaPipeOptimizationConfig = {
   targetFrameRate: 30,
   skipFrameThreshold: 50, // ms
   adaptiveFrameSkipping: true,
-  
+
   modelComplexity: 1,
   minDetectionConfidence: 0.5,
   minTrackingConfidence: 0.5,
-  
+
   maxProcessingTime: 33, // 30fps = 33ms per frame
   useWebWorker: true,
   enableGPUAcceleration: true,
-  
+
   maxCachedFrames: 3,
   enableFramePooling: true,
   autoGarbageCollection: true,
@@ -115,20 +115,27 @@ class AdaptiveFrameSkipper {
 
   shouldSkipFrame(lastProcessingTime: number): boolean {
     this.processingTimes.push(lastProcessingTime);
-    
+
     if (this.processingTimes.length > this.maxSamples) {
       this.processingTimes.shift();
     }
 
-    const averageProcessingTime = this.processingTimes.reduce((a, b) => a + b, 0) / this.processingTimes.length;
-    
+    const averageProcessingTime =
+      this.processingTimes.reduce((a, b) => a + b, 0) /
+      this.processingTimes.length;
+
     // 処理時間が目標フレーム時間を超える場合はスキップ
     return averageProcessingTime > this.targetFrameTime * 0.8;
   }
 
   getSkipRatio(): number {
-    const averageProcessingTime = this.processingTimes.reduce((a, b) => a + b, 0) / this.processingTimes.length;
-    const ratio = Math.max(1, Math.ceil(averageProcessingTime / this.targetFrameTime));
+    const averageProcessingTime =
+      this.processingTimes.reduce((a, b) => a + b, 0) /
+      this.processingTimes.length;
+    const ratio = Math.max(
+      1,
+      Math.ceil(averageProcessingTime / this.targetFrameTime)
+    );
     return Math.min(ratio, 4); // 最大4フレームに1回
   }
 }
@@ -148,13 +155,13 @@ class PerformanceMonitor {
   endFrame(skipped: boolean = false): void {
     const endTime = performance.now();
     const processingTime = endTime - this.startTime;
-    
+
     this.frameCount++;
     if (skipped) {
       this.skippedFrameCount++;
     } else {
       this.processingTimes.push(processingTime);
-      
+
       // 最新の100フレームのみ保持
       if (this.processingTimes.length > 100) {
         this.processingTimes.shift();
@@ -166,13 +173,15 @@ class PerformanceMonitor {
     const now = performance.now();
     const timeDiff = now - this.lastUpdateTime;
     const fps = this.frameCount / (timeDiff / 1000);
-    
-    const averageProcessingTime = this.processingTimes.length > 0 
-      ? this.processingTimes.reduce((a, b) => a + b, 0) / this.processingTimes.length
-      : 0;
+
+    const averageProcessingTime =
+      this.processingTimes.length > 0
+        ? this.processingTimes.reduce((a, b) => a + b, 0) /
+          this.processingTimes.length
+        : 0;
 
     // メモリ使用量の取得（利用可能な場合）
-    const memoryUsage = (performance as any).memory 
+    const memoryUsage = (performance as any).memory
       ? (performance as any).memory.usedJSHeapSize / 1024 / 1024 // MB
       : 0;
 
@@ -206,7 +215,7 @@ class MemoryOptimizer {
 
   checkAndOptimize(): void {
     const now = performance.now();
-    
+
     if (now - this.lastGCTime > this.gcInterval) {
       this.performGarbageCollection();
       this.lastGCTime = now;
@@ -218,13 +227,13 @@ class MemoryOptimizer {
     if ((performance as any).memory) {
       const memoryInfo = (performance as any).memory;
       const usedMemoryMB = memoryInfo.usedJSHeapSize / 1024 / 1024;
-      
+
       if (usedMemoryMB > this.memoryThreshold) {
         // 強制的なガベージコレクション（可能な場合）
         if ((window as any).gc) {
           (window as any).gc();
         }
-        
+
         // キャッシュクリア
         this.clearCaches();
       }
@@ -234,8 +243,8 @@ class MemoryOptimizer {
   private clearCaches(): void {
     // ImageBitmapキャッシュのクリア
     if ('caches' in window) {
-      caches.keys().then(cacheNames => {
-        cacheNames.forEach(cacheName => {
+      caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => {
           if (cacheName.includes('mediapipe') || cacheName.includes('frame')) {
             caches.delete(cacheName);
           }
@@ -270,7 +279,7 @@ export class OptimizedMediaPipeManager {
     onResults: (results: any) => void
   ): Promise<void> {
     const now = performance.now();
-    
+
     // フレームレート制限
     if (now - this.lastFrameTime < 1000 / this.config.targetFrameRate) {
       return;
@@ -293,27 +302,29 @@ export class OptimizedMediaPipeManager {
 
     try {
       // フレームプールからキャンバスを取得
-      const canvas = this.framePool.getFrame(videoElement.videoWidth, videoElement.videoHeight);
+      const canvas = this.framePool.getFrame(
+        videoElement.videoWidth,
+        videoElement.videoHeight
+      );
       const ctx = canvas.getContext('2d')!;
-      
+
       // ビデオフレームをキャンバスに描画
       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      
+
       // MediaPipe処理
       await this.processWithTimeout(hands, canvas, onResults);
-      
+
       // キャンバスをプールに戻す
       this.framePool.returnFrame(canvas);
-      
+
       this.lastFrameTime = now;
       this.frameCounter++;
-      
     } catch (error) {
       console.error('Frame processing error:', error);
     } finally {
       this.isProcessing = false;
       this.performanceMonitor.endFrame();
-      
+
       // 定期的なメモリ最適化
       if (this.config.autoGarbageCollection) {
         this.memoryOptimizer.checkAndOptimize();
@@ -360,7 +371,7 @@ export class OptimizedMediaPipeManager {
   optimizeForDevice(): void {
     // デバイス性能に基づく自動最適化
     const devicePerformance = this.detectDevicePerformance();
-    
+
     if (devicePerformance === 'low') {
       this.updateConfiguration({
         modelComplexity: 0,
@@ -385,34 +396,34 @@ export class OptimizedMediaPipeManager {
   private detectDevicePerformance(): 'low' | 'medium' | 'high' {
     // ハードウェア並行性（CPUコア数の概算）
     const hardwareConcurrency = navigator.hardwareConcurrency || 4;
-    
+
     // メモリ情報（利用可能な場合）
     const deviceMemory = (navigator as any).deviceMemory || 4;
-    
+
     // 接続速度
     const connection = (navigator as any).connection;
     const effectiveType = connection?.effectiveType || '4g';
-    
+
     // User Agent からの推定
     const userAgent = navigator.userAgent.toLowerCase();
     const isMobile = /mobile|android|iphone|ipad/.test(userAgent);
-    
+
     // スコア計算
     let score = 0;
-    
+
     if (hardwareConcurrency >= 8) score += 3;
     else if (hardwareConcurrency >= 4) score += 2;
     else score += 1;
-    
+
     if (deviceMemory >= 8) score += 3;
     else if (deviceMemory >= 4) score += 2;
     else score += 1;
-    
+
     if (effectiveType === '4g') score += 2;
     else if (effectiveType === '3g') score += 1;
-    
+
     if (!isMobile) score += 1;
-    
+
     if (score >= 7) return 'high';
     if (score >= 4) return 'medium';
     return 'low';
@@ -437,9 +448,9 @@ export class MediaPipeWorkerManager {
       const workerScript = this.createWorkerScript();
       const blob = new Blob([workerScript], { type: 'application/javascript' });
       const workerUrl = URL.createObjectURL(blob);
-      
+
       this.worker = new Worker(workerUrl);
-      
+
       // 初期化完了を待機
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -492,7 +503,7 @@ export class MediaPipeWorkerManager {
       this.worker?.addEventListener('message', messageHandler);
       this.worker?.postMessage({
         type: 'process',
-        imageData: imageData
+        imageData: imageData,
       });
     });
   }
@@ -550,13 +561,15 @@ export class MediaPipeWorkerManager {
 // React Hook for optimized MediaPipe
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-export function useOptimizedMediaPipe(config?: Partial<MediaPipeOptimizationConfig>) {
+export function useOptimizedMediaPipe(
+  config?: Partial<MediaPipeOptimizationConfig>
+) {
   const managerRef = useRef<OptimizedMediaPipeManager | null>(null);
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
 
   useEffect(() => {
     managerRef.current = new OptimizedMediaPipeManager(config);
-    
+
     // 定期的なメトリクス更新
     const interval = setInterval(() => {
       if (managerRef.current) {
@@ -572,21 +585,27 @@ export function useOptimizedMediaPipe(config?: Partial<MediaPipeOptimizationConf
     };
   }, []);
 
-  const processFrame = useCallback(async (
-    videoElement: HTMLVideoElement,
-    hands: any,
-    onResults: (results: any) => void
-  ) => {
-    if (managerRef.current) {
-      await managerRef.current.processFrame(videoElement, hands, onResults);
-    }
-  }, []);
+  const processFrame = useCallback(
+    async (
+      videoElement: HTMLVideoElement,
+      hands: any,
+      onResults: (results: any) => void
+    ) => {
+      if (managerRef.current) {
+        await managerRef.current.processFrame(videoElement, hands, onResults);
+      }
+    },
+    []
+  );
 
-  const updateConfig = useCallback((newConfig: Partial<MediaPipeOptimizationConfig>) => {
-    if (managerRef.current) {
-      managerRef.current.updateConfiguration(newConfig);
-    }
-  }, []);
+  const updateConfig = useCallback(
+    (newConfig: Partial<MediaPipeOptimizationConfig>) => {
+      if (managerRef.current) {
+        managerRef.current.updateConfiguration(newConfig);
+      }
+    },
+    []
+  );
 
   const optimizeForDevice = useCallback(() => {
     if (managerRef.current) {

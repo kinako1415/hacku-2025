@@ -36,6 +36,7 @@ https://your-domain.com/api
 測定データの一覧を取得します。
 
 **パラメータ**
+
 - `userId` (string, optional): ユーザーID
 - `startDate` (string, optional): 開始日 (ISO 8601形式)
 - `endDate` (string, optional): 終了日 (ISO 8601形式)
@@ -44,6 +45,7 @@ https://your-domain.com/api
 - `offset` (number, optional): オフセット (デフォルト: 0)
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -84,6 +86,7 @@ https://your-domain.com/api
 新しい測定データを作成します。
 
 **リクエストボディ**
+
 ```json
 {
   "userId": "user-456",
@@ -105,6 +108,7 @@ https://your-domain.com/api
 ```
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -129,9 +133,11 @@ https://your-domain.com/api
 特定の測定データを取得します。
 
 **パラメータ**
+
 - `id` (string, required): 測定データID
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -156,9 +162,11 @@ https://your-domain.com/api
 測定データを更新します。
 
 **パラメータ**
+
 - `id` (string, required): 測定データID
 
 **リクエストボディ**
+
 ```json
 {
   "angleValue": 50.2,
@@ -174,9 +182,11 @@ https://your-domain.com/api
 測定データを削除します。
 
 **パラメータ**
+
 - `id` (string, required): 測定データID
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -191,6 +201,7 @@ https://your-domain.com/api
 カレンダー記録の一覧を取得します。
 
 **パラメータ**
+
 - `userId` (string, optional): ユーザーID
 - `year` (number, optional): 年
 - `month` (number, optional): 月 (1-12)
@@ -198,6 +209,7 @@ https://your-domain.com/api
 - `endDate` (string, optional): 終了日
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -224,6 +236,7 @@ https://your-domain.com/api
 新しいカレンダー記録を作成します。
 
 **リクエストボディ**
+
 ```json
 {
   "userId": "user-456",
@@ -256,11 +269,13 @@ https://your-domain.com/api
 測定データの統計情報を取得します。
 
 **パラメータ**
+
 - `userId` (string, optional): ユーザーID
 - `period` (string, optional): 期間 ("week", "month", "year")
 - `measurementType` (string, optional): 測定タイプ
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -293,6 +308,7 @@ https://your-domain.com/api
 カレンダー記録の統計情報を取得します。
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -327,6 +343,7 @@ https://your-domain.com/api
 ユーザー情報を取得します。
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -359,6 +376,7 @@ https://your-domain.com/api
 APIの稼働状況を確認します。
 
 **レスポンス例**
+
 ```json
 {
   "success": true,
@@ -379,12 +397,14 @@ APIの稼働状況を確認します。
 測定データをエクスポートします。
 
 **パラメータ**
+
 - `userId` (string, required): ユーザーID
 - `format` (string, optional): エクスポート形式 ("json", "csv") - デフォルト: "json"
 - `startDate` (string, optional): 開始日
 - `endDate` (string, optional): 終了日
 
 **レスポンス例 (JSON)**
+
 ```json
 {
   "success": true,
@@ -413,6 +433,7 @@ APIの稼働状況を確認します。
 プッシュ通知の購読を登録します。
 
 **リクエストボディ**
+
 ```json
 {
   "subscription": {
@@ -445,7 +466,11 @@ interface Measurement {
   userId: string;
   measurementDate: Date;
   handUsed: 'left' | 'right';
-  measurementType: 'wrist-flexion' | 'wrist-extension' | 'thumb-abduction' | 'thumb-adduction';
+  measurementType:
+    | 'wrist-flexion'
+    | 'wrist-extension'
+    | 'thumb-abduction'
+    | 'thumb-adduction';
   angleValue: number; // 0-180度
   accuracy: number; // 0-1
   landmarks?: Array<{ x: number; y: number; z: number }>; // MediaPipeランドマーク
@@ -527,6 +552,7 @@ wss://your-domain.com/api/ws/measurements
 ### メッセージ形式
 
 **測定開始**
+
 ```json
 {
   "type": "start_measurement",
@@ -538,6 +564,7 @@ wss://your-domain.com/api/ws/measurements
 ```
 
 **リアルタイム測定データ**
+
 ```json
 {
   "type": "measurement_data",
@@ -559,13 +586,13 @@ import { RehabAIClient } from '@rehab-ai/sdk';
 
 const client = new RehabAIClient({
   baseUrl: 'https://your-domain.com/api',
-  apiKey: 'your-api-key'
+  apiKey: 'your-api-key',
 });
 
 // 測定データ取得
 const measurements = await client.measurements.list({
   userId: 'user-123',
-  limit: 10
+  limit: 10,
 });
 
 // 新しい測定データ作成

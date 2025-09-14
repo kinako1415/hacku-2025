@@ -20,7 +20,7 @@ const OfflinePage: NextPage = () => {
     };
 
     window.addEventListener('online', handleOnline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
     };
@@ -28,13 +28,13 @@ const OfflinePage: NextPage = () => {
 
   const handleRetry = async () => {
     setIsRetrying(true);
-    
+
     try {
       const response = await fetch('/api/health', {
         method: 'GET',
         cache: 'no-cache',
       });
-      
+
       if (response.ok) {
         window.location.reload();
       }
@@ -84,7 +84,7 @@ const OfflinePage: NextPage = () => {
                 オフライン
               </span>
             </div>
-            
+
             {lastSyncTime && (
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">最終同期</span>
@@ -101,7 +101,9 @@ const OfflinePage: NextPage = () => {
             disabled={isRetrying}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mb-4 flex items-center justify-center space-x-2"
           >
-            <RefreshCw className={`w-5 h-5 ${isRetrying ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-5 h-5 ${isRetrying ? 'animate-spin' : ''}`}
+            />
             <span>{isRetrying ? '接続を確認中...' : '再試行'}</span>
           </button>
 
@@ -110,7 +112,7 @@ const OfflinePage: NextPage = () => {
             <h3 className="text-sm font-medium text-gray-900 mb-4">
               利用可能な機能
             </h3>
-            
+
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={navigateToHome}
@@ -121,25 +123,21 @@ const OfflinePage: NextPage = () => {
                   ホーム
                 </span>
               </button>
-              
+
               <button
                 onClick={() => openCachedPage('/measurement')}
                 className="flex flex-col items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 <Activity className="w-6 h-6 text-gray-600 mb-1" />
-                <span className="text-xs font-medium text-gray-700">
-                  測定
-                </span>
+                <span className="text-xs font-medium text-gray-700">測定</span>
               </button>
-              
+
               <button
                 onClick={() => openCachedPage('/calendar')}
                 className="flex flex-col items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 <Calendar className="w-6 h-6 text-gray-600 mb-1" />
-                <span className="text-xs font-medium text-gray-700">
-                  記録
-                </span>
+                <span className="text-xs font-medium text-gray-700">記録</span>
               </button>
             </div>
           </div>

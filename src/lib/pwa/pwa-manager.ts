@@ -1,6 +1,6 @@
 /**
  * PWA サービスワーカー登録とPWA機能管理
- * 
+ *
  * 機能:
  * - サービスワーカーの登録・更新
  * - インストールプロンプト管理
@@ -126,7 +126,10 @@ export class PWAManager {
         const newWorker = registration.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
               this.updateState({ hasUpdate: true });
             }
           });
@@ -149,11 +152,14 @@ export class PWAManager {
       clearInterval(this.updateCheckTimer);
     }
 
-    this.updateCheckTimer = setInterval(() => {
-      registration.update().catch((error) => {
-        console.error('Service Worker update check failed:', error);
-      });
-    }, this.config.updateCheckInterval * 60 * 1000);
+    this.updateCheckTimer = setInterval(
+      () => {
+        registration.update().catch((error) => {
+          console.error('Service Worker update check failed:', error);
+        });
+      },
+      this.config.updateCheckInterval * 60 * 1000
+    );
   }
 
   // サービスワーカー更新適用
@@ -165,7 +171,7 @@ export class PWAManager {
     const waiting = this.state.serviceWorkerRegistration.waiting;
     if (waiting) {
       waiting.postMessage({ type: 'SKIP_WAITING' });
-      
+
       // ページリロード
       window.location.reload();
     }
@@ -180,9 +186,9 @@ export class PWAManager {
     try {
       const result = await this.state.installPrompt.prompt();
       const userChoice = await this.state.installPrompt.userChoice;
-      
+
       this.updateState({ installPrompt: null });
-      
+
       return userChoice.outcome === 'accepted';
     } catch (error) {
       console.error('Install prompt failed:', error);
@@ -197,7 +203,7 @@ export class PWAManager {
     }
 
     const permission = await Notification.requestPermission();
-    
+
     if (permission === 'granted' && this.state.serviceWorkerRegistration) {
       await this.subscribeToPushNotifications();
     }
@@ -214,15 +220,16 @@ export class PWAManager {
     try {
       // VAPID公開鍵（実際の実装では環境変数から取得）
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
-      
-      const subscription = await this.state.serviceWorkerRegistration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: vapidPublicKey,
-      });
+
+      const subscription =
+        await this.state.serviceWorkerRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidPublicKey,
+        });
 
       // サーバーに購読情報を送信
       await this.sendSubscriptionToServer(subscription);
-      
+
       return subscription;
     } catch (error) {
       console.error('Push subscription failed:', error);
@@ -231,7 +238,9 @@ export class PWAManager {
   }
 
   // サーバーに購読情報送信
-  private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
+  private async sendSubscriptionToServer(
+    subscription: PushSubscription
+  ): Promise<void> {
     try {
       await fetch('/api/push/subscribe', {
         method: 'POST',
@@ -251,7 +260,10 @@ export class PWAManager {
 
   // バックグラウンド同期トリガー
   async triggerBackgroundSync(): Promise<void> {
-    if (!this.state.serviceWorkerRegistration || !this.config.enableBackgroundSync) {
+    if (
+      !this.state.serviceWorkerRegistration ||
+      !this.config.enableBackgroundSync
+    ) {
       return;
     }
 
@@ -323,7 +335,8 @@ export class PWAManager {
       isInstalled: this.state.isInstalled,
       isOnline: this.state.isOnline,
       hasServiceWorker: !!this.state.serviceWorkerRegistration,
-      notificationPermission: 'Notification' in window ? Notification.permission : 'unsupported',
+      notificationPermission:
+        'Notification' in window ? Notification.permission : 'unsupported',
       hasInstallPrompt: !!this.state.installPrompt,
       userAgent: navigator.userAgent,
       platform: navigator.platform,
@@ -341,7 +354,8 @@ export class PWAManager {
           usage: estimate.usage,
         };
       } catch (error) {
-        diagnostics.storageError = error instanceof Error ? error.message : 'Unknown storage error';
+        diagnostics.storageError =
+          error instanceof Error ? error.message : 'Unknown storage error';
       }
     }
 
@@ -401,7 +415,7 @@ export function usePWA(config?: Partial<PWAConfig>) {
 
   useEffect(() => {
     pwaManager.setStateChangeCallback(setState);
-    
+
     // サービスワーカー自動登録
     pwaManager.registerServiceWorker();
 
@@ -413,11 +427,12 @@ export function usePWA(config?: Partial<PWAConfig>) {
   return {
     ...state,
     showInstallPrompt: () => pwaManager.showInstallPrompt(),
-    requestNotificationPermission: () => pwaManager.requestNotificationPermission(),
+    requestNotificationPermission: () =>
+      pwaManager.requestNotificationPermission(),
     applyUpdate: () => pwaManager.applyUpdate(),
     clearCache: () => pwaManager.clearCache(),
     triggerBackgroundSync: () => pwaManager.triggerBackgroundSync(),
-    showLocalNotification: (title: string, options?: NotificationOptions) => 
+    showLocalNotification: (title: string, options?: NotificationOptions) =>
       pwaManager.showLocalNotification(title, options),
     getDiagnostics: () => pwaManager.getDiagnostics(),
   };

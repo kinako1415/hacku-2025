@@ -1,6 +1,6 @@
 /**
  * Service Worker for PWA functionality
- * 
+ *
  * 機能:
  * - キャッシュ管理（アプリシェル、API応答、画像）
  * - オフライン対応
@@ -38,9 +38,10 @@ const MEDIAPIPE_ASSETS = [
 // インストール時の処理
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
-  
+
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches
+      .open(CACHE_NAME)
       .then((cache) => {
         console.log('Caching static assets...');
         return cache.addAll(STATIC_ASSETS);
@@ -66,19 +67,22 @@ self.addEventListener('install', (event) => {
 // アクティベート時の処理
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating...');
-  
+
   event.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
             .filter((cacheName) => {
               // 古いキャッシュを削除
-              return cacheName !== CACHE_NAME && 
-                     cacheName !== RUNTIME_CACHE && 
-                     cacheName !== API_CACHE && 
-                     cacheName !== IMAGES_CACHE &&
-                     cacheName !== 'mediapipe-cache';
+              return (
+                cacheName !== CACHE_NAME &&
+                cacheName !== RUNTIME_CACHE &&
+                cacheName !== API_CACHE &&
+                cacheName !== IMAGES_CACHE &&
+                cacheName !== 'mediapipe-cache'
+              );
             })
             .map((cacheName) => {
               console.log('Deleting old cache:', cacheName);
@@ -104,7 +108,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   // MediaPipeリソースの処理
-  if (url.origin === 'https://cdn.jsdelivr.net' && url.pathname.includes('mediapipe')) {
+  if (
+    url.origin === 'https://cdn.jsdelivr.net' &&
+    url.pathname.includes('mediapipe')
+  ) {
     event.respondWith(handleMediaPipeRequest(request));
     return;
   }
@@ -149,36 +156,36 @@ async function handleMediaPipeRequest(request) {
 // APIリクエストの処理
 async function handleApiRequest(request) {
   const cache = await caches.open(API_CACHE);
-  
+
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       // 成功したAPIレスポンスをキャッシュ
       await cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.log('API request failed, checking cache:', error);
-    
+
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // オフライン用のフォールバック
     return new Response(
       JSON.stringify({
         error: 'オフラインです。インターネット接続を確認してください。',
         offline: true,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
       {
         status: 503,
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       }
     );
   }
@@ -201,12 +208,12 @@ async function handleImageRequest(request) {
     return networkResponse;
   } catch (error) {
     console.log('Image fetch failed, using placeholder');
-    
+
     // プレースホルダー画像を返す
-    return new Response(
-      new Blob([''], { type: 'image/svg+xml' }),
-      { status: 200, headers: { 'Content-Type': 'image/svg+xml' } }
-    );
+    return new Response(new Blob([''], { type: 'image/svg+xml' }), {
+      status: 200,
+      headers: { 'Content-Type': 'image/svg+xml' },
+    });
   }
 }
 
@@ -221,25 +228,25 @@ async function handleStaticRequest(request) {
 
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       // ランタイムキャッシュに追加
       const runtimeCache = await caches.open(RUNTIME_CACHE);
       await runtimeCache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.log('Static resource fetch failed:', error);
-    
+
     // ランタイムキャッシュを確認
     const runtimeCache = await caches.open(RUNTIME_CACHE);
     const runtimeResponse = await runtimeCache.match(request);
-    
+
     if (runtimeResponse) {
       return runtimeResponse;
     }
-    
+
     // HTMLページの場合はオフラインページを返す
     if (request.headers.get('accept')?.includes('text/html')) {
       const offlineResponse = await cache.match('/offline');
@@ -247,7 +254,7 @@ async function handleStaticRequest(request) {
         return offlineResponse;
       }
     }
-    
+
     return new Response('リソースが利用できません', { status: 503 });
   }
 }
@@ -265,11 +272,11 @@ self.addEventListener('sync', (event) => {
 async function syncMeasurementData() {
   try {
     console.log('Syncing measurement data...');
-    
+
     // IndexedDBから未同期のデータを取得
     const db = await openIndexedDB();
     const measurements = await getUnsyncedMeasurements(db);
-    
+
     for (const measurement of measurements) {
       try {
         const response = await fetch('/api/measurements', {
@@ -279,7 +286,7 @@ async function syncMeasurementData() {
           },
           body: JSON.stringify(measurement),
         });
-        
+
         if (response.ok) {
           // 同期済みとしてマーク
           await markMeasurementAsSynced(db, measurement.id);
@@ -298,10 +305,10 @@ async function syncMeasurementData() {
 async function syncCalendarData() {
   try {
     console.log('Syncing calendar data...');
-    
+
     const db = await openIndexedDB();
     const records = await getUnsyncedCalendarRecords(db);
-    
+
     for (const record of records) {
       try {
         const response = await fetch('/api/calendar', {
@@ -311,7 +318,7 @@ async function syncCalendarData() {
           },
           body: JSON.stringify(record),
         });
-        
+
         if (response.ok) {
           await markCalendarRecordAsSynced(db, record.id);
           console.log('Calendar record synced:', record.id);
@@ -329,20 +336,22 @@ async function syncCalendarData() {
 function openIndexedDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('RehabDatabase', 1);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
-    
+
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      
+
       if (!db.objectStoreNames.contains('measurements')) {
         const store = db.createObjectStore('measurements', { keyPath: 'id' });
         store.createIndex('synced', 'synced', { unique: false });
       }
-      
+
       if (!db.objectStoreNames.contains('calendarRecords')) {
-        const store = db.createObjectStore('calendarRecords', { keyPath: 'id' });
+        const store = db.createObjectStore('calendarRecords', {
+          keyPath: 'id',
+        });
         store.createIndex('synced', 'synced', { unique: false });
       }
     };
@@ -355,7 +364,7 @@ function getUnsyncedMeasurements(db) {
     const store = transaction.objectStore('measurements');
     const index = store.index('synced');
     const request = index.getAll(false);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
   });
@@ -367,7 +376,7 @@ function getUnsyncedCalendarRecords(db) {
     const store = transaction.objectStore('calendarRecords');
     const index = store.index('synced');
     const request = index.getAll(false);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
   });
@@ -378,7 +387,7 @@ function markMeasurementAsSynced(db, id) {
     const transaction = db.transaction(['measurements'], 'readwrite');
     const store = transaction.objectStore('measurements');
     const request = store.get(id);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => {
       const measurement = request.result;
@@ -400,7 +409,7 @@ function markCalendarRecordAsSynced(db, id) {
     const transaction = db.transaction(['calendarRecords'], 'readwrite');
     const store = transaction.objectStore('calendarRecords');
     const request = store.get(id);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => {
       const record = request.result;
@@ -431,18 +440,16 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'open',
-        title: '開く'
+        title: '開く',
       },
       {
         action: 'dismiss',
-        title: '閉じる'
-      }
-    ]
+        title: '閉じる',
+      },
+    ],
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+  event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 // 通知クリックの処理
@@ -451,7 +458,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'open') {
     const url = event.notification.data?.url || '/';
-    
+
     event.waitUntil(
       clients.matchAll({ type: 'window' }).then((clientList) => {
         // 既存のウィンドウがあれば焦点を当てる
@@ -460,7 +467,7 @@ self.addEventListener('notificationclick', (event) => {
             return client.focus();
           }
         }
-        
+
         // 新しいウィンドウを開く
         if (clients.openWindow) {
           return clients.openWindow(url);
