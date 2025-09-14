@@ -196,6 +196,13 @@
   justify-content: center;
 }
 
+.captureButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .primaryButton {
   display: flex;
   align-items: center;
@@ -237,6 +244,15 @@
 
   &:hover:not(:disabled) {
     background: #e64919;
+  }
+}
+
+.saveButton {
+  background: #2196f3;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #1976d2;
   }
 }
 

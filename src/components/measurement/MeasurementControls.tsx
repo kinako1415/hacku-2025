@@ -18,6 +18,7 @@ interface MeasurementControlsProps {
   isSaving: boolean;
   onStartMeasurement: () => void;
   onStopMeasurement: () => void;
+  onSaveMeasurement?: () => void;
   onHandSelection: (hand: HandType) => void;
   className?: string;
 }
@@ -33,6 +34,7 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
   isSaving,
   onStartMeasurement,
   onStopMeasurement,
+  onSaveMeasurement,
   onHandSelection,
   className,
 }) => {
@@ -161,24 +163,47 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
             )}
           </button>
         ) : (
-          <button
-            type="button"
-            className={`${styles.primaryButton} ${styles.stopButton}`}
-            onClick={onStopMeasurement}
-            disabled={!canStopMeasurement || isSaving}
-          >
-            {isSaving ? (
-              <>
-                <span className={styles.spinner}></span>
-                保存中...
-              </>
-            ) : (
-              <>
-                <span className={styles.buttonIcon}>⏹️</span>
-                測定完了
-              </>
+          <div className={styles.captureButtons}>
+            <button
+              type="button"
+              className={`${styles.primaryButton} ${styles.stopButton}`}
+              onClick={onStopMeasurement}
+              disabled={!canStopMeasurement || isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <span className={styles.spinner}></span>
+                  保存中...
+                </>
+              ) : (
+                <>
+                  <span className={styles.buttonIcon}>⏹️</span>
+                  測定停止
+                </>
+              )}
+            </button>
+            
+            {onSaveMeasurement && (
+              <button
+                type="button"
+                className={`${styles.primaryButton} ${styles.saveButton}`}
+                onClick={onSaveMeasurement}
+                disabled={!canStopMeasurement || isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <span className={styles.spinner}></span>
+                    保存中...
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.buttonIcon}>💾</span>
+                    結果を保存
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </div>
         )}
       </div>
 

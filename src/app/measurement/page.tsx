@@ -914,6 +914,7 @@ const MeasurementPage: React.FC = () => {
             isSaving={false}
             onStartMeasurement={handleCaptureToggle}
             onStopMeasurement={handleCaptureToggle}
+            onSaveMeasurement={handleSaveMeasurement}
             onHandSelection={handleHandChange}
           />
         </div>
