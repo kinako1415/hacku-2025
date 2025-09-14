@@ -1,7 +1,5 @@
 {
-  "/page": "app/page.js",
-  "/calendar/page": "app/calendar/page.js",
   "/measurement/page": "app/measurement/page.js",
-  "/progress/page": "app/progress/page.js",
-  "/setup/page": "app/setup/page.js"
+  "/calendar/page": "app/calendar/page.js",
+  "/page": "app/page.js"
 }
