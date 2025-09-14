@@ -17,6 +17,7 @@
     "@mediapipe/pose": "^0.5.1646424915",
     "dexie": "^3.2.4",
     "jotai": "^2.8.0",
+    "lucide-react": "^0.544.0",
     "next": "14.2.32",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

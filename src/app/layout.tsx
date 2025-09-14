@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.scss';
+import '../styles/variables.css';
 
 export const metadata: Metadata = {
   title: 'AI駆動手首・母指可動域リハビリテーションアプリ',

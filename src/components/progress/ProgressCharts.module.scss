@@ -306,31 +306,8 @@
   color: var(--primary-color, #2196f3);
 }
 
-/* CSS変数のデフォルト値 */
-:root {
-  --background-color: #ffffff;
-  --text-primary: #212121;
-  --text-secondary: #757575;
-  --border-color: #e0e0e0;
-  --border-light: #f0f0f0;
-  --primary-color: #2196f3;
-  --primary-light: #f3f9ff;
-  --success-color: #4caf50;
-  --error-color: #f44336;
-  --warning-color: #ff9800;
-}
-
 /* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #1e1e1e;
-    --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --border-color: #404040;
-    --border-light: #2a2a2a;
-    --primary-light: #1a2332;
-  }
-
   .chartContainer svg {
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
