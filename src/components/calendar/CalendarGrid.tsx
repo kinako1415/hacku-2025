@@ -29,44 +29,48 @@ const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
  */
 const dateUtils = {
   isSameDay: (date1: Date, date2: Date): boolean => {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
   },
-  
+
   isSameMonth: (date1: Date, date2: Date): boolean => {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth();
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth()
+    );
   },
-  
+
   isToday: (date: Date): boolean => {
     const today = new Date();
     return dateUtils.isSameDay(date, today);
   },
-  
+
   startOfMonth: (date: Date): Date => {
     return new Date(date.getFullYear(), date.getMonth(), 1);
   },
-  
+
   endOfMonth: (date: Date): Date => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0);
   },
-  
+
   eachDayOfInterval: (start: Date, end: Date): Date[] => {
     const days: Date[] = [];
     const current = new Date(start);
-    
+
     while (current <= end) {
       days.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-    
+
     return days;
   },
-  
+
   formatMonth: (date: Date): string => {
     return `${date.getFullYear()}年${date.getMonth() + 1}月`;
-  }
+  },
 };
 
 /**
@@ -95,7 +99,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
    * 指定日の記録を取得
    */
   const getRecordForDate = (date: Date): CalendarRecord | undefined => {
-    return records.find(record => 
+    return records.find((record) =>
       dateUtils.isSameDay(new Date(record.recordDate), date)
     );
   };
@@ -105,11 +109,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
    */
   const handleDateClick = (date: Date): void => {
     const record = getRecordForDate(date);
-    
+
     if (onDateSelect) {
       onDateSelect(date);
     }
-    
+
     if (onDateClick) {
       onDateClick(date, record);
     }
@@ -121,10 +125,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const getCompletionRate = (record: CalendarRecord): number => {
     let completed = 0;
     let total = 2; // リハビリ + 測定の2項目
-    
+
     if (record.rehabCompleted) completed++;
     if (record.measurementCompleted) completed++;
-    
+
     return Math.round((completed / total) * 100);
   };
 
@@ -136,32 +140,35 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     if (completionRate >= 60) return '#8BC34A'; // 薄緑
     if (completionRate >= 40) return '#FFC107'; // 黄
     if (completionRate >= 20) return '#FF9800'; // オレンジ
-    if (completionRate > 0) return '#FF5722';   // 赤
+    if (completionRate > 0) return '#FF5722'; // 赤
     return '#E0E0E0'; // グレー（未実施）
   };
 
   /**
    * 日付セルのクラス名を生成
    */
-  const getDateCellClassName = (date: Date, record?: CalendarRecord): string => {
+  const getDateCellClassName = (
+    date: Date,
+    record?: CalendarRecord
+  ): string => {
     const classNames = [styles.dateCell];
-    
+
     if (!dateUtils.isSameMonth(date, currentDate)) {
       classNames.push(styles.otherMonth);
     }
-    
+
     if (dateUtils.isToday(date)) {
       classNames.push(styles.today);
     }
-    
+
     if (selectedDate && dateUtils.isSameDay(date, selectedDate)) {
       classNames.push(styles.selected);
     }
-    
+
     if (hoveredDate && dateUtils.isSameDay(date, hoveredDate)) {
       classNames.push(styles.hovered);
     }
-    
+
     if (record) {
       const completionRate = getCompletionRate(record);
       if (completionRate >= 100) {
@@ -174,7 +181,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     } else {
       classNames.push(styles.noRecord);
     }
-    
+
     return classNames.join(' ');
   };
 
@@ -182,19 +189,23 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
    * 月の統計情報を計算
    */
   const monthStats = useMemo(() => {
-    const monthRecords = records.filter(record => 
+    const monthRecords = records.filter((record) =>
       dateUtils.isSameMonth(new Date(record.recordDate), currentDate)
     );
-    
+
     const totalDays = monthDays.length;
     const recordedDays = monthRecords.length;
-    const completedDays = monthRecords.filter(r => 
-      getCompletionRate(r) >= 100
+    const completedDays = monthRecords.filter(
+      (r) => getCompletionRate(r) >= 100
     ).length;
-    const averageCompletion = recordedDays > 0 
-      ? Math.round(monthRecords.reduce((sum, r) => sum + getCompletionRate(r), 0) / recordedDays)
-      : 0;
-    
+    const averageCompletion =
+      recordedDays > 0
+        ? Math.round(
+            monthRecords.reduce((sum, r) => sum + getCompletionRate(r), 0) /
+              recordedDays
+          )
+        : 0;
+
     return {
       totalDays,
       recordedDays,
@@ -224,7 +235,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       {/* 曜日ヘッダー */}
       <div className={styles.weekdaysHeader}>
         {WEEKDAYS.map((weekday, index) => (
-          <div 
+          <div
             key={weekday}
             className={`${styles.weekdayCell} ${index === 0 ? styles.sunday : ''} ${index === 6 ? styles.saturday : ''}`}
           >
@@ -238,7 +249,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         {monthDays.map((date: Date) => {
           const record = getRecordForDate(date);
           const completionRate = record ? getCompletionRate(record) : 0;
-          
+
           return (
             <div
               key={date.toISOString()}
@@ -246,23 +257,23 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               onClick={() => handleDateClick(date)}
               onMouseEnter={() => setHoveredDate(date)}
               onMouseLeave={() => setHoveredDate(null)}
-              style={{
-                '--completion-color': getCompletionColor(completionRate)
-              } as React.CSSProperties}
+              style={
+                {
+                  '--completion-color': getCompletionColor(completionRate),
+                } as React.CSSProperties
+              }
             >
               {/* 日付番号 */}
-              <span className={styles.dateNumber}>
-                {date.getDate()}
-              </span>
+              <span className={styles.dateNumber}>{date.getDate()}</span>
 
               {/* 実施状況インジケーター */}
               {record && (
                 <div className={styles.recordIndicator}>
-                  <div 
+                  <div
                     className={styles.completionBar}
-                    style={{ 
+                    style={{
                       width: `${completionRate}%`,
-                      backgroundColor: getCompletionColor(completionRate)
+                      backgroundColor: getCompletionColor(completionRate),
                     }}
                   />
                   {completionRate >= 100 && (
@@ -285,27 +296,45 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         <h4>実施状況</h4>
         <div className={styles.legendItems}>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#4CAF50' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#4CAF50' }}
+            />
             <span>80%以上</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#8BC34A' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#8BC34A' }}
+            />
             <span>60-79%</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#FFC107' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#FFC107' }}
+            />
             <span>40-59%</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#FF9800' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#FF9800' }}
+            />
             <span>20-39%</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#FF5722' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#FF5722' }}
+            />
             <span>1-19%</span>
           </div>
           <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: '#E0E0E0' }} />
+            <div
+              className={styles.legendColor}
+              style={{ backgroundColor: '#E0E0E0' }}
+            />
             <span>未実施</span>
           </div>
         </div>

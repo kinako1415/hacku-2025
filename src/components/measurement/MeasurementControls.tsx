@@ -78,21 +78,27 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
         <div className={styles.statusGrid}>
           <div className={styles.statusItem}>
             <span className={styles.statusLabel}>カメラ:</span>
-            <span className={`${styles.statusValue} ${isReady ? styles.ready : styles.notReady}`}>
+            <span
+              className={`${styles.statusValue} ${isReady ? styles.ready : styles.notReady}`}
+            >
               {isReady ? '準備完了' : '準備中...'}
             </span>
           </div>
-          
+
           <div className={styles.statusItem}>
             <span className={styles.statusLabel}>測定:</span>
-            <span className={`${styles.statusValue} ${isCapturing ? styles.capturing : styles.idle}`}>
+            <span
+              className={`${styles.statusValue} ${isCapturing ? styles.capturing : styles.idle}`}
+            >
               {isCapturing ? '測定中' : '待機中'}
             </span>
           </div>
-          
+
           <div className={styles.statusItem}>
             <span className={styles.statusLabel}>精度:</span>
-            <span className={`${styles.statusValue} ${accuracyPercentage >= 70 ? styles.good : styles.poor}`}>
+            <span
+              className={`${styles.statusValue} ${accuracyPercentage >= 70 ? styles.good : styles.poor}`}
+            >
               {accuracyPercentage}%
             </span>
           </div>
@@ -103,12 +109,16 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
       <div className={styles.accuracyIndicator}>
         <h3>測定精度</h3>
         <div className={styles.progressBar}>
-          <div 
+          <div
             className={styles.progressFill}
-            style={{ 
+            style={{
               width: `${accuracyPercentage}%`,
-              backgroundColor: accuracyPercentage >= 70 ? '#4CAF50' : 
-                              accuracyPercentage >= 50 ? '#FF9800' : '#F44336'
+              backgroundColor:
+                accuracyPercentage >= 70
+                  ? '#4CAF50'
+                  : accuracyPercentage >= 50
+                    ? '#FF9800'
+                    : '#F44336',
             }}
           />
         </div>
@@ -117,10 +127,14 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
             <span className={styles.goodAccuracy}>✓ 測定可能な精度です</span>
           )}
           {accuracyPercentage < 70 && accuracyPercentage >= 50 && (
-            <span className={styles.mediumAccuracy}>△ 手をもう少し安定させてください</span>
+            <span className={styles.mediumAccuracy}>
+              △ 手をもう少し安定させてください
+            </span>
           )}
           {accuracyPercentage < 50 && (
-            <span className={styles.poorAccuracy}>⚠ 手を画面内に入れてください</span>
+            <span className={styles.poorAccuracy}>
+              ⚠ 手を画面内に入れてください
+            </span>
           )}
         </div>
       </div>
@@ -173,17 +187,29 @@ export const MeasurementControls: React.FC<MeasurementControlsProps> = ({
         <div className={styles.measurementGuide}>
           <h3>測定ガイド</h3>
           <ul className={styles.guideList}>
-            <li className={`${styles.guideItem} ${isReady ? styles.completed : ''}`}>
-              ✓ カメラに向かって{selectedHand === 'right' ? '右手' : '左手'}を出してください
+            <li
+              className={`${styles.guideItem} ${isReady ? styles.completed : ''}`}
+            >
+              ✓ カメラに向かって{selectedHand === 'right' ? '右手' : '左手'}
+              を出してください
             </li>
-            <li className={`${styles.guideItem} ${accuracyPercentage >= 30 ? styles.completed : ''}`}>
-              {accuracyPercentage >= 30 ? '✓' : '○'} 手を画面のガイド枠内に合わせてください
+            <li
+              className={`${styles.guideItem} ${accuracyPercentage >= 30 ? styles.completed : ''}`}
+            >
+              {accuracyPercentage >= 30 ? '✓' : '○'}{' '}
+              手を画面のガイド枠内に合わせてください
             </li>
-            <li className={`${styles.guideItem} ${accuracyPercentage >= 50 ? styles.completed : ''}`}>
-              {accuracyPercentage >= 50 ? '✓' : '○'} 手をゆっくりと動かしてください
+            <li
+              className={`${styles.guideItem} ${accuracyPercentage >= 50 ? styles.completed : ''}`}
+            >
+              {accuracyPercentage >= 50 ? '✓' : '○'}{' '}
+              手をゆっくりと動かしてください
             </li>
-            <li className={`${styles.guideItem} ${accuracyPercentage >= 70 ? styles.completed : ''}`}>
-              {accuracyPercentage >= 70 ? '✓' : '○'} 精度が70%以上で測定完了できます
+            <li
+              className={`${styles.guideItem} ${accuracyPercentage >= 70 ? styles.completed : ''}`}
+            >
+              {accuracyPercentage >= 70 ? '✓' : '○'}{' '}
+              精度が70%以上で測定完了できます
             </li>
           </ul>
         </div>

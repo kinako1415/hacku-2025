@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MeasurementControls } from '@/components/measurement/MeasurementControls';
@@ -90,19 +90,19 @@ const AngleOverlay: React.FC<{
     if (isCapturing && canvasRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
-
+      
       if (ctx) {
         // 簡単な角度表示のシミュレーション
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = 'rgba(33, 150, 243, 0.1)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        
         ctx.strokeStyle = '#2196f3';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
         ctx.stroke();
-
+        
         // モック角度データを送信
         onAnglesUpdate({
           wristExtension: Math.random() * 60 + 20,
@@ -128,14 +128,14 @@ const AngleOverlay: React.FC<{
  */
 export default function MeasurementPage(): React.JSX.Element {
   const router = useRouter();
-
+  
   // 状態管理
   const [measurementState, setMeasurementState] = useState<MeasurementState>({
     isCapturing: false,
     currentAngles: null,
     accuracy: 0,
   });
-
+  
   const [cameraState, setCameraState] = useState({
     isReady: false,
     stream: null as MediaStream | null,
@@ -161,19 +161,17 @@ export default function MeasurementPage(): React.JSX.Element {
     const initializePage = async (): Promise<void> => {
       try {
         setIsInitializing(true);
-
+        
         // カメラ初期化
         await initializeCamera();
-
+        
         // MediaPipe初期化
         await initializeMediaPipe();
-
+        
         setIsInitializing(false);
       } catch (err) {
         console.error('初期化エラー:', err);
-        setError(
-          '初期化に失敗しました。カメラとマイクの権限を確認してください。'
-        );
+        setError('初期化に失敗しました。カメラとマイクの権限を確認してください。');
         setIsInitializing(false);
       }
     };
@@ -183,7 +181,7 @@ export default function MeasurementPage(): React.JSX.Element {
     return () => {
       // クリーンアップ
       if (cameraState.stream) {
-        cameraState.stream.getTracks().forEach((track) => track.stop());
+        cameraState.stream.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
@@ -201,15 +199,19 @@ export default function MeasurementPage(): React.JSX.Element {
         },
       });
 
-      setCameraState((prev) => ({
+      setCameraState(prev => ({
         ...prev,
         stream,
         isReady: true,
         error: null,
       }));
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
     } catch (err) {
       console.error('カメラ初期化エラー:', err);
-      setCameraState((prev) => ({
+      setCameraState(prev => ({
         ...prev,
         error: 'カメラにアクセスできません',
         isReady: false,
@@ -225,7 +227,7 @@ export default function MeasurementPage(): React.JSX.Element {
     try {
       // MediaPipeの初期化は実際の実装で行う
       // 現在はモックとして設定
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setIsMediaPipeLoaded(true);
     } catch (err) {
       console.error('MediaPipe初期化エラー:', err);
@@ -242,14 +244,14 @@ export default function MeasurementPage(): React.JSX.Element {
       return;
     }
 
-    setMeasurementState((prev) => ({
+    setMeasurementState(prev => ({
       ...prev,
       isCapturing: true,
     }));
 
     // 測定精度の更新をシミュレート
     const accuracyInterval = setInterval(() => {
-      setMeasurementState((prev) => ({
+      setMeasurementState(prev => ({
         ...prev,
         accuracy: Math.random() * 0.3 + 0.7, // 70-100%
       }));
@@ -263,7 +265,7 @@ export default function MeasurementPage(): React.JSX.Element {
    * 測定停止
    */
   const handleStopMeasurement = useCallback(async (): Promise<void> => {
-    setMeasurementState((prev) => ({
+    setMeasurementState(prev => ({
       ...prev,
       isCapturing: false,
     }));
@@ -290,7 +292,6 @@ export default function MeasurementPage(): React.JSX.Element {
         id: `measurement_${Date.now()}`,
         handUsed: selectedHand,
         wristExtension: Math.round(Math.random() * 50 + 30), // 30-80度
-        wristFlexion: Math.round(Math.random() * 50 + 30), // 30-80度
         thumbAbduction: Math.round(Math.random() * 30 + 20), // 20-50度
         accuracyScore: measurementState.accuracy,
         measurementDate: new Date(),
@@ -298,14 +299,9 @@ export default function MeasurementPage(): React.JSX.Element {
 
       // ローカルストレージに保存
       const savedMeasurements = localStorage.getItem('measurements');
-      const currentMeasurements = savedMeasurements
-        ? JSON.parse(savedMeasurements)
-        : [];
-      const updatedMeasurements = [mockResult, ...currentMeasurements].slice(
-        0,
-        10
-      ); // 最新10件
-
+      const currentMeasurements = savedMeasurements ? JSON.parse(savedMeasurements) : [];
+      const updatedMeasurements = [mockResult, ...currentMeasurements].slice(0, 10); // 最新10件
+      
       localStorage.setItem('measurements', JSON.stringify(updatedMeasurements));
       setMeasurements(updatedMeasurements);
 
@@ -329,16 +325,6 @@ export default function MeasurementPage(): React.JSX.Element {
    */
   const handleResetError = useCallback((): void => {
     setError(null);
-  }, []);
-
-  /**
-   * 角度更新ハンドラ
-   */
-  const handleAnglesUpdate = useCallback((angles: any): void => {
-    setMeasurementState((prev) => ({
-      ...prev,
-      currentAngles: angles,
-    }));
   }, []);
 
   /**
@@ -368,76 +354,289 @@ export default function MeasurementPage(): React.JSX.Element {
       </div>
     );
   }
+  const {
+    handsDetector,
+    isLoaded: isMediaPipeLoaded,
+    error: mediaPipeError,
+    detectHands,
+  } = useMediaPipeHands();
+
+  /**
+   * 初期化処理
+   */
+  useEffect(() => {
+    const initializePage = async (): Promise<void> => {
+      try {
+        setIsInitializing(true);
+        setError(null);
+
+        // ユーザー存在確認
+        if (!currentUser) {
+          setError(
+            'ユーザー情報が見つかりません。セットアップページから開始してください。'
+          );
+          return;
+        }
+
+        // カメラの初期化
+        if (!cameraState.stream) {
+          await initializeCamera();
+        }
+
+        // MediaPipeの初期化を待機
+        // useMediaPipeHandsフックが自動で初期化を行う
+      } catch (err) {
+        console.error('測定ページ初期化エラー:', err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : '測定ページの初期化に失敗しました'
+        );
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializePage();
+  }, [currentUser, cameraState.stream]);
+
+  /**
+   * カメラ初期化
+   */
+  const initializeCamera = async (): Promise<void> => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user',
+        },
+        audio: false,
+      });
+
+      setCameraState({
+        ...cameraState,
+        stream,
+        isReady: true,
+        error: null,
+      });
+
+      // ビデオ要素にストリームを設定
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'カメラの初期化に失敗しました';
+      setCameraState({
+        ...cameraState,
+        error: errorMessage,
+        isReady: false,
+      });
+      throw new Error(errorMessage);
+    }
+  };
+
+  /**
+   * 測定開始処理
+   */
+  const handleStartMeasurement = useCallback(async (): Promise<void> => {
+    if (!currentUser || !cameraState.isReady || !isMediaPipeLoaded) {
+      setError(
+        '測定を開始する前に、カメラとMediaPipeが準備完了していることを確認してください'
+      );
+      return;
+    }
+
+    try {
+      setMeasurementState({
+        ...measurementState,
+        isCapturing: true,
+        currentAngles: null,
+        accuracy: 0,
+        startTime: new Date(),
+      });
+
+      setError(null);
+    } catch (err) {
+      console.error('測定開始エラー:', err);
+      setError('測定の開始に失敗しました');
+    }
+  }, [
+    currentUser,
+    cameraState.isReady,
+    isMediaPipeLoaded,
+    measurementState,
+    setMeasurementState,
+  ]);
+
+  /**
+   * 測定停止処理
+   */
+  const handleStopMeasurement = useCallback(async (): Promise<void> => {
+    try {
+      if (!measurementState.currentAngles || !currentUser) {
+        setError('保存する測定データがありません');
+        return;
+      }
+
+      // 測定データの作成
+      const measurementInput: CreateMotionMeasurementInput = {
+        userId: currentUser.id,
+        handUsed: selectedHand,
+        wristAngles: measurementState.currentAngles.wrist,
+        thumbAngles: measurementState.currentAngles.thumb,
+        accuracy: measurementState.accuracy,
+        duration: measurementState.startTime
+          ? Math.round(
+              (Date.now() - measurementState.startTime.getTime()) / 1000
+            )
+          : 0,
+      };
+
+      const measurementData = createMotionMeasurement(measurementInput);
+
+      // データベースに保存
+      await saveMotionMeasurement(measurementData);
+
+      // 測定リストに追加
+      setMeasurements((prev) => [measurementData, ...prev]);
+
+      // 測定状態をリセット
+      setMeasurementState({
+        ...measurementState,
+        isCapturing: false,
+        currentAngles: null,
+        accuracy: 0,
+        startTime: null,
+      });
+
+      setError(null);
+    } catch (err) {
+      console.error('測定停止エラー:', err);
+      setError('測定データの保存に失敗しました');
+    }
+  }, [
+    measurementState,
+    currentUser,
+    selectedHand,
+    saveMotionMeasurement,
+    setMeasurementState,
+  ]);
+
+  /**
+   * 手の選択変更
+   */
+  const handleHandSelection = useCallback((hand: HandType): void => {
+    setSelectedHand(hand);
+  }, []);
+
+  /**
+   * エラーリセット
+   */
+  const handleResetError = useCallback((): void => {
+    setError(null);
+  }, []);
+
+  // MediaPipeエラーの監視
+  useEffect(() => {
+    if (mediaPipeError) {
+      setError(`MediaPipe エラー: ${mediaPipeError}`);
+    }
+  }, [mediaPipeError]);
+
+  // 測定が開始されている場合の検出処理
+  useEffect(() => {
+    if (!measurementState.isCapturing || !handsDetector || !videoRef.current) {
+      return;
+    }
+
+    const detectAndMeasure = async (): Promise<void> => {
+      try {
+        if (videoRef.current && videoRef.current.readyState >= 2) {
+          const results = await detectHands(videoRef.current);
+
+          if (
+            results &&
+            results.multiHandLandmarks &&
+            results.multiHandLandmarks.length > 0
+          ) {
+            // 角度計算とオーバーレイ描画は AngleOverlay コンポーネントで処理
+            // ここでは検出状態の更新のみ
+            setMeasurementState((prev: MeasurementState) => ({
+              ...prev,
+              accuracy: Math.min(prev.accuracy + 0.1, 1.0), // 簡易的な精度向上
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('手の検出エラー:', err);
+      }
+    };
+
+    const intervalId = setInterval(detectAndMeasure, 100); // 10FPS
+    return () => clearInterval(intervalId);
+  }, [
+    measurementState.isCapturing,
+    handsDetector,
+    detectHands,
+    setMeasurementState,
+  ]);
+
+  // 読み込み中表示
+  if (isInitializing) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>測定画面を初期化しています...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.measurementPage}>
-      {/* ヘッダー */}
       <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>
-            <span className={styles.titleIcon}>📐</span>
-            AI可動域測定
-          </h1>
-          <nav className={styles.navigation}>
-            <Link href="/calendar" className={styles.navLink}>
-              📅 カレンダー
-            </Link>
-            <Link href="/progress" className={styles.navLink}>
-              📊 進捗
-            </Link>
-            <Link href="/setup" className={styles.navLink}>
-              ⚙️ 設定
-            </Link>
-          </nav>
+        <h1>手首・母指可動域測定</h1>
+        <div className={styles.userInfo}>
+          {currentUser && <span>ユーザー: {currentUser.name}</span>}
         </div>
       </header>
 
-      {/* エラー表示 */}
       {error && (
         <div className={styles.errorContainer}>
-          <div className={styles.errorMessage}>
-            <span className={styles.errorIcon}>⚠️</span>
-            <p>{error}</p>
-            <button
-              onClick={handleResetError}
-              className={styles.errorResetButton}
-            >
-              閉じる
-            </button>
-          </div>
+          <p className={styles.errorMessage}>{error}</p>
+          <button
+            onClick={handleResetError}
+            className={styles.errorResetButton}
+          >
+            エラーを閉じる
+          </button>
         </div>
       )}
 
       <main className={styles.mainContent}>
-        {/* カメラセクション */}
         <div className={styles.cameraSection}>
           <div className={styles.cameraContainer}>
             <CameraPreview
-              videoRef={videoRef}
+              ref={videoRef}
               stream={cameraState.stream}
               isReady={cameraState.isReady}
               error={cameraState.error}
             />
 
             <AngleOverlay
-              canvasRef={canvasRef}
+              ref={canvasRef}
+              videoElement={videoRef.current}
+              handsDetector={handsDetector}
               isCapturing={measurementState.isCapturing}
               selectedHand={selectedHand}
-              onAnglesUpdate={handleAnglesUpdate}
+              onAnglesUpdate={(angles: any) => {
+                setMeasurementState((prev: MeasurementState) => ({
+                  ...prev,
+                  currentAngles: angles,
+                }));
+              }}
             />
-
-            {/* 測定状況表示 */}
-            {measurementState.isCapturing && (
-              <div className={styles.measurementStatus}>
-                <div className={styles.statusIndicator}>
-                  <span className={styles.recordingDot}></span>
-                  測定中...
-                </div>
-                <div className={styles.accuracyDisplay}>
-                  精度: {Math.round(measurementState.accuracy * 100)}%
-                </div>
-              </div>
-            )}
           </div>
 
           <MeasurementControls
@@ -452,84 +651,37 @@ export default function MeasurementPage(): React.JSX.Element {
           />
         </div>
 
-        {/* 測定結果セクション */}
         <div className={styles.resultsSection}>
-          <div className={styles.resultsHeader}>
-            <h2>📋 最近の測定結果</h2>
-            {measurements.length > 0 && (
-              <Link href="/progress" className={styles.viewAllLink}>
-                すべて表示 →
-              </Link>
-            )}
-          </div>
-
+          <h2>測定結果</h2>
           {measurements.length > 0 ? (
             <div className={styles.measurementsList}>
               {measurements.slice(0, 5).map((measurement) => (
                 <div key={measurement.id} className={styles.measurementItem}>
                   <div className={styles.measurementHeader}>
-                    <span
-                      className={`${styles.handBadge} ${styles[measurement.handUsed]}`}
-                    >
-                      {measurement.handUsed === 'right' ? '🫱 右手' : '🫲 左手'}
+                    <span className={styles.handUsed}>
+                      {measurement.handUsed === 'right' ? '右手' : '左手'}
                     </span>
                     <span className={styles.measurementTime}>
-                      {new Date(measurement.measurementDate).toLocaleString()}
+                      {new Date(
+                        measurement.measurementDate
+                      ).toLocaleTimeString()}
                     </span>
                   </div>
-
                   <div className={styles.angleData}>
-                    <div className={styles.angleItem}>
-                      <span className={styles.angleLabel}>手首伸展</span>
-                      <span className={styles.angleValue}>
-                        {measurement.wristExtension}°
-                      </span>
-                    </div>
-                    <div className={styles.angleItem}>
-                      <span className={styles.angleLabel}>手首屈曲</span>
-                      <span className={styles.angleValue}>
-                        {measurement.wristFlexion}°
-                      </span>
-                    </div>
-                    <div className={styles.angleItem}>
-                      <span className={styles.angleLabel}>母指外転</span>
-                      <span className={styles.angleValue}>
-                        {measurement.thumbAbduction}°
-                      </span>
-                    </div>
-                    <div className={styles.angleItem}>
-                      <span className={styles.angleLabel}>精度</span>
-                      <span
-                        className={`${styles.angleValue} ${styles.accuracy}`}
-                      >
-                        {Math.round(measurement.accuracyScore * 100)}%
-                      </span>
-                    </div>
+                    <span>手首: {measurement.wristExtension}°</span>
+                    <span>母指: {measurement.thumbAbduction}°</span>
+                    <span>
+                      精度: {Math.round(measurement.accuracyScore * 100)}%
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className={styles.noResults}>
-              <span className={styles.noResultsIcon}>📊</span>
-              <h3>まだ測定結果がありません</h3>
-              <p>上記のカメラを使用して可動域測定を開始してください</p>
-            </div>
+            <p className={styles.noResults}>まだ測定結果がありません</p>
           )}
         </div>
       </main>
-
-      {/* フッター */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <p>AI駆動リハビリテーション支援システム</p>
-          <div className={styles.footerLinks}>
-            <Link href="/setup">設定</Link>
-            <Link href="/calendar">カレンダー</Link>
-            <Link href="/progress">進捗分析</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

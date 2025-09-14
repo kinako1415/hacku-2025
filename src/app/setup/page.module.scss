@@ -1,0 +1,684 @@
+/**
+ * セットアップページのスタイル
+ */
+
+.setupPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー */
+.header {
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin: 0;
+}
+
+.titleIcon {
+  font-size: 2rem;
+}
+
+.navigation {
+  display: flex;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+}
+
+/* エラー表示 */
+.errorContainer {
+  padding: 16px 24px;
+}
+
+.errorMessage {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.errorIcon {
+  font-size: 1.5rem;
+}
+
+.errorResetButton {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #c53030;
+  }
+}
+
+/* メインコンテンツ */
+.mainContent {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    gap: 24px;
+  }
+}
+
+/* タブナビゲーション */
+.tabNavigation {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.tabButtons {
+  display: flex;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.tabButton {
+  flex: 1;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: #4a5568;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 60px;
+
+  &:hover {
+    background: #f7fafc;
+    color: #2d3748;
+  }
+
+  &.active {
+    background: #4299e1;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+  }
+
+  span {
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    min-height: 50px;
+  }
+
+  @media (max-width: 480px) {
+    flex: 1 1 calc(50% - 4px);
+    font-size: 0.8rem;
+    gap: 6px;
+
+    span {
+      font-size: 1rem;
+    }
+  }
+}
+
+/* 設定セクション */
+.settingsSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.settingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settingLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.settingInput,
+.settingSelect,
+.settingTextarea {
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #ffffff;
+  color: #2d3748;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  }
+
+  &::placeholder {
+    color: #a0aec0;
+  }
+}
+
+.settingTextarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.settingDescription {
+  font-size: 0.875rem;
+  color: #718096;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
+}
+
+/* トグルスイッチ */
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggleInput {
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + .toggleSlider {
+    background-color: #4299e1;
+  }
+
+  &:checked + .toggleSlider:before {
+    transform: translateX(26px);
+  }
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e0;
+  transition: 0.2s;
+  border-radius: 34px;
+
+  &:before {
+    position: absolute;
+    content: '';
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.2s;
+    border-radius: 50%;
+  }
+}
+
+/* ボタンスタイル */
+.testButton,
+.exportButton,
+.resetButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.testButton {
+  background: #4299e1;
+  color: #ffffff;
+
+  &:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+  }
+}
+
+.exportButton {
+  background: #38a169;
+  color: #ffffff;
+
+  &:hover {
+    background: #2f855a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+  }
+}
+
+.resetButton {
+  background: #e53e3e;
+  color: #ffffff;
+
+  &:hover {
+    background: #c53030;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+  }
+}
+
+/* ファイル入力 */
+.fileInput {
+  padding: 8px 12px;
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  background: #f7fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e0;
+    background: #edf2f7;
+  }
+}
+
+/* 保存セクション */
+.saveSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e2e8f0;
+}
+
+.saveButtons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.saveButton {
+  padding: 16px 32px;
+  background: #38a169;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+
+  &:hover:not(.disabled) {
+    background: #2f855a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 161, 105, 0.3);
+  }
+
+  &.disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+.modifiedIndicator {
+  font-size: 0.9rem;
+  color: #d69e2e;
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ローディング */
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loadingSpinner {
+  text-align: center;
+  color: #ffffff;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 24px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingSpinner h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.loadingSpinner p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* フッター */
+.footer {
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 32px 24px;
+  margin-top: auto;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+
+  a {
+    color: #81e6d9;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #4fd1c7;
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .settingGroup {
+    gap: 6px;
+  }
+
+  .settingInput,
+  .settingSelect,
+  .settingTextarea {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .toggleSwitch {
+    width: 50px;
+    height: 28px;
+  }
+
+  .toggleSlider:before {
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+  }
+
+  .toggleInput:checked + .toggleSlider:before {
+    transform: translateX(22px);
+  }
+
+  .testButton,
+  .exportButton,
+  .resetButton {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .setupPage {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  }
+
+  .header {
+    background: #2d3748;
+    border-bottom: 1px solid #4a5568;
+  }
+
+  .title {
+    color: #f7fafc;
+  }
+
+  .navLink {
+    color: #cbd5e0;
+
+    &:hover {
+      background: #4a5568;
+      color: #f7fafc;
+    }
+  }
+
+  .tabNavigation,
+  .settingsSection,
+  .saveSection {
+    background: #2d3748;
+    color: #f7fafc;
+  }
+
+  .settingsSection h2 {
+    color: #f7fafc;
+    border-color: #4a5568;
+  }
+
+  .settingLabel {
+    color: #f7fafc;
+  }
+
+  .settingInput,
+  .settingSelect,
+  .settingTextarea {
+    background: #4a5568;
+    border-color: #718096;
+    color: #f7fafc;
+
+    &:focus {
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+  }
+
+  .settingDescription {
+    color: #a0aec0;
+  }
+
+  .tabButton {
+    color: #cbd5e0;
+
+    &:hover {
+      background: #4a5568;
+      color: #f7fafc;
+    }
+
+    &.active {
+      background: #4299e1;
+      color: #ffffff;
+    }
+  }
+
+  .toggleSlider {
+    background-color: #4a5568;
+  }
+
+  .fileInput {
+    background: #4a5568;
+    border-color: #718096;
+    color: #f7fafc;
+
+    &:hover {
+      border-color: #a0aec0;
+      background: #718096;
+    }
+  }
+
+  .modifiedIndicator {
+    color: #fbd38d;
+  }
+}
