@@ -14,7 +14,7 @@ describe('GET /api/progress/{userId} Contract Test', () => {
     const response = await fetch(`${API_BASE}${baseEndpoint}/${testUserId}`);
 
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData).toHaveProperty('id');
     expect(responseData).toHaveProperty('userId', testUserId);
@@ -39,8 +39,10 @@ describe('GET /api/progress/{userId} Contract Test', () => {
     // データ型の検証
     expect(typeof weeklyStats.measurement_count).toBe('number');
     expect(typeof weeklyStats.average_accuracy).toBe('number');
-    expect(['improving', 'stable', 'declining']).toContain(weeklyStats.improvement_trend);
-    
+    expect(['improving', 'stable', 'declining']).toContain(
+      weeklyStats.improvement_trend
+    );
+
     // 精度は0-1の範囲
     expect(weeklyStats.average_accuracy).toBeGreaterThanOrEqual(0);
     expect(weeklyStats.average_accuracy).toBeLessThanOrEqual(1);
@@ -60,10 +62,10 @@ describe('GET /api/progress/{userId} Contract Test', () => {
     expect(typeof monthlyStats.measurement_count).toBe('number');
     expect(typeof monthlyStats.compliance_rate).toBe('number');
     expect(typeof monthlyStats.average_progress).toBe('number');
-    
+
     // 月形式の検証（YYYY-MM）
     expect(monthlyStats.month).toMatch(/^\d{4}-\d{2}$/);
-    
+
     // レートは0-1の範囲
     expect(monthlyStats.compliance_rate).toBeGreaterThanOrEqual(0);
     expect(monthlyStats.compliance_rate).toBeLessThanOrEqual(1);
@@ -124,16 +126,20 @@ describe('GET /api/progress/{userId} Contract Test', () => {
 
     // 完全回復予測日がある場合の検証
     if (predictedRecovery.estimated_full_recovery_date) {
-      expect(typeof predictedRecovery.estimated_full_recovery_date).toBe('string');
+      expect(typeof predictedRecovery.estimated_full_recovery_date).toBe(
+        'string'
+      );
     }
   });
 
   it('should return 404 for non-existent userId', async () => {
     const nonExistentUserId = 'non-existent-user-999';
-    const response = await fetch(`${API_BASE}${baseEndpoint}/${nonExistentUserId}`);
+    const response = await fetch(
+      `${API_BASE}${baseEndpoint}/${nonExistentUserId}`
+    );
 
     expect(response.status).toBe(404);
-    
+
     const errorData = await response.json();
     expect(errorData).toHaveProperty('error');
     expect(errorData.error).toContain('not found');
@@ -153,15 +159,18 @@ describe('GET /api/progress/{userId} Contract Test', () => {
     // 計算日が最近のものであることを確認
     const calculatedDate = new Date(responseData.calculatedDate);
     const now = new Date();
-    const daysDiff = (now.getTime() - calculatedDate.getTime()) / (1000 * 60 * 60 * 24);
-    
+    const daysDiff =
+      (now.getTime() - calculatedDate.getTime()) / (1000 * 60 * 60 * 24);
+
     // 7日以内の計算データであることを期待
     expect(daysDiff).toBeLessThanOrEqual(7);
   });
 
   it('should handle userId with special characters', async () => {
     const specialUserId = 'user-with-hyphen_and_underscore.123';
-    const response = await fetch(`${API_BASE}${baseEndpoint}/${encodeURIComponent(specialUserId)}`);
+    const response = await fetch(
+      `${API_BASE}${baseEndpoint}/${encodeURIComponent(specialUserId)}`
+    );
 
     // 特殊文字を含むユーザーIDでも適切に処理されることを確認
     // 404または200が期待される（ユーザーが存在するかによる）

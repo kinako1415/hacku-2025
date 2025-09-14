@@ -4,9 +4,9 @@
  */
 
 export type ComparisonStatus =
-  | { status: "normal"; within_range: true }
-  | { status: "below_normal"; deficit_degrees: number }
-  | { status: "above_normal"; excess_degrees: number };
+  | { status: 'normal'; within_range: true }
+  | { status: 'below_normal'; deficit_degrees: number }
+  | { status: 'above_normal'; excess_degrees: number };
 
 export interface MotionComparisonResult {
   wristFlexion: ComparisonStatus;
@@ -17,7 +17,7 @@ export interface MotionComparisonResult {
   thumbExtension: ComparisonStatus;
   thumbAdduction: ComparisonStatus;
   thumbAbduction: ComparisonStatus;
-  overallStatus: "normal" | "below_normal" | "above_normal";
+  overallStatus: 'normal' | 'below_normal' | 'above_normal';
 }
 
 export interface MotionMeasurement {
@@ -39,7 +39,7 @@ export interface MotionMeasurement {
 
   // 測定メタデータ
   accuracyScore: number; // 測定精度スコア 0-1
-  handUsed: "left" | "right"; // 測定対象手
+  handUsed: 'left' | 'right'; // 測定対象手
 
   // 正常範囲比較結果
   comparisonResult: MotionComparisonResult;
@@ -59,7 +59,7 @@ export interface CreateMeasurementInput {
   thumbAdduction: number;
   thumbAbduction: number;
   accuracyScore: number;
-  handUsed: "left" | "right";
+  handUsed: 'left' | 'right';
 }
 
 /**
@@ -93,16 +93,16 @@ const compareAngleWithNormalRange = (
   normalRange: { min: number; max: number }
 ): ComparisonStatus => {
   if (angle >= normalRange.min && angle <= normalRange.max) {
-    return { status: "normal", within_range: true };
+    return { status: 'normal', within_range: true };
   } else if (angle < normalRange.min) {
-    return { 
-      status: "below_normal", 
-      deficit_degrees: Math.round(normalRange.min - angle) 
+    return {
+      status: 'below_normal',
+      deficit_degrees: Math.round(normalRange.min - angle),
     };
   } else {
-    return { 
-      status: "above_normal", 
-      excess_degrees: Math.round(angle - normalRange.max) 
+    return {
+      status: 'above_normal',
+      excess_degrees: Math.round(angle - normalRange.max),
     };
   }
 };
@@ -114,35 +114,35 @@ export const calculateComparisonResult = (
   measurement: Omit<CreateMeasurementInput, 'userId' | 'measurementDate'>
 ): MotionComparisonResult => {
   const wristFlexion = compareAngleWithNormalRange(
-    measurement.wristFlexion, 
+    measurement.wristFlexion,
     NORMAL_RANGES.wrist.flexion
   );
   const wristExtension = compareAngleWithNormalRange(
-    measurement.wristExtension, 
+    measurement.wristExtension,
     NORMAL_RANGES.wrist.extension
   );
   const wristUlnarDeviation = compareAngleWithNormalRange(
-    measurement.wristUlnarDeviation, 
+    measurement.wristUlnarDeviation,
     NORMAL_RANGES.wrist.ulnarDeviation
   );
   const wristRadialDeviation = compareAngleWithNormalRange(
-    measurement.wristRadialDeviation, 
+    measurement.wristRadialDeviation,
     NORMAL_RANGES.wrist.radialDeviation
   );
   const thumbFlexion = compareAngleWithNormalRange(
-    measurement.thumbFlexion, 
+    measurement.thumbFlexion,
     NORMAL_RANGES.thumb.flexion
   );
   const thumbExtension = compareAngleWithNormalRange(
-    measurement.thumbExtension, 
+    measurement.thumbExtension,
     NORMAL_RANGES.thumb.extension
   );
   const thumbAdduction = compareAngleWithNormalRange(
-    measurement.thumbAdduction, 
+    measurement.thumbAdduction,
     NORMAL_RANGES.thumb.adduction
   );
   const thumbAbduction = compareAngleWithNormalRange(
-    measurement.thumbAbduction, 
+    measurement.thumbAbduction,
     NORMAL_RANGES.thumb.abduction
   );
 
@@ -158,12 +158,12 @@ export const calculateComparisonResult = (
     thumbAbduction.status,
   ];
 
-  let overallStatus: "normal" | "below_normal" | "above_normal" = "normal";
-  
-  if (allStatuses.includes("below_normal")) {
-    overallStatus = "below_normal";
-  } else if (allStatuses.includes("above_normal")) {
-    overallStatus = "above_normal";
+  let overallStatus: 'normal' | 'below_normal' | 'above_normal' = 'normal';
+
+  if (allStatuses.includes('below_normal')) {
+    overallStatus = 'below_normal';
+  } else if (allStatuses.includes('above_normal')) {
+    overallStatus = 'above_normal';
   }
 
   return {
@@ -197,14 +197,46 @@ export const validateMeasurement = (data: CreateMeasurementInput): string[] => {
 
   // 角度値の検証
   const angleChecks = [
-    { value: data.wristFlexion, name: '手首掌屈', max: NORMAL_RANGES.wrist.flexion.max },
-    { value: data.wristExtension, name: '手首背屈', max: NORMAL_RANGES.wrist.extension.max },
-    { value: data.wristUlnarDeviation, name: '手首尺屈', max: NORMAL_RANGES.wrist.ulnarDeviation.max },
-    { value: data.wristRadialDeviation, name: '手首橈屈', max: NORMAL_RANGES.wrist.radialDeviation.max },
-    { value: data.thumbFlexion, name: '母指屈曲', max: NORMAL_RANGES.thumb.flexion.max },
-    { value: data.thumbExtension, name: '母指伸展', max: NORMAL_RANGES.thumb.extension.max },
-    { value: data.thumbAdduction, name: '母指内転', max: NORMAL_RANGES.thumb.adduction.max },
-    { value: data.thumbAbduction, name: '母指外転', max: NORMAL_RANGES.thumb.abduction.max },
+    {
+      value: data.wristFlexion,
+      name: '手首掌屈',
+      max: NORMAL_RANGES.wrist.flexion.max,
+    },
+    {
+      value: data.wristExtension,
+      name: '手首背屈',
+      max: NORMAL_RANGES.wrist.extension.max,
+    },
+    {
+      value: data.wristUlnarDeviation,
+      name: '手首尺屈',
+      max: NORMAL_RANGES.wrist.ulnarDeviation.max,
+    },
+    {
+      value: data.wristRadialDeviation,
+      name: '手首橈屈',
+      max: NORMAL_RANGES.wrist.radialDeviation.max,
+    },
+    {
+      value: data.thumbFlexion,
+      name: '母指屈曲',
+      max: NORMAL_RANGES.thumb.flexion.max,
+    },
+    {
+      value: data.thumbExtension,
+      name: '母指伸展',
+      max: NORMAL_RANGES.thumb.extension.max,
+    },
+    {
+      value: data.thumbAdduction,
+      name: '母指内転',
+      max: NORMAL_RANGES.thumb.adduction.max,
+    },
+    {
+      value: data.thumbAbduction,
+      name: '母指外転',
+      max: NORMAL_RANGES.thumb.abduction.max,
+    },
   ];
 
   angleChecks.forEach(({ value, name, max }) => {
@@ -233,7 +265,9 @@ export const validateMeasurement = (data: CreateMeasurementInput): string[] => {
 /**
  * 測定エンティティの作成
  */
-export const createMeasurement = (input: CreateMeasurementInput): MotionMeasurement => {
+export const createMeasurement = (
+  input: CreateMeasurementInput
+): MotionMeasurement => {
   const errors = validateMeasurement(input);
   if (errors.length > 0) {
     throw new Error(`測定データ作成エラー: ${errors.join(', ')}`);

@@ -8,7 +8,7 @@ export interface User {
   name: string; // 患者名
   rehabStartDate: Date; // リハビリ開始日
   currentSymptomLevel: 1 | 2 | 3 | 4 | 5; // 症状レベル(1=軽微, 5=重症)
-  preferredHand: "left" | "right"; // 主測定手
+  preferredHand: 'left' | 'right'; // 主測定手
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,13 +17,13 @@ export interface CreateUserInput {
   name: string;
   rehabStartDate: Date;
   currentSymptomLevel: 1 | 2 | 3 | 4 | 5;
-  preferredHand: "left" | "right";
+  preferredHand: 'left' | 'right';
 }
 
 export interface UpdateUserInput {
   name?: string;
   currentSymptomLevel?: 1 | 2 | 3 | 4 | 5;
-  preferredHand?: "left" | "right";
+  preferredHand?: 'left' | 'right';
 }
 
 /**
@@ -83,7 +83,10 @@ export const createUser = (input: CreateUserInput): User => {
 /**
  * ユーザーエンティティの更新
  */
-export const updateUser = (existingUser: User, updates: UpdateUserInput): User => {
+export const updateUser = (
+  existingUser: User,
+  updates: UpdateUserInput
+): User => {
   const updatedUser: User = {
     ...existingUser,
     ...updates,

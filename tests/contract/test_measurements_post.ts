@@ -37,7 +37,7 @@ describe('POST /api/measurements Contract Test', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData).toHaveProperty('id');
     expect(responseData).toHaveProperty('userId', validPayload.userId);
@@ -57,7 +57,7 @@ describe('POST /api/measurements Contract Test', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData).toHaveProperty('error');
     expect(errorData.error).toContain('validation');
@@ -79,7 +79,7 @@ describe('POST /api/measurements Contract Test', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData).toHaveProperty('error');
   });
@@ -111,16 +111,16 @@ describe('POST /api/measurements Contract Test', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
-    
+
     // comparisonResultの構造検証
     expect(responseData.comparisonResult).toHaveProperty('wristFlexion');
     expect(responseData.comparisonResult).toHaveProperty('wristExtension');
     expect(responseData.comparisonResult).toHaveProperty('thumbFlexion');
     expect(responseData.comparisonResult).toHaveProperty('thumbAbduction');
     expect(responseData.comparisonResult).toHaveProperty('overallStatus');
-    
+
     // 正常範囲ステータスの検証
     expect(['normal', 'below_normal', 'above_normal']).toContain(
       responseData.comparisonResult.overallStatus

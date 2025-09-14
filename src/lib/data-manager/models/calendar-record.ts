@@ -15,7 +15,7 @@ export interface CalendarRecord {
   // 実行状況
   rehabCompleted: boolean; // リハビリ実施フラグ
   measurementCompleted: boolean; // 測定実施フラグ
-  
+
   // 主観的評価（1-5スケール）
   performanceLevel?: PerformanceLevel; // 動作レベル自己評価
   painLevel?: PainLevel; // 痛みレベル
@@ -52,7 +52,9 @@ export interface UpdateCalendarRecordInput {
 /**
  * カレンダー記録の検証ルール
  */
-export const validateCalendarRecord = (data: CreateCalendarRecordInput): string[] => {
+export const validateCalendarRecord = (
+  data: CreateCalendarRecordInput
+): string[] => {
   const errors: string[] = [];
 
   // userId必須
@@ -78,7 +80,7 @@ export const validateCalendarRecord = (data: CreateCalendarRecordInput): string[
   const levelChecks = [
     { value: data.performanceLevel, name: '動作レベル' },
     { value: data.painLevel, name: '痛みレベル' },
-    { value: data.motivationLevel, name: 'モチベーションレベル' }
+    { value: data.motivationLevel, name: 'モチベーションレベル' },
   ];
 
   levelChecks.forEach(({ value, name }) => {
@@ -98,14 +100,16 @@ export const validateCalendarRecord = (data: CreateCalendarRecordInput): string[
 /**
  * 更新データの検証ルール
  */
-export const validateCalendarRecordUpdate = (data: UpdateCalendarRecordInput): string[] => {
+export const validateCalendarRecordUpdate = (
+  data: UpdateCalendarRecordInput
+): string[] => {
   const errors: string[] = [];
 
   // レベル値の検証（1-5の範囲）
   const levelChecks = [
     { value: data.performanceLevel, name: '動作レベル' },
     { value: data.painLevel, name: '痛みレベル' },
-    { value: data.motivationLevel, name: 'モチベーションレベル' }
+    { value: data.motivationLevel, name: 'モチベーションレベル' },
   ];
 
   levelChecks.forEach(({ value, name }) => {
@@ -140,7 +144,9 @@ export const parseRecordDate = (dateString: string): Date => {
 /**
  * 当日のデフォルト記録を作成
  */
-export const createTodayRecord = (userId: string): CreateCalendarRecordInput => {
+export const createTodayRecord = (
+  userId: string
+): CreateCalendarRecordInput => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // 時間をリセット
 
@@ -155,14 +161,16 @@ export const createTodayRecord = (userId: string): CreateCalendarRecordInput => 
 /**
  * カレンダー記録エンティティの作成
  */
-export const createCalendarRecord = (input: CreateCalendarRecordInput): CalendarRecord => {
+export const createCalendarRecord = (
+  input: CreateCalendarRecordInput
+): CalendarRecord => {
   const errors = validateCalendarRecord(input);
   if (errors.length > 0) {
     throw new Error(`カレンダー記録作成エラー: ${errors.join(', ')}`);
   }
 
   const now = new Date();
-  
+
   const record: CalendarRecord = {
     id: crypto.randomUUID(),
     userId: input.userId,
@@ -194,7 +202,7 @@ export const createCalendarRecord = (input: CreateCalendarRecordInput): Calendar
  * カレンダー記録エンティティの更新
  */
 export const updateCalendarRecord = (
-  record: CalendarRecord, 
+  record: CalendarRecord,
   updates: UpdateCalendarRecordInput
 ): CalendarRecord => {
   const errors = validateCalendarRecordUpdate(updates);
@@ -215,7 +223,7 @@ export const updateCalendarRecord = (
 export const calculateCompletionStatus = (record: CalendarRecord) => {
   const completedTasks = [
     record.rehabCompleted,
-    record.measurementCompleted
+    record.measurementCompleted,
   ].filter(Boolean).length;
 
   const totalTasks = 2;
@@ -244,12 +252,16 @@ export interface WeeklyStats {
   overallCompletionRate: number;
 }
 
-export const calculateWeeklyStats = (records: CalendarRecord[]): WeeklyStats => {
+export const calculateWeeklyStats = (
+  records: CalendarRecord[]
+): WeeklyStats => {
   const totalDays = records.length;
-  const rehabCompletedDays = records.filter(r => r.rehabCompleted).length;
-  const measurementCompletedDays = records.filter(r => r.measurementCompleted).length;
+  const rehabCompletedDays = records.filter((r) => r.rehabCompleted).length;
+  const measurementCompletedDays = records.filter(
+    (r) => r.measurementCompleted
+  ).length;
   const fullyCompletedDays = records.filter(
-    r => r.rehabCompleted && r.measurementCompleted
+    (r) => r.rehabCompleted && r.measurementCompleted
   ).length;
 
   return {
@@ -258,7 +270,8 @@ export const calculateWeeklyStats = (records: CalendarRecord[]): WeeklyStats => 
     measurementCompletedDays,
     fullyCompletedDays,
     rehabCompletionRate: totalDays > 0 ? rehabCompletedDays / totalDays : 0,
-    measurementCompletionRate: totalDays > 0 ? measurementCompletedDays / totalDays : 0,
+    measurementCompletionRate:
+      totalDays > 0 ? measurementCompletedDays / totalDays : 0,
     overallCompletionRate: totalDays > 0 ? fullyCompletedDays / totalDays : 0,
   };
 };

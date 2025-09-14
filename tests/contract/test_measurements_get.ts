@@ -19,7 +19,7 @@ describe('GET /api/measurements Contract Test', () => {
     const response = await fetch(`${API_BASE}${endpoint}?${params}`);
 
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     expect(responseData).toHaveProperty('measurements');
     expect(responseData).toHaveProperty('total');
@@ -38,7 +38,7 @@ describe('GET /api/measurements Contract Test', () => {
 
     if (responseData.measurements.length > 0) {
       const measurement = responseData.measurements[0];
-      
+
       // 必須フィールドの検証
       expect(measurement).toHaveProperty('id');
       expect(measurement).toHaveProperty('userId');
@@ -57,7 +57,7 @@ describe('GET /api/measurements Contract Test', () => {
   it('should filter by date range when provided', async () => {
     const startDate = '2025-09-01';
     const endDate = '2025-09-30';
-    
+
     const params = new URLSearchParams({
       userId: testUserId,
       startDate,
@@ -68,9 +68,9 @@ describe('GET /api/measurements Contract Test', () => {
     const response = await fetch(`${API_BASE}${endpoint}?${params}`);
 
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
-    
+
     // 日付範囲内の測定データのみ返されることを確認
     responseData.measurements.forEach((measurement: any) => {
       const measurementDate = new Date(measurement.measurementDate);
@@ -83,7 +83,7 @@ describe('GET /api/measurements Contract Test', () => {
     const response = await fetch(`${API_BASE}${endpoint}`);
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData).toHaveProperty('error');
     expect(errorData.error.toLowerCase()).toContain('userid');
@@ -106,9 +106,9 @@ describe('GET /api/measurements Contract Test', () => {
     });
 
     const response = await fetch(`${API_BASE}${endpoint}?${params}`);
-    
+
     expect(response.status).toBe(200);
-    
+
     const responseData = await response.json();
     // デフォルトリミット30を超えないことを確認
     expect(responseData.measurements.length).toBeLessThanOrEqual(30);
@@ -125,8 +125,12 @@ describe('GET /api/measurements Contract Test', () => {
 
     if (responseData.measurements.length > 1) {
       for (let i = 1; i < responseData.measurements.length; i++) {
-        const prevDate = new Date(responseData.measurements[i - 1].measurementDate);
-        const currentDate = new Date(responseData.measurements[i].measurementDate);
+        const prevDate = new Date(
+          responseData.measurements[i - 1].measurementDate
+        );
+        const currentDate = new Date(
+          responseData.measurements[i].measurementDate
+        );
         expect(prevDate >= currentDate).toBe(true);
       }
     }

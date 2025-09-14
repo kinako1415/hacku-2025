@@ -80,7 +80,7 @@ describe('Data Storage Flow Integration Test', () => {
 
     await expect(async () => {
       const savedUser = await dataService.saveUser(userData);
-      
+
       expect(savedUser).toHaveProperty('id', userData.id);
       expect(savedUser).toHaveProperty('createdAt');
       expect(savedUser).toHaveProperty('updatedAt');
@@ -105,14 +105,17 @@ describe('Data Storage Flow Integration Test', () => {
     };
 
     await expect(async () => {
-      const savedMeasurement = await dataService.saveMeasurement(measurementData);
-      
+      const savedMeasurement =
+        await dataService.saveMeasurement(measurementData);
+
       expect(savedMeasurement).toHaveProperty('id');
       expect(savedMeasurement).toHaveProperty('comparisonResult');
       expect(savedMeasurement.comparisonResult).toHaveProperty('overallStatus');
       expect(savedMeasurement.comparisonResult).toHaveProperty('wristFlexion');
-      expect(savedMeasurement.comparisonResult).toHaveProperty('thumbAbduction');
-      
+      expect(savedMeasurement.comparisonResult).toHaveProperty(
+        'thumbAbduction'
+      );
+
       // 正常範囲比較結果の検証
       expect(['normal', 'below_normal', 'above_normal']).toContain(
         savedMeasurement.comparisonResult.overallStatus
@@ -135,13 +138,13 @@ describe('Data Storage Flow Integration Test', () => {
       // 初回作成
       const savedRecord = await dataService.saveCalendarRecord(recordData);
       expect(savedRecord).toHaveProperty('id');
-      
+
       // 同じ日付での更新（upsert動作）
       const updateData = {
         ...recordData,
         physicalConditionNote: '更新された体調メモ',
       };
-      
+
       const updatedRecord = await dataService.saveCalendarRecord(updateData);
       expect(updatedRecord.id).toBe(savedRecord.id); // 同じIDで更新
       expect(updatedRecord.physicalConditionNote).toBe('更新された体調メモ');
@@ -157,12 +160,15 @@ describe('Data Storage Flow Integration Test', () => {
     };
 
     await expect(async () => {
-      const measurements = await dataService.getMeasurements(userId, filterOptions);
-      
+      const measurements = await dataService.getMeasurements(
+        userId,
+        filterOptions
+      );
+
       expect(Array.isArray(measurements.data)).toBe(true);
       expect(typeof measurements.total).toBe('number');
       expect(measurements.data.length).toBeLessThanOrEqual(filterOptions.limit);
-      
+
       // 日付フィルタリングの検証
       measurements.data.forEach((measurement: any) => {
         const measurementDate = new Date(measurement.measurementDate);
@@ -207,7 +213,7 @@ describe('Data Storage Flow Integration Test', () => {
       const savePromises = largeMeasurementData.map((data) =>
         dataService.saveMeasurement(data)
       );
-      
+
       const savedMeasurements = await Promise.all(savePromises);
       expect(savedMeasurements.length).toBe(1000);
     }).rejects.toThrow();
@@ -230,7 +236,7 @@ describe('Data Storage Flow Integration Test', () => {
       // オフライン保存
       const offlineSaved = await dataService.saveMeasurement(offlineData);
       expect(offlineSaved.syncStatus).toBe('pending');
-      
+
       // オンライン復帰時の同期処理
       const syncedData = await dataService.syncOfflineData();
       expect(syncedData.synced).toBeGreaterThan(0);
@@ -240,11 +246,11 @@ describe('Data Storage Flow Integration Test', () => {
   it('should maintain data integrity across operations', async () => {
     // データ整合性テスト
     const userId = 'user-123';
-    
+
     await expect(async () => {
       // ユーザー作成
       await dataService.saveUser({ id: userId, name: 'テストユーザー' });
-      
+
       // 測定データ作成
       const measurement = await dataService.saveMeasurement({
         userId,
@@ -253,7 +259,7 @@ describe('Data Storage Flow Integration Test', () => {
         accuracyScore: 0.8,
         handUsed: 'right',
       });
-      
+
       // カレンダー記録と測定データの関連付け
       const calendarRecord = await dataService.saveCalendarRecord({
         userId,
@@ -261,10 +267,10 @@ describe('Data Storage Flow Integration Test', () => {
         measurementCompleted: true,
         measurementId: measurement.id,
       });
-      
+
       // 関連データの整合性確認
       expect(calendarRecord.measurementId).toBe(measurement.id);
-      
+
       // 外部キー制約の確認
       const retrievedMeasurement = await dataService.getMeasurements(userId);
       expect(retrievedMeasurement.data[0].id).toBe(measurement.id);

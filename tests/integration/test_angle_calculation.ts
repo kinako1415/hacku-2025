@@ -6,16 +6,20 @@ import { describe, it, expect } from '@jest/globals';
 
 // 角度計算ライブラリ（実装前はテスト失敗想定）
 class Vector3D {
-  constructor(public x: number, public y: number, public z: number) {}
-  
+  constructor(
+    public x: number,
+    public y: number,
+    public z: number
+  ) {}
+
   static subtract(a: Vector3D, b: Vector3D): Vector3D {
     return new Vector3D(a.x - b.x, a.y - b.y, a.z - b.z);
   }
-  
+
   static dotProduct(a: Vector3D, b: Vector3D): number {
     return a.x * b.x + a.y * b.y + a.z * b.z;
   }
-  
+
   magnitude(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
@@ -58,7 +62,7 @@ describe('Angle Calculation Integration Test', () => {
         landmarks.WRIST,
         landmarks.INDEX_FINGER_MCP
       );
-      
+
       // 手首掌屈の正常範囲（0-90度）
       expect(wristFlexionAngle).toBeGreaterThanOrEqual(0);
       expect(wristFlexionAngle).toBeLessThanOrEqual(90);
@@ -70,7 +74,7 @@ describe('Angle Calculation Integration Test', () => {
     const thumbLandmarks = {
       CMC: new Vector3D(0.4, 0.6, 0.0), // 手根中手関節
       MCP: new Vector3D(0.5, 0.5, 0.0), // 中手指節関節
-      IP: new Vector3D(0.6, 0.4, 0.0),  // 指節間関節
+      IP: new Vector3D(0.6, 0.4, 0.0), // 指節間関節
     };
 
     expect(() => {
@@ -79,7 +83,7 @@ describe('Angle Calculation Integration Test', () => {
         thumbLandmarks.MCP,
         thumbLandmarks.IP
       );
-      
+
       // 母指外転の正常範囲（0-60度）
       expect(thumbAbductionAngle).toBeGreaterThanOrEqual(0);
       expect(thumbAbductionAngle).toBeLessThanOrEqual(60);
@@ -100,7 +104,7 @@ describe('Angle Calculation Integration Test', () => {
         linearPoints.vertex,
         linearPoints.point2
       );
-      
+
       expect(angle).toBeCloseTo(180, 1); // 直線の場合は180度
     }).toThrow();
   });
@@ -110,7 +114,7 @@ describe('Angle Calculation Integration Test', () => {
     const knownAnglePoints = {
       point1: new Vector3D(1, 0, 0),
       vertex: new Vector3D(0, 0, 0),
-      point2: new Vector3D(Math.cos(Math.PI/4), Math.sin(Math.PI/4), 0), // 45度
+      point2: new Vector3D(Math.cos(Math.PI / 4), Math.sin(Math.PI / 4), 0), // 45度
     };
 
     expect(() => {
@@ -119,7 +123,7 @@ describe('Angle Calculation Integration Test', () => {
         knownAnglePoints.vertex,
         knownAnglePoints.point2
       );
-      
+
       // ±5度の精度要件
       expect(Math.abs(calculatedAngle - 45)).toBeLessThanOrEqual(5);
     }).toThrow();
@@ -132,15 +136,27 @@ describe('Angle Calculation Integration Test', () => {
       expectedAngle: number;
     }> = [
       {
-        points: [new Vector3D(1, 0, 0), new Vector3D(0, 0, 0), new Vector3D(0, 1, 0)],
+        points: [
+          new Vector3D(1, 0, 0),
+          new Vector3D(0, 0, 0),
+          new Vector3D(0, 1, 0),
+        ],
         expectedAngle: 90,
       },
       {
-        points: [new Vector3D(1, 0, 0), new Vector3D(0, 0, 0), new Vector3D(-1, 0, 0)],
+        points: [
+          new Vector3D(1, 0, 0),
+          new Vector3D(0, 0, 0),
+          new Vector3D(-1, 0, 0),
+        ],
         expectedAngle: 180,
       },
       {
-        points: [new Vector3D(1, 0, 0), new Vector3D(0, 0, 0), new Vector3D(1, 0, 0)],
+        points: [
+          new Vector3D(1, 0, 0),
+          new Vector3D(0, 0, 0),
+          new Vector3D(1, 0, 0),
+        ],
         expectedAngle: 0,
       },
     ];
@@ -149,7 +165,7 @@ describe('Angle Calculation Integration Test', () => {
       expect(() => {
         const [point1, vertex, point2] = testCase.points;
         const angle = calculateAngleBetweenThreePoints(point1, vertex, point2);
-        
+
         expect(angle).toBeCloseTo(testCase.expectedAngle, 1);
       }).toThrow(`Test case ${index} should fail before implementation`);
     });
@@ -169,7 +185,7 @@ describe('Angle Calculation Integration Test', () => {
         spatial3DPoints.vertex,
         spatial3DPoints.point2
       );
-      
+
       expect(angle).toBeCloseTo(90, 1); // 3D空間での直角
     }).toThrow();
   });
@@ -188,7 +204,7 @@ describe('Angle Calculation Integration Test', () => {
         invalidPoints.vertex,
         invalidPoints.point2
       );
-      
+
       expect(Number.isNaN(angle)).toBe(false); // NaN結果は期待しない
     }).toThrow();
   });

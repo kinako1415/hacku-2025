@@ -33,7 +33,8 @@ describe('MediaPipe Hands Detection Integration Test', () => {
     // このテストは実装前は失敗することを想定
     expect(async () => {
       await MediaPipeHands.initialize({
-        locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        locateFile: (file: string) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
         maxNumHands: 1,
         modelComplexity: 1,
         minDetectionConfidence: 0.5,
@@ -45,7 +46,7 @@ describe('MediaPipe Hands Detection Integration Test', () => {
   it('should detect hand landmarks from camera input', async () => {
     // モックカメラ入力データ
     const mockImageData = new ImageData(640, 480);
-    
+
     // 期待されるランドマーク構造
     const expectedLandmarks = {
       landmarks: [
@@ -93,7 +94,9 @@ describe('MediaPipe Hands Detection Integration Test', () => {
     expect(typeof angle).toBe('number');
     expect(angle).toBeGreaterThanOrEqual(0);
     expect(angle).toBeLessThanOrEqual(90); // 手首掌屈の正常範囲
-    expect(AngleCalculator.calculateWristFlexion).toHaveBeenCalledWith(mockLandmarks);
+    expect(AngleCalculator.calculateWristFlexion).toHaveBeenCalledWith(
+      mockLandmarks
+    );
   });
 
   it('should calculate thumb abduction angle from landmarks', () => {
@@ -111,13 +114,15 @@ describe('MediaPipe Hands Detection Integration Test', () => {
     expect(typeof angle).toBe('number');
     expect(angle).toBeGreaterThanOrEqual(0);
     expect(angle).toBeLessThanOrEqual(60); // 母指外転の正常範囲
-    expect(AngleCalculator.calculateThumbAbduction).toHaveBeenCalledWith(mockLandmarks);
+    expect(AngleCalculator.calculateThumbAbduction).toHaveBeenCalledWith(
+      mockLandmarks
+    );
   });
 
   it('should handle low-quality detection gracefully', async () => {
     // 低品質な検出結果のシミュレート
     const mockLowQualityInput = new ImageData(320, 240); // 低解像度
-    
+
     MediaPipeHands.detectHands.mockResolvedValue({
       landmarks: [],
       confidence: 0.3, // 低信頼度
@@ -139,7 +144,7 @@ describe('MediaPipe Hands Detection Integration Test', () => {
 
     // 精度スコア計算の検証（実装前は失敗想定）
     const expectedAccuracyScore = 0.85;
-    
+
     expect(mockDetectionResult.confidence).toBe(expectedAccuracyScore);
     expect(mockDetectionResult.confidence).toBeGreaterThanOrEqual(0);
     expect(mockDetectionResult.confidence).toBeLessThanOrEqual(1);
@@ -154,13 +159,13 @@ describe('MediaPipe Hands Detection Integration Test', () => {
     ];
 
     const results = [];
-    
+
     for (const frame of mockFrames) {
       MediaPipeHands.detectHands.mockResolvedValue({
         landmarks: Array(21).fill({ x: 0.5, y: 0.5, z: 0.0 }),
         confidence: 0.8,
       });
-      
+
       const result = await MediaPipeHands.detectHands(frame);
       results.push(result);
     }

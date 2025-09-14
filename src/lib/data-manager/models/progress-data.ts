@@ -3,8 +3,13 @@
  * 進捗トレンド分析データ
  */
 
-export type TrendDirection = "improving" | "stable" | "declining";
-export type AnalysisPeriod = "1_week" | "2_weeks" | "1_month" | "3_months" | "6_months";
+export type TrendDirection = 'improving' | 'stable' | 'declining';
+export type AnalysisPeriod =
+  | '1_week'
+  | '2_weeks'
+  | '1_month'
+  | '3_months'
+  | '6_months';
 
 export interface AngleTrend {
   currentValue: number; // 現在値
@@ -81,15 +86,15 @@ export interface CreateProgressDataInput {
  */
 export const getAnalysisPeriodDays = (period: AnalysisPeriod): number => {
   switch (period) {
-    case "1_week":
+    case '1_week':
       return 7;
-    case "2_weeks":
+    case '2_weeks':
       return 14;
-    case "1_month":
+    case '1_month':
       return 30;
-    case "3_months":
+    case '3_months':
       return 90;
-    case "6_months":
+    case '6_months':
       return 180;
     default:
       return 7;
@@ -108,20 +113,21 @@ export const calculateAngleTrend = (
       currentValue,
       changeAmount: 0,
       changePercentage: 0,
-      trend: "stable",
+      trend: 'stable',
     };
   }
 
   const changeAmount = currentValue - previousValue;
-  const changePercentage = previousValue !== 0 
-    ? Math.round((changeAmount / Math.abs(previousValue)) * 100 * 10) / 10
-    : 0;
+  const changePercentage =
+    previousValue !== 0
+      ? Math.round((changeAmount / Math.abs(previousValue)) * 100 * 10) / 10
+      : 0;
 
-  let trend: TrendDirection = "stable";
+  let trend: TrendDirection = 'stable';
   const threshold = 5; // 5%以上の変化で改善/悪化と判定
 
   if (Math.abs(changePercentage) >= threshold) {
-    trend = changeAmount > 0 ? "improving" : "declining";
+    trend = changeAmount > 0 ? 'improving' : 'declining';
   }
 
   return {
@@ -137,16 +143,16 @@ export const calculateAngleTrend = (
  * 総合トレンドの計算
  */
 export const calculateOverallTrend = (trends: AngleTrend[]): TrendDirection => {
-  const improvingCount = trends.filter(t => t.trend === "improving").length;
-  const decliningCount = trends.filter(t => t.trend === "declining").length;
-  const stableCount = trends.filter(t => t.trend === "stable").length;
+  const improvingCount = trends.filter((t) => t.trend === 'improving').length;
+  const decliningCount = trends.filter((t) => t.trend === 'declining').length;
+  const stableCount = trends.filter((t) => t.trend === 'stable').length;
 
   if (improvingCount > decliningCount + stableCount / 2) {
-    return "improving";
+    return 'improving';
   } else if (decliningCount > improvingCount + stableCount / 2) {
-    return "declining";
+    return 'declining';
   } else {
-    return "stable";
+    return 'stable';
   }
 };
 
@@ -155,10 +161,10 @@ export const calculateOverallTrend = (trends: AngleTrend[]): TrendDirection => {
  */
 export const calculateOverallImprovement = (trends: AngleTrend[]): number => {
   const totalChangePercentage = trends.reduce(
-    (sum, trend) => sum + trend.changePercentage, 
+    (sum, trend) => sum + trend.changePercentage,
     0
   );
-  
+
   return Math.round((totalChangePercentage / trends.length) * 10) / 10;
 };
 
@@ -172,20 +178,22 @@ export const calculateDataQuality = (
 ): number => {
   // 測定回数スコア（期間中最低3回は必要）
   const measurementScore = Math.min(measurementCount / 3, 1);
-  
+
   // 記録完成度スコア（期間の70%以上の記録が理想）
   const recordScore = Math.min(recordCount / (expectedPeriodDays * 0.7), 1);
-  
+
   // 総合スコア（測定40%、記録60%の重み）
   const qualityScore = measurementScore * 0.4 + recordScore * 0.6;
-  
+
   return Math.round(qualityScore * 100) / 100;
 };
 
 /**
  * 進捗データの検証ルール
  */
-export const validateProgressData = (data: CreateProgressDataInput): string[] => {
+export const validateProgressData = (
+  data: CreateProgressDataInput
+): string[] => {
   const errors: string[] = [];
 
   // userId必須
@@ -194,7 +202,13 @@ export const validateProgressData = (data: CreateProgressDataInput): string[] =>
   }
 
   // analysisPeriod妥当性
-  const validPeriods: AnalysisPeriod[] = ["1_week", "2_weeks", "1_month", "3_months", "6_months"];
+  const validPeriods: AnalysisPeriod[] = [
+    '1_week',
+    '2_weeks',
+    '1_month',
+    '3_months',
+    '6_months',
+  ];
   if (!validPeriods.includes(data.analysisPeriod)) {
     errors.push('分析期間が無効です');
   }
@@ -234,8 +248,14 @@ export const validateProgressData = (data: CreateProgressDataInput): string[] =>
 
   // activityProgress検証
   const activityRates = [
-    { value: data.activityProgress.rehabCompletionRate, name: 'リハビリ実施率' },
-    { value: data.activityProgress.measurementCompletionRate, name: '測定実施率' },
+    {
+      value: data.activityProgress.rehabCompletionRate,
+      name: 'リハビリ実施率',
+    },
+    {
+      value: data.activityProgress.measurementCompletionRate,
+      name: '測定実施率',
+    },
     { value: data.activityProgress.overallCompletionRate, name: '総合実施率' },
   ];
 
@@ -259,7 +279,9 @@ export const validateProgressData = (data: CreateProgressDataInput): string[] =>
 /**
  * 進捗データエンティティの作成
  */
-export const createProgressData = (input: CreateProgressDataInput): ProgressData => {
+export const createProgressData = (
+  input: CreateProgressDataInput
+): ProgressData => {
   const errors = validateProgressData(input);
   if (errors.length > 0) {
     throw new Error(`進捗データ作成エラー: ${errors.join(', ')}`);
@@ -283,9 +305,11 @@ export const createProgressData = (input: CreateProgressDataInput): ProgressData
  * 改善傾向の判定
  */
 export const isImprovementTrend = (progressData: ProgressData): boolean => {
-  const motionImproving = progressData.motionProgress.overallTrend === "improving";
-  const activityImproving = progressData.activityProgress.overallCompletionRate > 70;
-  
+  const motionImproving =
+    progressData.motionProgress.overallTrend === 'improving';
+  const activityImproving =
+    progressData.activityProgress.overallCompletionRate > 70;
+
   return motionImproving || activityImproving;
 };
 
@@ -293,9 +317,10 @@ export const isImprovementTrend = (progressData: ProgressData): boolean => {
  * 要注意状態の判定
  */
 export const needsAttention = (progressData: ProgressData): boolean => {
-  const motionDeclining = progressData.motionProgress.overallTrend === "declining";
+  const motionDeclining =
+    progressData.motionProgress.overallTrend === 'declining';
   const lowActivity = progressData.activityProgress.overallCompletionRate < 30;
   const poorDataQuality = progressData.dataQuality < 0.5;
-  
+
   return motionDeclining || lowActivity || poorDataQuality;
 };

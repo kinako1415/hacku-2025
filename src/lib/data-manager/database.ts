@@ -21,20 +21,23 @@ export class RehabDatabase extends Dexie {
 
   constructor() {
     super('RehabDatabase');
-    
+
     // データベーススキーマ定義
     this.version(1).stores({
       // ユーザーテーブル
       users: 'id, name, createdAt',
-      
+
       // 測定データテーブル
-      measurements: 'id, userId, measurementDate, handUsed, createdAt, [userId+measurementDate]',
-      
-      // カレンダー記録テーブル  
-      records: 'id, userId, recordDate, createdAt, updatedAt, [userId+recordDate]',
-      
+      measurements:
+        'id, userId, measurementDate, handUsed, createdAt, [userId+measurementDate]',
+
+      // カレンダー記録テーブル
+      records:
+        'id, userId, recordDate, createdAt, updatedAt, [userId+recordDate]',
+
       // 進捗データテーブル
-      progress: 'id, userId, analysisDate, analysisPeriod, createdAt, [userId+analysisPeriod]'
+      progress:
+        'id, userId, analysisDate, analysisPeriod, createdAt, [userId+analysisPeriod]',
     });
 
     // スキーマアップグレード時のマイグレーション
@@ -113,10 +116,12 @@ export const resetDatabase = async (): Promise<void> => {
   try {
     await db.delete();
     console.log('RehabDatabase: データベースがリセットされました');
-    
+
     // 新しいインスタンスを作成
     await db.open();
-    console.log('RehabDatabase: 新しいデータベースインスタンスが作成されました');
+    console.log(
+      'RehabDatabase: 新しいデータベースインスタンスが作成されました'
+    );
   } catch (error) {
     console.error('RehabDatabase: リセットエラー:', error);
     throw error;
@@ -154,27 +159,31 @@ export const exportDatabase = async () => {
  */
 export const importDatabase = async (exportData: any): Promise<void> => {
   try {
-    await db.transaction('rw', [db.users, db.measurements, db.records, db.progress], async () => {
-      // 既存データをクリア
-      await db.users.clear();
-      await db.measurements.clear();
-      await db.records.clear();
-      await db.progress.clear();
+    await db.transaction(
+      'rw',
+      [db.users, db.measurements, db.records, db.progress],
+      async () => {
+        // 既存データをクリア
+        await db.users.clear();
+        await db.measurements.clear();
+        await db.records.clear();
+        await db.progress.clear();
 
-      // データをインポート
-      if (exportData.data.users) {
-        await db.users.bulkAdd(exportData.data.users);
+        // データをインポート
+        if (exportData.data.users) {
+          await db.users.bulkAdd(exportData.data.users);
+        }
+        if (exportData.data.measurements) {
+          await db.measurements.bulkAdd(exportData.data.measurements);
+        }
+        if (exportData.data.records) {
+          await db.records.bulkAdd(exportData.data.records);
+        }
+        if (exportData.data.progress) {
+          await db.progress.bulkAdd(exportData.data.progress);
+        }
       }
-      if (exportData.data.measurements) {
-        await db.measurements.bulkAdd(exportData.data.measurements);
-      }
-      if (exportData.data.records) {
-        await db.records.bulkAdd(exportData.data.records);
-      }
-      if (exportData.data.progress) {
-        await db.progress.bulkAdd(exportData.data.progress);
-      }
-    });
+    );
 
     console.log('RehabDatabase: データベースインポートが完了しました');
   } catch (error) {
@@ -188,12 +197,16 @@ export const importDatabase = async (exportData: any): Promise<void> => {
  */
 export const deleteUserData = async (userId: string): Promise<void> => {
   try {
-    await db.transaction('rw', [db.users, db.measurements, db.records, db.progress], async () => {
-      await db.users.where('id').equals(userId).delete();
-      await db.measurements.where('userId').equals(userId).delete();
-      await db.records.where('userId').equals(userId).delete();
-      await db.progress.where('userId').equals(userId).delete();
-    });
+    await db.transaction(
+      'rw',
+      [db.users, db.measurements, db.records, db.progress],
+      async () => {
+        await db.users.where('id').equals(userId).delete();
+        await db.measurements.where('userId').equals(userId).delete();
+        await db.records.where('userId').equals(userId).delete();
+        await db.progress.where('userId').equals(userId).delete();
+      }
+    );
 
     console.log(`RehabDatabase: ユーザー ${userId} のデータを削除しました`);
   } catch (error) {
@@ -212,9 +225,10 @@ export const getStorageUsage = async () => {
       return {
         quota: estimate.quota,
         usage: estimate.usage,
-        available: estimate.quota && estimate.usage 
-          ? estimate.quota - estimate.usage 
-          : undefined,
+        available:
+          estimate.quota && estimate.usage
+            ? estimate.quota - estimate.usage
+            : undefined,
       };
     }
     return null;

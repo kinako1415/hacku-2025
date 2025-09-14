@@ -31,12 +31,15 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData).toHaveProperty('id');
     expect(responseData).toHaveProperty('userId', validPayload.userId);
     expect(responseData).toHaveProperty('recordDate', validPayload.recordDate);
-    expect(responseData).toHaveProperty('measurementCompleted', validPayload.measurementCompleted);
+    expect(responseData).toHaveProperty(
+      'measurementCompleted',
+      validPayload.measurementCompleted
+    );
     expect(responseData).toHaveProperty('createdAt');
     expect(responseData).toHaveProperty('updatedAt');
   });
@@ -57,10 +60,12 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData.measurementCompleted).toBe(true);
-    expect(responseData.measurementId).toBe(payloadWithMeasurement.measurementId);
+    expect(responseData.measurementId).toBe(
+      payloadWithMeasurement.measurementId
+    );
   });
 
   it('should update existing record (upsert behavior)', async () => {
@@ -94,7 +99,7 @@ describe('POST /api/calendar Contract Test', () => {
 
     expect(updateResponse.status).toBe(201);
     const updateData = await updateResponse.json();
-    
+
     // 同じIDで更新されることを確認（upsert動作）
     expect(updateData.id).toBe(firstData.id);
     expect(updateData.physicalConditionNote).toBe('更新された体調メモ');
@@ -117,7 +122,7 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData).toHaveProperty('error');
     expect(errorData.error.toLowerCase()).toContain('userid');
@@ -155,7 +160,7 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData.error).toContain('length');
   });
@@ -193,7 +198,7 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(400);
-    
+
     const errorData = await response.json();
     expect(errorData.error).toContain('measurementId');
   });
@@ -214,7 +219,7 @@ describe('POST /api/calendar Contract Test', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const responseData = await response.json();
     expect(responseData.userId).toBe(minimalPayload.userId);
     expect(responseData.measurementCompleted).toBe(false);
