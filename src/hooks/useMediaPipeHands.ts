@@ -21,7 +21,8 @@ interface UseMediaPipeHandsReturn {
  * MediaPipe Hands設定
  */
 const MEDIAPIPE_CONFIG = {
-  locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+  locateFile: (file: string) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
   options: {
     maxNumHands: 1,
     modelComplexity: 1 as 0 | 1,
@@ -39,7 +40,7 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastResults, setLastResults] = useState<Results | null>(null);
-  
+
   // MediaPipeの初期化状態を追跡
   const initializationRef = useRef<boolean>(false);
 
@@ -72,9 +73,11 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
       initializationRef.current = true;
 
       return hands;
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'MediaPipe Handsの初期化に失敗しました';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'MediaPipe Handsの初期化に失敗しました';
       setError(errorMessage);
       console.error('MediaPipe Hands初期化エラー:', err);
       return null;
@@ -86,28 +89,31 @@ export function useMediaPipeHands(): UseMediaPipeHandsReturn {
   /**
    * 手の検出実行
    */
-  const detectHands = useCallback(async (videoElement: HTMLVideoElement): Promise<Results | null> => {
-    if (!handsDetector) {
-      setError('MediaPipe Handsが初期化されていません');
-      return null;
-    }
+  const detectHands = useCallback(
+    async (videoElement: HTMLVideoElement): Promise<Results | null> => {
+      if (!handsDetector) {
+        setError('MediaPipe Handsが初期化されていません');
+        return null;
+      }
 
-    if (!videoElement || videoElement.readyState < 2) {
-      setError('ビデオ要素が準備できていません');
-      return null;
-    }
+      if (!videoElement || videoElement.readyState < 2) {
+        setError('ビデオ要素が準備できていません');
+        return null;
+      }
 
-    try {
-      await handsDetector.send({ image: videoElement });
-      return lastResults;
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '手の検出に失敗しました';
-      setError(errorMessage);
-      console.error('手の検出エラー:', err);
-      return null;
-    }
-  }, [handsDetector, lastResults]);
+      try {
+        await handsDetector.send({ image: videoElement });
+        return lastResults;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : '手の検出に失敗しました';
+        setError(errorMessage);
+        console.error('手の検出エラー:', err);
+        return null;
+      }
+    },
+    [handsDetector, lastResults]
+  );
 
   /**
    * コンポーネントマウント時の初期化

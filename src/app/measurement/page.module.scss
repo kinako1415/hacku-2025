@@ -16,7 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  
+
   h1 {
     margin: 0;
     color: #2c3e50;
@@ -37,7 +37,7 @@
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  
+
   p {
     margin-top: 1rem;
     color: #666;
@@ -55,8 +55,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .errorContainer {
@@ -85,7 +89,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.3s ease;
-  
+
   &:hover {
     background: #a22;
   }
@@ -97,7 +101,7 @@
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
   padding: 2rem;
-  
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -126,7 +130,7 @@
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   height: fit-content;
-  
+
   h2 {
     margin: 0 0 1rem 0;
     color: #2c3e50;
@@ -147,8 +151,10 @@
   border: 1px solid #eee;
   border-radius: 8px;
   padding: 0.75rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -180,7 +186,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  
+
   span {
     background: #f8f9fa;
     padding: 0.25rem 0.5rem;
@@ -206,20 +212,20 @@
     gap: 0.5rem;
     text-align: center;
   }
-  
+
   .mainContent {
     padding: 1rem;
     gap: 1rem;
   }
-  
+
   .resultsSection {
     padding: 1rem;
   }
-  
+
   .angleData {
     flex-direction: column;
     gap: 0.5rem;
-    
+
     span {
       text-align: center;
     }
@@ -229,23 +235,23 @@
 @media (max-width: 480px) {
   .header {
     padding: 1rem;
-    
+
     h1 {
       font-size: 1.25rem;
     }
   }
-  
+
   .mainContent {
     padding: 0.75rem;
   }
-  
+
   .errorContainer {
     margin: 0.75rem;
     flex-direction: column;
     gap: 0.75rem;
     text-align: center;
   }
-  
+
   .measurementHeader {
     flex-direction: column;
     gap: 0.25rem;

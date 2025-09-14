@@ -10,12 +10,20 @@ import { useAtom } from 'jotai';
 import { CameraPreview } from '@/components/camera/CameraPreview';
 import { AngleOverlay } from '@/components/measurement/AngleOverlay';
 import { MeasurementControls } from '@/components/measurement/MeasurementControls';
-import { measurementStateAtom, currentUserAtom, type MeasurementState } from '@/stores/measurement-atoms';
+import {
+  measurementStateAtom,
+  currentUserAtom,
+  type MeasurementState,
+} from '@/stores/measurement-atoms';
 import { cameraStateAtom } from '@/stores/camera-atoms';
 import { useMeasurementService } from '@/hooks/useMeasurementService';
 import { useMediaPipeHands } from '@/hooks/useMediaPipeHands';
 import { createMotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
-import type { MotionMeasurement, HandType, CreateMotionMeasurementInput } from '@/lib/data-manager/models/motion-measurement';
+import type {
+  MotionMeasurement,
+  HandType,
+  CreateMotionMeasurementInput,
+} from '@/lib/data-manager/models/motion-measurement';
 import styles from './page.module.scss';
 
 /**
@@ -26,24 +34,25 @@ export default function MeasurementPage(): React.JSX.Element {
   const [measurementState, setMeasurementState] = useAtom(measurementStateAtom);
   const [cameraState, setCameraState] = useAtom(cameraStateAtom);
   const [currentUser] = useAtom(currentUserAtom);
-  
+
   // ローカル状態
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
   const [selectedHand, setSelectedHand] = useState<HandType>('right');
-  
+
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   // カスタムフック
-  const { saveMotionMeasurement, isLoading: isSaving } = useMeasurementService();
-  const { 
-    handsDetector, 
-    isLoaded: isMediaPipeLoaded, 
+  const { saveMotionMeasurement, isLoading: isSaving } =
+    useMeasurementService();
+  const {
+    handsDetector,
+    isLoaded: isMediaPipeLoaded,
     error: mediaPipeError,
-    detectHands
+    detectHands,
   } = useMediaPipeHands();
 
   /**
@@ -54,26 +63,27 @@ export default function MeasurementPage(): React.JSX.Element {
       try {
         setIsInitializing(true);
         setError(null);
-        
+
         // ユーザー存在確認
         if (!currentUser) {
-          setError('ユーザー情報が見つかりません。セットアップページから開始してください。');
+          setError(
+            'ユーザー情報が見つかりません。セットアップページから開始してください。'
+          );
           return;
         }
-        
+
         // カメラの初期化
         if (!cameraState.stream) {
           await initializeCamera();
         }
-        
+
         // MediaPipeの初期化を待機
         // useMediaPipeHandsフックが自動で初期化を行う
-        
       } catch (err) {
         console.error('測定ページ初期化エラー:', err);
         setError(
-          err instanceof Error 
-            ? err.message 
+          err instanceof Error
+            ? err.message
             : '測定ページの初期化に失敗しました'
         );
       } finally {
@@ -109,9 +119,9 @@ export default function MeasurementPage(): React.JSX.Element {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'カメラの初期化に失敗しました';
+      const errorMessage =
+        err instanceof Error ? err.message : 'カメラの初期化に失敗しました';
       setCameraState({
         ...cameraState,
         error: errorMessage,
@@ -126,7 +136,9 @@ export default function MeasurementPage(): React.JSX.Element {
    */
   const handleStartMeasurement = useCallback(async (): Promise<void> => {
     if (!currentUser || !cameraState.isReady || !isMediaPipeLoaded) {
-      setError('測定を開始する前に、カメラとMediaPipeが準備完了していることを確認してください');
+      setError(
+        '測定を開始する前に、カメラとMediaPipeが準備完了していることを確認してください'
+      );
       return;
     }
 
@@ -140,12 +152,17 @@ export default function MeasurementPage(): React.JSX.Element {
       });
 
       setError(null);
-      
     } catch (err) {
       console.error('測定開始エラー:', err);
       setError('測定の開始に失敗しました');
     }
-  }, [currentUser, cameraState.isReady, isMediaPipeLoaded, measurementState, setMeasurementState]);
+  }, [
+    currentUser,
+    cameraState.isReady,
+    isMediaPipeLoaded,
+    measurementState,
+    setMeasurementState,
+  ]);
 
   /**
    * 測定停止処理
@@ -164,8 +181,10 @@ export default function MeasurementPage(): React.JSX.Element {
         wristAngles: measurementState.currentAngles.wrist,
         thumbAngles: measurementState.currentAngles.thumb,
         accuracy: measurementState.accuracy,
-        duration: measurementState.startTime 
-          ? Math.round((Date.now() - measurementState.startTime.getTime()) / 1000)
+        duration: measurementState.startTime
+          ? Math.round(
+              (Date.now() - measurementState.startTime.getTime()) / 1000
+            )
           : 0,
       };
 
@@ -173,9 +192,9 @@ export default function MeasurementPage(): React.JSX.Element {
 
       // データベースに保存
       await saveMotionMeasurement(measurementData);
-      
+
       // 測定リストに追加
-      setMeasurements(prev => [measurementData, ...prev]);
+      setMeasurements((prev) => [measurementData, ...prev]);
 
       // 測定状態をリセット
       setMeasurementState({
@@ -187,12 +206,17 @@ export default function MeasurementPage(): React.JSX.Element {
       });
 
       setError(null);
-      
     } catch (err) {
       console.error('測定停止エラー:', err);
       setError('測定データの保存に失敗しました');
     }
-  }, [measurementState, currentUser, selectedHand, saveMotionMeasurement, setMeasurementState]);
+  }, [
+    measurementState,
+    currentUser,
+    selectedHand,
+    saveMotionMeasurement,
+    setMeasurementState,
+  ]);
 
   /**
    * 手の選択変更
@@ -225,8 +249,12 @@ export default function MeasurementPage(): React.JSX.Element {
       try {
         if (videoRef.current && videoRef.current.readyState >= 2) {
           const results = await detectHands(videoRef.current);
-          
-          if (results && results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+
+          if (
+            results &&
+            results.multiHandLandmarks &&
+            results.multiHandLandmarks.length > 0
+          ) {
             // 角度計算とオーバーレイ描画は AngleOverlay コンポーネントで処理
             // ここでは検出状態の更新のみ
             setMeasurementState((prev: MeasurementState) => ({
@@ -242,7 +270,12 @@ export default function MeasurementPage(): React.JSX.Element {
 
     const intervalId = setInterval(detectAndMeasure, 100); // 10FPS
     return () => clearInterval(intervalId);
-  }, [measurementState.isCapturing, handsDetector, detectHands, setMeasurementState]);
+  }, [
+    measurementState.isCapturing,
+    handsDetector,
+    detectHands,
+    setMeasurementState,
+  ]);
 
   // 読み込み中表示
   if (isInitializing) {
@@ -259,16 +292,14 @@ export default function MeasurementPage(): React.JSX.Element {
       <header className={styles.header}>
         <h1>手首・母指可動域測定</h1>
         <div className={styles.userInfo}>
-          {currentUser && (
-            <span>ユーザー: {currentUser.name}</span>
-          )}
+          {currentUser && <span>ユーザー: {currentUser.name}</span>}
         </div>
       </header>
 
       {error && (
         <div className={styles.errorContainer}>
           <p className={styles.errorMessage}>{error}</p>
-          <button 
+          <button
             onClick={handleResetError}
             className={styles.errorResetButton}
           >
@@ -286,7 +317,7 @@ export default function MeasurementPage(): React.JSX.Element {
               isReady={cameraState.isReady}
               error={cameraState.error}
             />
-            
+
             <AngleOverlay
               ref={canvasRef}
               videoElement={videoRef.current}
@@ -325,13 +356,17 @@ export default function MeasurementPage(): React.JSX.Element {
                       {measurement.handUsed === 'right' ? '右手' : '左手'}
                     </span>
                     <span className={styles.measurementTime}>
-                      {new Date(measurement.measurementDate).toLocaleTimeString()}
+                      {new Date(
+                        measurement.measurementDate
+                      ).toLocaleTimeString()}
                     </span>
                   </div>
                   <div className={styles.angleData}>
                     <span>手首: {measurement.wristExtension}°</span>
                     <span>母指: {measurement.thumbAbduction}°</span>
-                    <span>精度: {Math.round(measurement.accuracyScore * 100)}%</span>
+                    <span>
+                      精度: {Math.round(measurement.accuracyScore * 100)}%
+                    </span>
                   </div>
                 </div>
               ))}

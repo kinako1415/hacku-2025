@@ -84,7 +84,9 @@ export const cameraSettingsAtom = atom<CameraSettings>({
  */
 export const isCameraAvailableAtom = atom((get) => {
   const cameraState = get(cameraStateAtom);
-  return cameraState.stream !== null && cameraState.isReady && !cameraState.error;
+  return (
+    cameraState.stream !== null && cameraState.isReady && !cameraState.error
+  );
 });
 
 /**
@@ -126,7 +128,7 @@ export const initializeCameraAtom = atom(
   null,
   async (get, set, customConstraints?: MediaStreamConstraints) => {
     const currentState = get(cameraStateAtom);
-    
+
     set(cameraStateAtom, {
       ...currentState,
       isInitializing: true,
@@ -135,16 +137,18 @@ export const initializeCameraAtom = atom(
 
     try {
       // カメラ権限の確認
-      const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
-      
+      const permission = await navigator.permissions.query({
+        name: 'camera' as PermissionName,
+      });
+
       // MediaStreamの取得
       const constraints = customConstraints || currentState.constraints;
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+
       // ビデオトラックの設定を取得
       const videoTrack = stream.getVideoTracks()[0];
       const settings = videoTrack?.getSettings();
-      
+
       set(cameraStateAtom, {
         ...currentState,
         stream,
@@ -161,16 +165,16 @@ export const initializeCameraAtom = atom(
         set(cameraSettingsAtom, {
           width: settings.width,
           height: settings.height,
-          facingMode: settings.facingMode as 'user' | 'environment' || 'user',
+          facingMode: (settings.facingMode as 'user' | 'environment') || 'user',
           frameRate: settings.frameRate,
         });
       }
 
       return stream;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'カメラの初期化に失敗しました';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'カメラの初期化に失敗しました';
+
       set(cameraStateAtom, {
         ...currentState,
         stream: null,
@@ -187,50 +191,43 @@ export const initializeCameraAtom = atom(
 /**
  * カメラ停止用の書き込み可能アトム
  */
-export const stopCameraAtom = atom(
-  null,
-  (get, set) => {
-    const currentState = get(cameraStateAtom);
-    
-    if (currentState.stream) {
-      // すべてのトラックを停止
-      currentState.stream.getTracks().forEach(track => track.stop());
-    }
+export const stopCameraAtom = atom(null, (get, set) => {
+  const currentState = get(cameraStateAtom);
 
-    set(cameraStateAtom, {
-      ...currentState,
-      stream: null,
-      isReady: false,
-      error: null,
-    });
+  if (currentState.stream) {
+    // すべてのトラックを停止
+    currentState.stream.getTracks().forEach((track) => track.stop());
   }
-);
+
+  set(cameraStateAtom, {
+    ...currentState,
+    stream: null,
+    isReady: false,
+    error: null,
+  });
+});
 
 /**
  * カメラデバイス一覧取得用の書き込み可能アトム
  */
-export const getCameraDevicesAtom = atom(
-  null,
-  async (get, set) => {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices
-        .filter(device => device.kind === 'videoinput')
-        .map(device => ({
-          deviceId: device.deviceId,
-          label: device.label || `Camera ${device.deviceId.slice(0, 8)}`,
-          groupId: device.groupId,
-        }));
+export const getCameraDevicesAtom = atom(null, async (get, set) => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices
+      .filter((device) => device.kind === 'videoinput')
+      .map((device) => ({
+        deviceId: device.deviceId,
+        label: device.label || `Camera ${device.deviceId.slice(0, 8)}`,
+        groupId: device.groupId,
+      }));
 
-      set(availableCamerasAtom, videoDevices);
-      return videoDevices;
-
-    } catch (error) {
-      console.error('カメラデバイス一覧の取得に失敗:', error);
-      return [];
-    }
+    set(availableCamerasAtom, videoDevices);
+    return videoDevices;
+  } catch (error) {
+    console.error('カメラデバイス一覧の取得に失敗:', error);
+    return [];
   }
-);
+});
 
 /**
  * カメラデバイス切り替え用の書き込み可能アトム
@@ -243,7 +240,7 @@ export const switchCameraDeviceAtom = atom(
 
     // 現在のストリームを停止
     if (currentState.stream) {
-      currentState.stream.getTracks().forEach(track => track.stop());
+      currentState.stream.getTracks().forEach((track) => track.stop());
     }
 
     try {
@@ -269,10 +266,12 @@ export const switchCameraDeviceAtom = atom(
       });
 
       return stream;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'カメラデバイスの切り替えに失敗しました';
-      
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'カメラデバイスの切り替えに失敗しました';
+
       set(cameraStateAtom, {
         ...currentState,
         stream: null,
@@ -300,11 +299,11 @@ export const changeCameraResolutionAtom = atom(
 
     try {
       const videoTrack = currentState.stream.getVideoTracks()[0];
-      
+
       if (!videoTrack) {
         throw new Error('ビデオトラックが見つかりません');
       }
-      
+
       await videoTrack.applyConstraints({
         width: { ideal: width },
         height: { ideal: height },
@@ -316,7 +315,6 @@ export const changeCameraResolutionAtom = atom(
         width,
         height,
       });
-
     } catch (error) {
       console.error('解像度の変更に失敗:', error);
       throw error;
@@ -327,14 +325,11 @@ export const changeCameraResolutionAtom = atom(
 /**
  * カメラエラーリセット用の書き込み可能アトム
  */
-export const resetCameraErrorAtom = atom(
-  null,
-  (get, set) => {
-    const currentState = get(cameraStateAtom);
-    
-    set(cameraStateAtom, {
-      ...currentState,
-      error: null,
-    });
-  }
-);
+export const resetCameraErrorAtom = atom(null, (get, set) => {
+  const currentState = get(cameraStateAtom);
+
+  set(cameraStateAtom, {
+    ...currentState,
+    error: null,
+  });
+});

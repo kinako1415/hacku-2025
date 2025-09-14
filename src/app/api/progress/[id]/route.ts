@@ -5,13 +5,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/data-manager/database';
-import { 
-  createProgressData, 
+import {
+  createProgressData,
   validateProgressData,
   isImprovementTrend,
-  needsAttention
+  needsAttention,
 } from '@/lib/data-manager/models/progress-data';
-import type { CreateProgressDataInput, ProgressData } from '@/lib/data-manager/models/progress-data';
+import type {
+  CreateProgressDataInput,
+  ProgressData,
+} from '@/lib/data-manager/models/progress-data';
 
 /**
  * GET /api/progress/[id]
@@ -33,10 +36,13 @@ export async function GET(
     const progressData = await db.progress.get(progressId);
 
     if (!progressData) {
-      return NextResponse.json({
-        success: false,
-        error: '進捗データが見つかりません',
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: '進捗データが見つかりません',
+        },
+        { status: 404 }
+      );
     }
 
     // 詳細情報の追加
@@ -52,15 +58,17 @@ export async function GET(
       data: progressData,
       insights,
     });
-
   } catch (error) {
     console.error('Progress GET API エラー:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: '進捗データ取得に失敗しました',
-      details: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: '進捗データ取得に失敗しました',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -84,10 +92,13 @@ export async function PUT(
     // 既存進捗データを取得
     const existingProgress = await db.progress.get(progressId);
     if (!existingProgress) {
-      return NextResponse.json({
-        success: false,
-        error: '進捗データが見つかりません',
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: '進捗データが見つかりません',
+        },
+        { status: 404 }
+      );
     }
 
     // 更新データの構築
@@ -95,8 +106,10 @@ export async function PUT(
       userId: body.userId ?? existingProgress.userId,
       analysisPeriod: body.analysisPeriod ?? existingProgress.analysisPeriod,
       motionProgress: body.motionProgress ?? existingProgress.motionProgress,
-      activityProgress: body.activityProgress ?? existingProgress.activityProgress,
-      measurementCount: body.measurementCount ?? existingProgress.measurementCount,
+      activityProgress:
+        body.activityProgress ?? existingProgress.activityProgress,
+      measurementCount:
+        body.measurementCount ?? existingProgress.measurementCount,
       recordCount: body.recordCount ?? existingProgress.recordCount,
       dataQuality: body.dataQuality ?? existingProgress.dataQuality,
     };
@@ -104,31 +117,37 @@ export async function PUT(
     // バリデーション実行
     const validationErrors = validateProgressData(updateData);
     if (validationErrors.length > 0) {
-      return NextResponse.json({
-        success: false,
-        error: '進捗データが無効です',
-        validationErrors,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: '進捗データが無効です',
+          validationErrors,
+        },
+        { status: 400 }
+      );
     }
 
     // ユーザー存在確認（ユーザーIDが変更された場合）
     if (updateData.userId !== existingProgress.userId) {
       const user = await db.users.get(updateData.userId);
       if (!user) {
-        return NextResponse.json({
-          success: false,
-          error: '指定されたユーザーが見つかりません',
-        }, { status: 404 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: '指定されたユーザーが見つかりません',
+          },
+          { status: 404 }
+        );
       }
     }
 
     // 新しい進捗データを作成
     const updatedProgress = createProgressData(updateData);
-    
+
     // IDと作成日時を保持
     updatedProgress.id = progressId;
     updatedProgress.createdAt = existingProgress.createdAt;
-    
+
     // データベースに保存
     await db.progress.put(updatedProgress);
 
@@ -137,15 +156,17 @@ export async function PUT(
       data: updatedProgress,
       message: '進捗データが正常に更新されました',
     });
-
   } catch (error) {
     console.error('Progress PUT API エラー:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: '進捗データ更新に失敗しました',
-      details: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: '進捗データ更新に失敗しました',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -168,10 +189,13 @@ export async function DELETE(
     // 進捗データ存在確認
     const existingProgress = await db.progress.get(progressId);
     if (!existingProgress) {
-      return NextResponse.json({
-        success: false,
-        error: '進捗データが見つかりません',
-      }, { status: 404 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: '進捗データが見つかりません',
+        },
+        { status: 404 }
+      );
     }
 
     // 進捗データを削除
@@ -187,15 +211,17 @@ export async function DELETE(
         userId: existingProgress.userId,
       },
     });
-
   } catch (error) {
     console.error('Progress DELETE API エラー:', error);
-    
-    return NextResponse.json({
-      success: false,
-      error: '進捗データ削除に失敗しました',
-      details: error instanceof Error ? error.message : 'Unknown error',
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: '進捗データ削除に失敗しました',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -254,7 +280,8 @@ function generateDetailedRecommendations(progressData: ProgressData): Array<{
     recommendations.push({
       category: 'motion',
       priority: 'medium',
-      message: '現在の取り組みを継続し、追加的なエクササイズの検討をお勧めします',
+      message:
+        '現在の取り組みを継続し、追加的なエクササイズの検討をお勧めします',
     });
   } else {
     recommendations.push({
