@@ -35,6 +35,7 @@ const fetchMeasurements = async (
       .reverse()
       .toArray();
 
+    console.log('進捗ページ: 取得した測定データ:', measurements);
     return measurements;
   } catch (error) {
     console.error('測定データの取得に失敗:', error);

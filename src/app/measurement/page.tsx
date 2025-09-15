@@ -16,7 +16,12 @@ import {
   calculateThumbAngles,
 } from '@/lib/motion-capture/angle-calculator';
 import type { AngleData } from '@/stores/measurement-atoms';
-import type { HandType } from '@/lib/data-manager/models/motion-measurement';
+import type {
+  HandType,
+  CreateMeasurementInput,
+} from '@/lib/data-manager/models/motion-measurement';
+import { createMeasurement } from '@/lib/data-manager/models/motion-measurement';
+import { db, initializeDatabase } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
@@ -798,31 +803,48 @@ const MeasurementPage: React.FC = () => {
   /**
    * 測定結果の保存
    */
-  const handleSaveMeasurement = useCallback(() => {
+  const handleSaveMeasurement = useCallback(async () => {
     if (!measurementState.currentAngles) {
       alert('測定データがありません');
       return;
     }
 
-    const result: MeasurementResult = {
-      id: `measurement-${Date.now()}`,
-      handUsed: selectedHand,
-      wristExtension: measurementState.currentAngles.wrist.extension,
-      wristFlexion: measurementState.currentAngles.wrist.flexion,
-      thumbAbduction: measurementState.currentAngles.thumb.abduction,
-      accuracyScore: measurementState.accuracy,
-      measurementDate: new Date(),
-    };
+    try {
+      // データベースに保存するための測定データを準備
+      const measurementInput: CreateMeasurementInput = {
+        userId: 'default-user', // 実際の実装ではログインユーザーIDを使用
+        measurementDate: new Date(),
+        handUsed: selectedHand,
+        wristFlexion: measurementState.currentAngles.wrist.flexion,
+        wristExtension: measurementState.currentAngles.wrist.extension,
+        wristUlnarDeviation:
+          measurementState.currentAngles.wrist.ulnarDeviation || 0,
+        wristRadialDeviation:
+          measurementState.currentAngles.wrist.radialDeviation || 0,
+        thumbFlexion: measurementState.currentAngles.thumb.flexion || 0,
+        thumbExtension: measurementState.currentAngles.thumb.extension || 0,
+        thumbAdduction: measurementState.currentAngles.thumb.adduction || 0,
+        thumbAbduction: measurementState.currentAngles.thumb.abduction,
+        accuracyScore: measurementState.accuracy / 100, // パーセントから0-1の範囲に変換
+      };
 
-    // ローカルストレージに保存
-    const savedResults = JSON.parse(
-      localStorage.getItem('measurementResults') || '[]'
-    );
-    savedResults.push(result);
-    localStorage.setItem('measurementResults', JSON.stringify(savedResults));
+      // データベースに測定結果を保存
+      const measurementData = createMeasurement(measurementInput);
+      await db.measurements.add(measurementData);
 
-    alert('測定結果を保存しました');
-    router.push('/progress');
+      // 保存後の確認
+      const allMeasurements = await db.measurements.toArray();
+      console.log('測定結果が保存されました:', measurementData);
+      console.log('全測定データ:', allMeasurements);
+
+      alert(`測定結果を保存しました (ID: ${measurementData.id})`);
+
+      // 進捗ページに移動
+      router.push('/progress');
+    } catch (error) {
+      console.error('測定結果の保存に失敗:', error);
+      alert('測定結果の保存に失敗しました。もう一度お試しください。');
+    }
   }, [measurementState, selectedHand, router]);
 
   /**
@@ -843,8 +865,19 @@ const MeasurementPage: React.FC = () => {
    * 初期化処理
    */
   useEffect(() => {
-    initializeCamera();
-    initializeMediaPipe();
+    const initialize = async () => {
+      try {
+        await initializeDatabase();
+        console.log('データベースが初期化されました');
+      } catch (error) {
+        console.error('データベース初期化エラー:', error);
+      }
+
+      initializeCamera();
+      initializeMediaPipe();
+    };
+
+    initialize();
 
     return () => {
       // クリーンアップ

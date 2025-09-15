@@ -17,17 +17,22 @@
       "static/css/app/calendar/page.css",
       "static/chunks/app/calendar/page.js"
     ],
-    "/setup/page": [
+    "/measurement/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/setup/page.css",
-      "static/chunks/app/setup/page.js"
+      "static/css/app/measurement/page.css",
+      "static/chunks/app/measurement/page.js"
     ],
     "/progress/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/progress/page.css",
       "static/chunks/app/progress/page.js"
+    ],
+    "/debug/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/debug/page.js"
     ]
   }
 }
