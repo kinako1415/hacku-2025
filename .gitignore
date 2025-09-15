@@ -154,10 +154,10 @@ temp/
 *.sln
 *.sw?
 
-# Package managers
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# Package managers (uncomment if you want to ignore lock files)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # Testing
 test-results/
