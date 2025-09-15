@@ -1,1 +1,6 @@
-{}
+{
+  "/setup/page": "app/setup/page.js",
+  "/progress/page": "app/progress/page.js",
+  "/page": "app/page.js",
+  "/calendar/page": "app/calendar/page.js"
+}
