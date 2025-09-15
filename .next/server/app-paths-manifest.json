@@ -1,7 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/debug/page": "app/debug/page.js",
-  "/progress/page": "app/progress/page.js",
-  "/calendar/page": "app/calendar/page.js",
-  "/measurement/page": "app/measurement/page.js"
-}
