@@ -290,27 +290,25 @@ const ProgressPage: React.FC = () => {
 
   return (
     <div className={styles.progressPage}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>
-            <span className={styles.titleIcon}>📊</span>
-            進捗レポート
-          </h1>
-          <div className={styles.periodSelector}>
-            {Object.entries(periodLabels).map(([period, label]) => (
-              <button
-                key={period}
-                className={`${styles.periodButton} ${
-                  selectedPeriod === period ? styles.active : ''
-                }`}
-                onClick={() => setSelectedPeriod(period as PeriodType)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.title}>
+          <span className={styles.titleIcon}>📊</span>
+          進捗レポート
+        </h1>
+        <div className={styles.periodSelector}>
+          {Object.entries(periodLabels).map(([period, label]) => (
+            <button
+              key={period}
+              className={`${styles.periodButton} ${
+                selectedPeriod === period ? styles.active : ''
+              }`}
+              onClick={() => setSelectedPeriod(period as PeriodType)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      </header>
+      </div>
 
       <main className={styles.mainContent}>
         <div className={styles.statsGrid}>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.scss';
 import '../styles/variables.css';
+import Header from '@/components/common/Header';
 
 export const metadata: Metadata = {
   title: 'AI駆動手首・母指可動域リハビリテーションアプリ',
@@ -14,7 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <Header />
+        <main className="main-content">{children}</main>
+      </body>
     </html>
   );
 }

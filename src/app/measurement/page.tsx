@@ -889,11 +889,11 @@ const MeasurementPage: React.FC = () => {
 
   return (
     <div className={styles.measurementPage}>
-      <div className={styles.header}>
-        <Link href="/" className={styles.backButton}>
-          ← 戻る
-        </Link>
-        <h1 className={styles.title}>可動域測定</h1>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.title}>
+          <span className={styles.titleIcon}>📏</span>
+          可動域測定
+        </h1>
       </div>
 
       <div className={styles.content}>

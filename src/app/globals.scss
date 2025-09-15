@@ -529,3 +529,16 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* メインコンテンツ レイアウト */
+.main-content {
+  min-height: calc(100vh - 64px); /* ヘッダーの高さを考慮 */
+  padding-top: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    min-height: calc(100vh - 56px); /* モバイル時のヘッダー高さ */
+    padding-top: var(--space-sm);
+  }
+}

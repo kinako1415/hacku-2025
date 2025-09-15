@@ -275,22 +275,17 @@ export default function CalendarPage(): React.JSX.Element {
 
   return (
     <div className={styles.calendarPage}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>
-            <span className={styles.titleIcon}>📅</span>
-            リハビリカレンダー
-          </h1>
-          <div className={styles.headerActions}>
-            <Link href="/measurement" className={styles.measurementButton}>
-              今日の測定
-            </Link>
-            <Link href="/progress" className={styles.progressButton}>
-              進捗確認
-            </Link>
-          </div>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.title}>
+          <span className={styles.titleIcon}>📅</span>
+          リハビリカレンダー
+        </h1>
+        <div className={styles.headerActions}>
+          <Link href="/measurement" className={styles.measurementButton}>
+            今日の測定
+          </Link>
         </div>
-      </header>
+      </div>
 
       {error && (
         <div className={styles.errorContainer}>

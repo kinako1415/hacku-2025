@@ -1,0 +1,218 @@
+/**
+ * ホームページのスタイル
+ */
+
+.homePage {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+}
+
+/* ヒーローセクション */
+.heroSection {
+  text-align: center;
+  padding: 60px 0;
+  color: white;
+}
+
+.heroTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+    gap: 8px;
+  }
+}
+
+.titleIcon {
+  font-size: 3.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroDescription {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
+}
+
+/* 機能カードグリッド */
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+}
+
+.featureCard {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+  }
+}
+
+.cardIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a365d;
+  margin: 0 0 12px 0;
+}
+
+.cardDescription {
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 情報セクション */
+.infoSection {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  color: white;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+}
+
+.infoTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 32px 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    gap: 24px;
+  }
+}
+
+.step {
+  text-align: center;
+}
+
+.stepNumber {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 auto 16px auto;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.step h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.step p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 480px) {
+  .homePage {
+    padding: 0 16px;
+  }
+
+  .heroSection {
+    padding: 40px 0;
+  }
+
+  .featuresGrid {
+    gap: 12px;
+  }
+
+  .featureCard {
+    padding: 20px 16px;
+  }
+
+  .infoSection {
+    padding: 20px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
