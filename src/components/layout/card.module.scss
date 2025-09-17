@@ -4,8 +4,6 @@
   padding-inline: 26px;
   color: #fff;
   position: relative;
-  width: 350px;
-  height: 180px;
   transition: box-shadow 0.2s;
   display: flex;
   flex-direction: column;
@@ -22,6 +20,12 @@
   font-size: 16px;
   color: #b3c6ff;
   white-space: pre-line;
+}
+
+.cardRole {
+  font-size: 32px;
+  color: #fff;
+  font-weight: bold;
 }
 
 .cardArrow {

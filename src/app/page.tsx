@@ -11,6 +11,7 @@ export default function Home() {
           <Card
             title="測定"
             description={'AIカメラで手首と\n母指の可動域を正確に測定'}
+            width={340}
           />
         </Link>
         <Link href="/progress">
@@ -18,6 +19,7 @@ export default function Home() {
             title="進捗確認"
             description={'測定データの推移と\n詳細な統計情報を表示'}
             isBlue={false}
+            width={340}
           />
         </Link>
         <Link href="/calendar">
@@ -25,6 +27,7 @@ export default function Home() {
             title="記録管理"
             description={'日々のリハビリ記録を\nカレンダーで管理'}
             isBlue={false}
+            width={340}
           />
         </Link>
       </div>

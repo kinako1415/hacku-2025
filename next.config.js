@@ -6,6 +6,9 @@ const nextConfig = {
   sassOptions: {
     includePaths: ['./src'],
   },
+  images: {
+    domains: ['api.iconify.design'],
+  },
   webpack: (config) => {
     // MediaPipe用の設定
     config.resolve.fallback = {
