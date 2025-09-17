@@ -1,41 +1,12 @@
 'use client';
 
 import style from './Calendar.module.scss';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect } from 'react';
 import Image from 'next/image';
 import { useCalendar } from './useCalendar';
 import dayjs from 'dayjs';
 
-// 仮　型定義とデータ
-interface User {
-  id: string;
-  name: string;
-  avatar?: string;
-}
-
-interface ChatRoom {
-  id: string;
-  name: string;
-}
-
-interface YohakuParticipant extends User {
-  joinedAt: Date;
-}
-
-interface Yohaku {
-  yohakuId: string;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  author: User;
-  participants: YohakuParticipant[];
-  chatRoom: ChatRoom;
-  place: string;
-  createdAt: Date;
-}
-
 type CalendarProps = {
-  yohakus?: Yohaku[];
   selectedDate?: string;
   onDateChange?: (date: string) => void;
 };
@@ -48,16 +19,12 @@ export const Calendar: FC<CalendarProps> = ({
     selectedMonth,
     selectedDate: internalSelectedDate,
     calenderData,
-    selectedWeekList,
     handlePrevMonth,
     handleNextMonth,
     handleSelectDate: internalHandleSelectedDate,
   } = useCalendar(
     externalSelectedDate ? { initialDate: dayjs(externalSelectedDate) } : {}
   );
-
-  // 現在の月かどうかを判定
-  const isCurrentMonth = internalSelectedDate.isSame(dayjs(), 'month');
 
   useEffect(() => {
     if (
@@ -68,52 +35,84 @@ export const Calendar: FC<CalendarProps> = ({
     }
   }, [externalSelectedDate, internalSelectedDate, internalHandleSelectedDate]);
 
+  // 日付選択
   const handleSelectDate = (date: dayjs.Dayjs) => {
     internalHandleSelectedDate(date);
     if (onDateChange) {
-      const formattedDate = date.format('YYYY-MM-DD');
-      onDateChange(formattedDate);
+      onDateChange(date.format('YYYY-MM-DD'));
     }
-  };
-
-  // 前月移動
-  const internalHandlePrevMonth = () => {
-    handlePrevMonth();
-
-    // 前月移動後の新しい日付を外部に通知
-    setTimeout(() => {
-      if (onDateChange) {
-        const newMonth = selectedMonth.subtract(1, 'month');
-        const currentDay = internalSelectedDate.date();
-        const lastDayOfPrevMonth = newMonth.daysInMonth();
-        const targetDay = Math.min(currentDay, lastDayOfPrevMonth);
-        const newDate = newMonth.date(targetDay);
-
-        onDateChange(newDate.format('YYYY-MM-DD'));
-      }
-    }, 0);
-  };
-
-  // 次月移動
-  const internalHandleNextMonth = () => {
-    handleNextMonth();
-
-    // 次月移動後の新しい日付を外部に通知
-    setTimeout(() => {
-      if (onDateChange) {
-        const newMonth = selectedMonth.add(1, 'month');
-        const currentDay = internalSelectedDate.date();
-        const lastDayOfNextMonth = newMonth.daysInMonth();
-        const targetDay = Math.min(currentDay, lastDayOfNextMonth);
-        const newDate = newMonth.date(targetDay);
-
-        onDateChange(newDate.format('YYYY-MM-DD'));
-      }
-    }, 0);
   };
 
   const weekView = false;
   const now = dayjs();
+
+  // 仮のデータ：測定した日付のリスト
+  const sokuteibi = [
+    new Date('2025-09-08'), // 2025年9月8日に測定済み
+    new Date('2025-09-11'), // 2025年9月8日に測定済み
+    new Date('2025-09-15'), // 2025年9月15日に測定済み
+    new Date('2025-09-16'), // 2025年9月16日に測定済み
+  ];
+
+  // 測定済みの日付をチェックする関数
+  const isMeasuredDate = (date: dayjs.Dayjs) => {
+    return sokuteibi.some((measuredDate) =>
+      date.isSame(dayjs(measuredDate), 'day')
+    );
+  };
+
+  // 日付セルのクラス名を生成
+  const getDateCellClasses = (date: dayjs.Dayjs) => {
+    const classes = [style.day];
+
+    if (date.isSame(now, 'day')) {
+      classes.push(style.today);
+    }
+
+    if (date.month() !== selectedMonth.month()) {
+      classes.push(style.outside);
+    }
+
+    // 測定済みの日付にmeasuredクラスを追加
+    if (isMeasuredDate(date)) {
+      classes.push(style.measured);
+    }
+
+    return classes.join(' ');
+  };
+
+  // 曜日ヘッダーのクラス名を生成
+  const getWeekdayClasses = (index: number) => {
+    const classes = [style.headerTh];
+
+    if (index === 0) classes.push(style.sundayHeader);
+    if (index === 6) classes.push(style.saturdayHeader);
+
+    return classes.join(' ');
+  };
+
+  // 日付セルをレンダリング
+  const renderDateCell = (date: dayjs.Dayjs, index: number) => (
+    <td key={index} className={style.mainTh}>
+      <button
+        type="button"
+        onClick={() => handleSelectDate(date)}
+        className={getDateCellClasses(date)}
+      >
+        {date.date()}
+      </button>
+    </td>
+  );
+
+  // 月表示をレンダリング
+  const renderMonthView = () =>
+    calenderData.map((calendar, weekIndex) => (
+      <tr key={weekIndex} className={style.mainCols}>
+        {calendar.map(renderDateCell)}
+      </tr>
+    ));
+
+  const weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
 
   return (
     <div className={style.content}>
@@ -122,14 +121,14 @@ export const Calendar: FC<CalendarProps> = ({
           <button
             type="button"
             className={style.navButton}
-            onClick={internalHandlePrevMonth}
+            onClick={handlePrevMonth}
           >
             <Image src="/left.svg" alt="前の月" width={20} height={20} />
           </button>
           <button
             type="button"
             className={style.navButton}
-            onClick={internalHandleNextMonth}
+            onClick={handleNextMonth}
           >
             <Image src="/right.svg" alt="次の月" width={20} height={20} />
           </button>
@@ -147,67 +146,18 @@ export const Calendar: FC<CalendarProps> = ({
           </span>
         </div>
       </div>
+
       <table className={style.table}>
         <thead>
           <tr className={style.headerCols}>
-            {['日', '月', '火', '水', '木', '金', '土'].map((day, index) => (
-              <th
-                key={index}
-                className={`
-								${style.headerTh}
-								${index === 0 ? style.sundayHeader : ''}
-								${index === 6 ? style.saturdayHeader : ''}
-								`}
-              >
+            {weekdayLabels.map((day, index) => (
+              <th key={index} className={getWeekdayClasses(index)}>
                 {day}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody>
-          {weekView ? (
-            <tr className={style.mainCols}>
-              {selectedWeekList.map((date, index) => (
-                <td key={index} className={style.mainTh}>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectDate(date)}
-                    className={`
-											${style.day} 
-											${date.isSame(internalSelectedDate, 'day') ? style.selectedDay : ''}
-                      ${date.isSame(now, 'day') ? style.selectedToDay : ''}
-											${date.month() !== selectedMonth.month() ? style.outside : ''}
-                      `}
-                  >
-                    {date.date()}
-                  </button>
-                </td>
-              ))}
-            </tr>
-          ) : (
-            calenderData.map((calendar, index) => (
-              <tr key={index} className={style.mainCols}>
-                {calendar.map((date, index) => (
-                  <td key={index} className={style.mainTh}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectDate(date)}
-                      className={`
-                        ${style.day} 
-                        ${date.isSame(internalSelectedDate, 'day') ? style.selectedDay : ''}
-                        ${date.isSame(now, 'day') ? style.selectedToDay : ''}
-                        ${date.month() !== selectedMonth.month() ? style.outside : ''}
-                        ${date.isSame(now, 'day') ? style.measured : ''}
-                    `}
-                    >
-                      {date.date()}
-                    </button>
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
+        <tbody>{renderMonthView()}</tbody>
       </table>
     </div>
   );

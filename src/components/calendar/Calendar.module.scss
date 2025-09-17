@@ -1,9 +1,11 @@
 .content {
-  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 682px;
+  padding: 32px 16px 16px 16px;
+  background-color: #fff;
+  border-radius: 16px;
+  max-height: 682px;
 }
 
 .header {
@@ -15,7 +17,6 @@
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 0px;
 }
 
 .Emoji {
@@ -51,51 +52,13 @@
   border-radius: 50%;
   transition: background-color 0.2s ease;
   color: var(--primary-600);
-
-  &:hover {
-    background-color: var(--primary-50);
-    color: var(--primary-700);
-  }
-
-  &:active {
-    background-color: var(--primary-100);
-  }
-
-  img {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-.NextMonthButton {
-  display: flex;
-}
-
-.month {
-  text-align: center;
-  font-weight: bold;
-  font-size: 24px;
-  color: black;
-}
-
-.table {
-  padding: 20px;
-  text-align: center;
-
-  border-radius: 16px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
-  max-width: 500px;
-  background: white;
 }
 
 .headerTh {
-  padding: 8px;
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  color: black;
+  color: #494949;
 }
 
 .headerCols {
@@ -110,122 +73,60 @@
   color: #3b82f6;
 }
 
-.mainTh {
-  padding: 8px;
-}
-
 .day {
   font-size: 16px;
   color: black;
   font-weight: 500;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
+  width: 100px;
+  height: 100px;
+  padding: 24px 0 0 0;
   border: none;
   background: transparent;
-  border-radius: 12px;
+  border-radius: 32px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   justify-content: center;
-  flex-direction: column;
 
   &.outside {
-    color: #d1d5db !important;
-    background: #f8fafc;
+    color: #808080 !important;
+    background: #f4f4f4;
   }
 
   &.measured {
-    background: #3b82f6;
+    background: #0542fc;
     color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 20px;
+
+    &::after {
+      content: '測定済';
+      position: absolute;
+      bottom: 17px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+  }
+
+  &.today {
+    color: white;
+    font-weight: bold;
+    background-color: #0542fc;
     border-radius: 12px;
-
-    &::after {
-      content: '測定済';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: white;
-    }
-  }
-
-  &.unmeasured {
-    background: #f8fafc;
-    color: var(--gray-900);
-    border: 1px solid #e5e7eb;
-
-    &::after {
-      content: '未測定';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #6b7280;
-    }
-  }
-
-  &.selectedDay {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-
-    &::after {
-      content: '測定済';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: white;
-    }
-  }
-
-  &.selectedToDay {
-    background-color: #3b82f6;
-    border-radius: 12px;
-    color: white;
-    border: none;
-
-    &::after {
-      content: '測定済';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: white;
-    }
-  }
-
-  &.todayUnmeasured {
-    background-color: white;
-    border-radius: 50%;
-    color: #3b82f6;
-    border: 3px solid #3b82f6;
-
-    &::after {
-      content: '未測定';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #3b82f6;
-    }
-  }
-
-  &.scheduledMeasurement {
-    background: #e0f2fe;
-    color: #3b82f6;
-    border: 1px solid #3b82f6;
-
-    &::after {
-      content: '測定予定';
-      position: absolute;
-      bottom: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #3b82f6;
-    }
+    width: 32px;
+    height: 32px;
+    margin-top: -25px;
+    margin-left: auto;
+    margin-right: 32.5px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

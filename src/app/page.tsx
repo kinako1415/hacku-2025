@@ -12,6 +12,7 @@ export default function Home() {
             title="測定"
             description={'AIカメラで手首と\n母指の可動域を正確に測定'}
             width={340}
+            isBlue={true}
           />
         </Link>
         <Link href="/progress">
