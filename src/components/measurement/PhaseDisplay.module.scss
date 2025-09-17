@@ -1,0 +1,276 @@
+/* PhaseDisplay Component Styles */
+.phaseDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* フェーズプログレス */
+.phaseProgress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* 現在のフェーズ */
+.currentPhase {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.phaseNumber {
+  font-size: 1rem;
+  color: #3b82f6;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.phaseName {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    font-size: 3rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2.5rem;
+  }
+}
+
+.angleDisplay {
+  margin-top: 16px;
+}
+
+.currentAngleValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+/* 角度情報 */
+.angleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.angleRange {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.angleProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.angleBar {
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.angleFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+
+  &.valid {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  }
+
+  &.invalid {
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+  }
+}
+
+.rangeMarkers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.minMarker,
+.maxMarker {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 指示・説明 */
+.instructions {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #374151;
+  font-weight: 500;
+  margin: 0;
+}
+
+.instruction {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* アクションボタン */
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.nextButton,
+.completeButton {
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+.nextButton {
+  &.enabled {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &.disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+}
+
+.completeButton {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* ステータス */
+.status {
+  display: flex;
+  justify-content: center;
+}
+
+.statusIndicator {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+
+  &.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  &.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .phaseDisplay {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .currentPhase {
+    padding: 16px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .phaseDisplay {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .nextButton,
+  .completeButton {
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    min-width: 120px;
+  }
+}

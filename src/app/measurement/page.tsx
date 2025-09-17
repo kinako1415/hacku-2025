@@ -22,7 +22,25 @@ import type {
 } from '@/lib/data-manager/models/motion-measurement';
 import { createMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import { db, initializeDatabase } from '@/lib/data-manager/database';
+import PhaseDisplay from '@/components/measurement/PhaseDisplay';
 import styles from './page.module.scss';
+
+/**
+ * 測定フェーズの型定義
+ */
+type MeasurementPhase = 'flexion' | 'extension' | 'ulnarDeviation' | 'radialDeviation';
+
+/**
+ * フェーズ情報の型定義
+ */
+interface PhaseInfo {
+  id: MeasurementPhase;
+  name: string;
+  description: string;
+  targetAngle: keyof AngleData['wrist'];
+  normalRange: { min: number; max: number };
+  instruction: string;
+}
 
 /**
  * 測定データの型定義
@@ -46,6 +64,9 @@ interface MeasurementState {
   accuracy: number;
   handDetected: boolean;
   lastUpdateTime: number;
+  currentPhase: MeasurementPhase;
+  phaseResults: Record<MeasurementPhase, number>;
+  isPhaseComplete: boolean;
 }
 
 /**
@@ -601,6 +622,42 @@ const MeasurementPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // フェーズ定義
+  const MEASUREMENT_PHASES: PhaseInfo[] = [
+    {
+      id: 'flexion',
+      name: '掌屈',
+      description: '手のひらを下に向けて曲げてください',
+      targetAngle: 'flexion',
+      normalRange: { min: 0, max: 90 },
+      instruction: '手首を手のひら側に最大まで曲げてください（0-90°）',
+    },
+    {
+      id: 'extension',
+      name: '背屈',
+      description: '手の甲を上に向けて反らしてください',
+      targetAngle: 'extension',
+      normalRange: { min: 0, max: 70 },
+      instruction: '手首を手の甲側に最大まで反らしてください（0-70°）',
+    },
+    {
+      id: 'ulnarDeviation',
+      name: '尺屈',
+      description: '小指側に手首を曲げてください',
+      targetAngle: 'ulnarDeviation',
+      normalRange: { min: 0, max: 55 },
+      instruction: '手首を小指側に最大まで曲げてください（0-55°）',
+    },
+    {
+      id: 'radialDeviation',
+      name: '橈屈',
+      description: '親指側に手首を曲げてください',
+      targetAngle: 'radialDeviation',
+      normalRange: { min: 0, max: 25 },
+      instruction: '手首を親指側に最大まで曲げてください（0-25°）',
+    },
+  ];
+
   // 状態管理
   const [selectedHand, setSelectedHand] = useState<HandType>('right');
   const [measurementState, setMeasurementState] = useState<MeasurementState>({
@@ -609,6 +666,14 @@ const MeasurementPage: React.FC = () => {
     accuracy: 0,
     handDetected: false,
     lastUpdateTime: Date.now(),
+    currentPhase: 'flexion',
+    phaseResults: {
+      flexion: 0,
+      extension: 0,
+      ulnarDeviation: 0,
+      radialDeviation: 0,
+    },
+    isPhaseComplete: false,
   });
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
@@ -858,8 +923,78 @@ const MeasurementPage: React.FC = () => {
       currentAngles: null,
       accuracy: 0,
       handDetected: false,
+      currentPhase: 'flexion',
+      phaseResults: {
+        flexion: 0,
+        extension: 0,
+        ulnarDeviation: 0,
+        radialDeviation: 0,
+      },
+      isPhaseComplete: false,
     }));
   }, [resetAccuracyHistory]);
+
+  /**
+   * 次のフェーズに進む
+   */
+  const handleNextPhase = useCallback(() => {
+    const currentPhaseIndex = MEASUREMENT_PHASES.findIndex(
+      (phase) => phase.id === measurementState.currentPhase
+    );
+    
+    if (currentPhaseIndex < MEASUREMENT_PHASES.length - 1) {
+      const nextPhase = MEASUREMENT_PHASES[currentPhaseIndex + 1];
+      if (nextPhase) {
+        setMeasurementState((prev) => ({
+          ...prev,
+          currentPhase: nextPhase.id,
+          isPhaseComplete: false,
+        }));
+      }
+    }
+  }, [measurementState.currentPhase, MEASUREMENT_PHASES]);
+
+  /**
+   * 測定完了処理
+   */
+  const handleCompleteMeasurement = useCallback(async () => {
+    await handleSaveMeasurement();
+  }, [handleSaveMeasurement]);
+
+  /**
+   * 現在の角度を取得（フェーズに応じて）
+   */
+  const getCurrentAngle = useCallback(() => {
+    if (!measurementState.currentAngles?.wrist) return 0;
+    
+    const currentPhase = MEASUREMENT_PHASES.find(
+      (phase) => phase.id === measurementState.currentPhase
+    );
+    
+    if (!currentPhase) return 0;
+    
+    return measurementState.currentAngles.wrist[currentPhase.targetAngle] || 0;
+  }, [measurementState.currentAngles, measurementState.currentPhase, MEASUREMENT_PHASES]);
+
+  /**
+   * フェーズプログレス計算
+   */
+  const getPhaseProgress = useCallback(() => {
+    const currentPhaseIndex = MEASUREMENT_PHASES.findIndex(
+      (phase) => phase.id === measurementState.currentPhase
+    );
+    return ((currentPhaseIndex + 1) / MEASUREMENT_PHASES.length) * 100;
+  }, [measurementState.currentPhase, MEASUREMENT_PHASES]);
+
+  /**
+   * 最終フェーズかチェック
+   */
+  const isLastPhase = useCallback(() => {
+    const currentPhaseIndex = MEASUREMENT_PHASES.findIndex(
+      (phase) => phase.id === measurementState.currentPhase
+    );
+    return currentPhaseIndex === MEASUREMENT_PHASES.length - 1;
+  }, [measurementState.currentPhase, MEASUREMENT_PHASES]);
 
   /**
    * 初期化処理
@@ -887,12 +1022,16 @@ const MeasurementPage: React.FC = () => {
     };
   }, [initializeCamera, initializeMediaPipe]);
 
+  const currentPhaseInfo = MEASUREMENT_PHASES.find(
+    (phase) => phase.id === measurementState.currentPhase
+  );
+
   return (
     <div className={styles.measurementPage}>
       <div className={styles.pageHeader}>
         <h1 className={styles.title}>
           <span className={styles.titleIcon}>📏</span>
-          可動域測定
+          可動域測定 - フェーズベース測定
         </h1>
       </div>
 
@@ -939,17 +1078,41 @@ const MeasurementPage: React.FC = () => {
         </div>
 
         <div className={styles.controlsSection}>
-          <MeasurementControls
-            selectedHand={selectedHand}
-            isCapturing={measurementState.isCapturing}
-            isReady={cameraReady && mediaPipeReady}
-            accuracy={measurementState.accuracy}
-            isSaving={false}
-            onStartMeasurement={handleCaptureToggle}
-            onStopMeasurement={handleCaptureToggle}
-            onSaveMeasurement={handleSaveMeasurement}
-            onHandSelection={handleHandChange}
-          />
+          {/* フェーズベース測定UI */}
+          {currentPhaseInfo && measurementState.isCapturing && (
+            <PhaseDisplay
+              currentPhase={currentPhaseInfo}
+              currentAngle={getCurrentAngle()}
+              phaseProgress={getPhaseProgress()}
+              totalPhases={MEASUREMENT_PHASES.length}
+              currentPhaseNumber={MEASUREMENT_PHASES.findIndex(p => p.id === measurementState.currentPhase) + 1}
+              isComplete={isLastPhase()}
+              onNext={handleNextPhase}
+              onComplete={handleCompleteMeasurement}
+              status={
+                !measurementState.handDetected 
+                  ? 'invalid' 
+                  : measurementState.isPhaseComplete 
+                    ? 'complete' 
+                    : 'measuring'
+              }
+            />
+          )}
+
+          {/* 測定開始前のコントロール */}
+          {!measurementState.isCapturing && (
+            <MeasurementControls
+              selectedHand={selectedHand}
+              isCapturing={measurementState.isCapturing}
+              isReady={cameraReady && mediaPipeReady}
+              accuracy={measurementState.accuracy}
+              isSaving={false}
+              onStartMeasurement={handleCaptureToggle}
+              onStopMeasurement={handleCaptureToggle}
+              onSaveMeasurement={handleSaveMeasurement}
+              onHandSelection={handleHandChange}
+            />
+          )}
         </div>
       </div>
     </div>
