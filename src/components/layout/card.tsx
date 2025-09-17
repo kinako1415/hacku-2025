@@ -4,21 +4,31 @@ import styles from './card.module.scss';
 type CardProps = {
   title: string;
   description: string;
+  role?: string;
   onClick?: () => void;
   isBlue?: boolean;
+  width?: number;
+  height?: number;
 };
 
 const Card: React.FC<CardProps> = ({
   title,
   description,
+  role,
   onClick,
-  isBlue = true,
+  isBlue = false,
+  width = 350,
+  height = 180,
 }) => {
   const cardClass = isBlue ? styles.card : `${styles.card} ${styles.white}`;
   return (
-    <div className={cardClass}>
+    <div
+      className={cardClass}
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
       <div className={styles.cardTitle}>{title}</div>
       <div className={styles.cardDescription}>{description}</div>
+      {role && <div className={styles.cardRole}>{role}</div>}
       <div className={styles.cardArrow}>
         <svg
           width="56"

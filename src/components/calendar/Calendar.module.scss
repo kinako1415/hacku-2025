@@ -1,0 +1,132 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 16px 16px;
+  background-color: #fff;
+  border-radius: 16px;
+  max-height: 682px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.Emoji {
+  font-size: 18px;
+}
+
+.dateText {
+  font-size: 32px;
+  font-weight: bold;
+  color: #494949;
+}
+
+.dateSeparator {
+  color: #494949;
+  font-size: 32px;
+}
+
+.PrevNextMonthButton {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  color: var(--primary-600);
+}
+
+.headerTh {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #494949;
+}
+
+.headerCols {
+  height: 50px;
+}
+
+.sundayHeader {
+  color: #ef4444;
+}
+
+.saturdayHeader {
+  color: #3b82f6;
+}
+
+.day {
+  font-size: 16px;
+  color: black;
+  font-weight: 500;
+  width: 100px;
+  height: 100px;
+  padding: 24px 0 0 0;
+  border: none;
+  background: transparent;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  &.outside {
+    color: #808080 !important;
+    background: #f4f4f4;
+  }
+
+  &.measured {
+    background: #0542fc;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 20px;
+
+    &::after {
+      content: '測定済';
+      position: absolute;
+      bottom: 17px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+    }
+  }
+
+  &.today {
+    color: white;
+    font-weight: bold;
+    background-color: #0542fc;
+    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    margin-top: -25px;
+    margin-left: auto;
+    margin-right: 32.5px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
