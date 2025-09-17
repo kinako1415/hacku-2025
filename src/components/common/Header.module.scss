@@ -1,18 +1,15 @@
 /* Header Component Styles */
 .header {
-  position: fixed;
+  position: sticky;
   top: 0;
   z-index: 100;
-  width: 40%;
+  width: 55%;
 }
 
 .container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 64px;
 }
 
 .simpleHeaderContainer {
@@ -22,114 +19,36 @@
   background: #fff;
   border-radius: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  padding: 8px 8px 8px 24px;
+  padding: 8px 24px 8px 24px;
   margin: 1rem 1rem 1.5rem 1rem;
-  min-height: 40px;
 }
 
 .simpleTitle {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: bold;
   color: #0542fc;
-  margin-left: 0.5rem;
-  letter-spacing: 0.02em;
   cursor: pointer;
 }
 
 .simpleNav {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 8px;
 }
 
 .simpleNavLink {
-  color: #444;
-  font-size: 1rem;
-  font-weight: 500;
-  text-decoration: none;
-  background: none;
-  border: none;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-.simpleNavLink:hover {
-  background: #f0f4ff;
+  color: #494949;
 }
 
 .simpleActionButton {
-  color: #3570ec;
-  background: #f7faff;
-  border: 1.5px solid #3570ec;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 1rem;
-  padding: 0.2rem 1.2rem;
-  margin-left: 0.5rem;
-  text-decoration: none;
-  transition:
-    background 0.15s,
-    border 0.15s;
-  min-width: 90px;
-  min-height: 36px;
+  background-color: #0542fc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  min-width: 80px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-}
-.simpleActionButton:hover {
-  background: #e3edff;
-  border-color: #285bb5;
-}
-
-.title {
-  font-size: 1.1rem;
-}
-
-.homeButton {
-  padding: 0.4rem 0.8rem;
-}
-
-.homeText {
-  display: none;
-}
-
-.navLink {
-  padding: 0.4rem 0.6rem;
-  min-width: 50px;
-}
-
-.navText {
-  font-size: 0.7rem;
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 0 0.5rem;
-  }
-
-  .titleSection {
-    padding: 0 0.5rem;
-  }
-
-  .title {
-    font-size: 1rem;
-  }
-
-  .navList {
-    gap: 0.25rem;
-  }
-
-  .navLink {
-    padding: 0.3rem 0.4rem;
-    min-width: 45px;
-  }
-
-  .navIcon {
-    font-size: 1rem;
-  }
-
-  .navText {
-    font-size: 0.65rem;
-  }
 }

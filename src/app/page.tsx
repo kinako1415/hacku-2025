@@ -6,12 +6,6 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <div className={styles.homePage}>
-      <Image
-        src="homeDescription.svg"
-        alt="Top Illustration"
-        width={1060}
-        height={220}
-      />
       <div className={styles.cardWrapper}>
         <Link href="/measurement">
           <Card
@@ -34,6 +28,12 @@ export default function Home() {
           />
         </Link>
       </div>
+      <Image
+        src="homeDescription.svg"
+        alt="Top Illustration"
+        width={1060}
+        height={220}
+      />
     </div>
   );
 }
