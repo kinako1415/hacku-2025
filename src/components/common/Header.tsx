@@ -9,7 +9,12 @@ export default function Header() {
     <header className={styles.header}>
       <div className={styles.simpleHeaderContainer}>
         {/* 左: タイトル */}
-        <div className={styles.simpleTitle}>Rehabit</div>
+        <div
+          onClick={() => (window.location.href = '/')}
+          className={styles.simpleTitle}
+        >
+          Rehabit
+        </div>
         {/* 右: メニュー */}
         <nav className={styles.simpleNav}>
           <Link
