@@ -2,7 +2,10 @@
 .header {
   top: 0;
   z-index: 100;
-  width: 55%;
+  width: 48%;
+  position: fixed;
+  left: 16px;
+  top: 12px;
 }
 
 .container {
@@ -19,7 +22,6 @@
   border-radius: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   padding: 8px 24px 8px 24px;
-  margin: 1rem 1rem 1.5rem 1rem;
 }
 
 .simpleTitle {

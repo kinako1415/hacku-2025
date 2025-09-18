@@ -533,7 +533,6 @@ a:hover {
 /* メインコンテンツ レイアウト */
 .main-content {
   min-height: calc(100vh - 64px); /* ヘッダーの高さを考慮 */
-  padding-top: var(--space-md);
 }
 
 @media (max-width: 768px) {

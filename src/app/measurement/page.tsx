@@ -44,70 +44,73 @@ const InstructionsSection: React.FC<{
 }> = ({ onNext }) => {
   return (
     <div className={styles.instructionsSection}>
-      <h1 className={styles.title}>説明</h1>
+      <div className={styles.instructionsBody}>
+        <h1 className={styles.title}>説明</h1>
 
-      <div className={styles.instructionItem}>
-        <div className={styles.stepNumber}>1</div>
-        <div className={styles.stepContent}>
-          <h3 className={styles.stepTitle}>準備</h3>
-          <p className={styles.stepDescription}>
-            明るい場所で、手首と母指がカメラにはっきり映るようにしてください
-            <br />
-            時計や指輪など手に付けているものは外してください
-            <br />
-            スマホやタブレットは据えないように固定してください（三脚があると安心です）
-          </p>
+        <div className={styles.instructionsContent}>
+          <div className={styles.instructionItem}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>1</div>
+              <h3 className={styles.stepTitle}>準備</h3>
+            </div>
+            <p className={styles.stepDescription}>
+              明るい場所で、手首と母指がカメラにはっきり映るようにしてください
+              <br />
+              時計や指輪など手に付けているものは外してください
+              <br />
+              スマホやタブレットは据えないように固定してください（三脚があると安心です）
+            </p>
+          </div>
+
+          <div className={styles.instructionItem}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>2</div>
+              <h3 className={styles.stepTitle}>姿勢</h3>
+            </div>
+            <p className={styles.stepDescription}>
+              椅子に座り、前腕を机やひざに安定させてください
+              <br />
+              カメラから40～70cmほど離れ、手首から指先まで画面に収まるようにしてください
+              <br />
+              正面から手が映る位置に調整してください
+            </p>
+          </div>
+
+          <div className={styles.instructionItem}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>3</div>
+              <h3 className={styles.stepTitle}>測定動作</h3>
+            </div>
+            <p className={styles.stepDescription}>
+              画面の指示に従って、手首（掌屈・背屈・尺屈・橈屈）をゆっくり動かしてください
+              <br />
+              動作は急がず、最大に動かせるところまで静かに動かします
+              <br />
+              測定中にカメラから手が外れないように注意してください
+            </p>
+          </div>
+
+          <div className={styles.instructionItem}>
+            <div className={styles.stepHeader}>
+              <div className={styles.stepNumber}>4</div>
+              <h3 className={styles.stepTitle}>注意点</h3>
+            </div>
+            <p className={styles.stepDescription}>
+              手やカメラがブレると測定精度が下がります
+              <br />
+              強い痛みを感じたら、無理をせず中止してください
+              <br />
+              測定値が極端にずれている場合は、もう一度測り直してください
+              <br />
+              正しく測れない場合は、画面に表示されるガイダンスを参考に修正してください
+            </p>
+          </div>
         </div>
       </div>
-
-      <div className={styles.instructionItem}>
-        <div className={styles.stepNumber}>2</div>
-        <div className={styles.stepContent}>
-          <h3 className={styles.stepTitle}>姿勢</h3>
-          <p className={styles.stepDescription}>
-            椅子に座り、前腕を机やひざに安定させてください
-            <br />
-            カメラから40～70cmほど離れ、手首から指先まで画面に収まるようにしてください
-            <br />
-            正面から手が映る位置に調整してください
-          </p>
-        </div>
-      </div>
-
-      <div className={styles.instructionItem}>
-        <div className={styles.stepNumber}>3</div>
-        <div className={styles.stepContent}>
-          <h3 className={styles.stepTitle}>測定動作</h3>
-          <p className={styles.stepDescription}>
-            画面の指示に従って、手首（掌屈・背屈・尺屈・橈屈）をゆっくり動かしてください
-            <br />
-            動作は急がず、最大に動かせるところまで静かに動かします
-            <br />
-            測定中にカメラから手が外れないように注意してください
-          </p>
-        </div>
-      </div>
-
-      <div className={styles.instructionItem}>
-        <div className={styles.stepNumber}>4</div>
-        <div className={styles.stepContent}>
-          <h3 className={styles.stepTitle}>注意点</h3>
-          <p className={styles.stepDescription}>
-            手やカメラがブレると測定精度が下がります
-            <br />
-            強い痛みを感じたら、無理をせず中止してください
-            <br />
-            測定値が極端にずれている場合は、もう一度測り直してください
-            <br />
-            正しく測れない場合は、画面に表示されるガイダンスを参考に修正してください
-          </p>
-        </div>
-      </div>
-
-      {/* 次へボタン */}
+      {/* 次へボタン - instructionsContentの外に移動 */}
       <div className={styles.instructionsNext}>
         <button className={styles.nextButton} onClick={onNext}>
-          次へ →
+          測定へ進む →
         </button>
       </div>
     </div>
@@ -209,6 +212,12 @@ const CameraPreview: React.FC<{
 
   return (
     <div className={styles.cameraContainer}>
+      {/* 点線の枠（absolute配置） */}
+      <div className={styles.dashedFrame}></div>
+
+      {/* 指示テキスト */}
+      <div className={styles.frameInstruction}>枠内に手を入れてください</div>
+
       <div className={styles.cameraFrame}>
         <div className={styles.frameInner}>
           {cameraState.isReady ? (
@@ -229,7 +238,6 @@ const CameraPreview: React.FC<{
             </div>
           )}
         </div>
-        <div className={styles.frameInstruction}>枠内に手を入れてください</div>
       </div>
     </div>
   );
@@ -332,7 +340,7 @@ const MeasurementPage: React.FC = () => {
       {/* メインコンテンツエリア */}
       <div className={styles.mainContent}>
         {/* 左側: コンテンツセクション */}
-        <div className={styles.leftSection}>
+        <div className={styles.leftContent}>
           {setup.currentStep === 'instructions' ? (
             <InstructionsSection onNext={handleNextStep} />
           ) : (
@@ -347,7 +355,7 @@ const MeasurementPage: React.FC = () => {
         </div>
 
         {/* 右側: カメラセクション */}
-        <div className={styles.rightSection}>
+        <div className={styles.rightContent}>
           <div className={styles.cameraHeader}>
             <span className={styles.statusBadge}>
               {cameraState.isReady ? '測定中' : 'カメラ準備中'}
