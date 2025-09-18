@@ -54,11 +54,10 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>準備</h3>
             </div>
             <p className={styles.stepDescription}>
-              明るい場所で、手首と母指がカメラにはっきり映るようにしてください
+              明るい場所で、手首と親指がはっきり映るように撮影してください。
               <br />
-              時計や指輪など手に付けているものは外してください
+              時計や指輪は外し、スマホやPCは固定して映しましょう。
               <br />
-              スマホやタブレットは据えないように固定してください（三脚があると安心です）
             </p>
           </div>
 
@@ -68,11 +67,10 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>姿勢</h3>
             </div>
             <p className={styles.stepDescription}>
-              椅子に座り、前腕を机やひざに安定させてください
+              椅子に座り、腕を机などで安定させます。カメラから40～70cm離れ、
               <br />
-              カメラから40～70cmほど離れ、手首から指先まで画面に収まるようにしてください
+              手首から指先までを正面から画面に収めてください。
               <br />
-              正面から手が映る位置に調整してください
             </p>
           </div>
 
@@ -82,11 +80,9 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>測定動作</h3>
             </div>
             <p className={styles.stepDescription}>
-              画面の指示に従って、手首（掌屈・背屈・尺屈・橈屈）をゆっくり動かしてください
+              画面の指示に従い、手首(掌屈・背屈・尺屈・橈屈）をゆっくり最大まで動かしてください。
               <br />
-              動作は急がず、最大に動かせるところまで静かに動かします
-              <br />
-              測定中にカメラから手が外れないように注意してください
+              測定中はカメラから手が外れないよう注意してください。
             </p>
           </div>
 
@@ -96,13 +92,9 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>注意点</h3>
             </div>
             <p className={styles.stepDescription}>
-              手やカメラがブレると測定精度が下がります
+              手ブレは測定精度を下げます。強い痛みがあれば中止し、値がずれたら再測定してください。
               <br />
-              強い痛みを感じたら、無理をせず中止してください
-              <br />
-              測定値が極端にずれている場合は、もう一度測り直してください
-              <br />
-              正しく測れない場合は、画面に表示されるガイダンスを参考に修正してください
+              うまく測れない場合はガイダンスを確認してください。
             </p>
           </div>
         </div>
