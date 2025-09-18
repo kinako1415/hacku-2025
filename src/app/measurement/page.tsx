@@ -10,9 +10,13 @@ import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
 
 /**
- * 測定部位の型定義
+ * カメラセットアップ状態
  */
-type MeasurementPart = 'wrist' | 'thumb' | 'finger' | 'elbow';
+interface CameraState {
+  stream: MediaStream | null;
+  isReady: boolean;
+  error: string | null;
+}
 
 /**
  * 手の選択
@@ -20,111 +24,164 @@ type MeasurementPart = 'wrist' | 'thumb' | 'finger' | 'elbow';
 type HandSelection = 'left' | 'right';
 
 /**
- * セットアップ状態
+ * 画面表示ステップ
  */
-interface SetupState {
+type DisplayStep = 'instructions' | 'selection';
+
+/**
+ * 測定セットアップ状態
+ */
+interface MeasurementSetup {
   selectedHand: HandSelection | null;
-  selectedParts: MeasurementPart[];
-  cameraReady: boolean;
-  cameraError: string | null;
+  currentStep: DisplayStep;
 }
 
 /**
- * カメラプレビューコンポーネント
+ * 説明セクションコンポーネント
  */
-const CameraPreview: React.FC<{
-  videoRef: React.RefObject<HTMLVideoElement>;
-  stream: MediaStream | null;
-  isReady: boolean;
-  error: string | null;
-}> = ({ videoRef, stream, isReady, error }) => {
-  useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
-  }, [videoRef, stream]);
-
-  if (error) {
-    return (
-      <div className={styles.cameraError}>
-        <div className={styles.errorMessage}>カメラアクセスに失敗しました</div>
-      </div>
-    );
-  }
-
-  if (!isReady) {
-    return (
-      <div className={styles.cameraPlaceholder}>
-        <div className={styles.placeholderText}>枠内に手を入れてください</div>
-        <div className={styles.handFrame}></div>
-      </div>
-    );
-  }
-
+const InstructionsSection: React.FC<{
+  onNext: () => void;
+}> = ({ onNext }) => {
   return (
-    <div className={styles.cameraContainer}>
-      <video
-        ref={videoRef}
-        className={styles.cameraVideo}
-        autoPlay
-        playsInline
-        muted
-      />
-      <div className={styles.handFrame}></div>
-      <div className={styles.instructions}>枠内に手を入れてください</div>
+    <div className={styles.instructionsSection}>
+      <h1 className={styles.title}>説明</h1>
+
+      <div className={styles.instructionItem}>
+        <div className={styles.stepNumber}>1</div>
+        <div className={styles.stepContent}>
+          <h3 className={styles.stepTitle}>準備</h3>
+          <p className={styles.stepDescription}>
+            明るい場所で、手首と母指がカメラにはっきり映るようにしてください
+            <br />
+            時計や指輪など手に付けているものは外してください
+            <br />
+            スマホやタブレットは据えないように固定してください（三脚があると安心です）
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.instructionItem}>
+        <div className={styles.stepNumber}>2</div>
+        <div className={styles.stepContent}>
+          <h3 className={styles.stepTitle}>姿勢</h3>
+          <p className={styles.stepDescription}>
+            椅子に座り、前腕を机やひざに安定させてください
+            <br />
+            カメラから40～70cmほど離れ、手首から指先まで画面に収まるようにしてください
+            <br />
+            正面から手が映る位置に調整してください
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.instructionItem}>
+        <div className={styles.stepNumber}>3</div>
+        <div className={styles.stepContent}>
+          <h3 className={styles.stepTitle}>測定動作</h3>
+          <p className={styles.stepDescription}>
+            画面の指示に従って、手首（掌屈・背屈・尺屈・橈屈）をゆっくり動かしてください
+            <br />
+            動作は急がず、最大に動かせるところまで静かに動かします
+            <br />
+            測定中にカメラから手が外れないように注意してください
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.instructionItem}>
+        <div className={styles.stepNumber}>4</div>
+        <div className={styles.stepContent}>
+          <h3 className={styles.stepTitle}>注意点</h3>
+          <p className={styles.stepDescription}>
+            手やカメラがブレると測定精度が下がります
+            <br />
+            強い痛みを感じたら、無理をせず中止してください
+            <br />
+            測定値が極端にずれている場合は、もう一度測り直してください
+            <br />
+            正しく測れない場合は、画面に表示されるガイダンスを参考に修正してください
+          </p>
+        </div>
+      </div>
+
+      {/* 次へボタン */}
+      <div className={styles.instructionsNext}>
+        <button className={styles.nextButton} onClick={onNext}>
+          次へ →
+        </button>
+      </div>
     </div>
   );
 };
 
 /**
- * 手首選択カード
+ * 手首選択コンポーネント
  */
-const HandSelectionCard: React.FC<{
-  hand: HandSelection;
-  isSelected: boolean;
-  onSelect: (hand: HandSelection) => void;
-}> = ({ hand, isSelected, onSelect }) => {
-  const handLabel = hand === 'right' ? '右手首' : '左手首';
-  const description =
-    hand === 'right'
-      ? '右手首の可動域を測定します'
-      : '左手首の可動域を測定します';
-
+const HandSelectionSection: React.FC<{
+  selectedHand: HandSelection | null;
+  onHandSelect: (hand: HandSelection) => void;
+}> = ({ selectedHand, onHandSelect }) => {
   return (
-    <div
-      className={`${styles.handCard} ${isSelected ? styles.selected : ''}`}
-      onClick={() => onSelect(hand)}
-    >
-      <h3 className={styles.handTitle}>{handLabel}</h3>
-      <p className={styles.handDescription}>{description}</p>
-      <div className={styles.measurementTags}>
-        <span className={styles.tag}>掌屈</span>
-        <span className={styles.tag}>背屈</span>
-        <span className={styles.tag}>尺屈</span>
-        <span className={styles.tag}>橈屈</span>
+    <div className={styles.handSelectionSection}>
+      <h2 className={styles.selectionTitle}>
+        測定部位を選択してください
+        <span className={styles.selectionNote}>どちらか選択してください</span>
+      </h2>
+
+      <div className={styles.handCards}>
+        <div
+          className={`${styles.handCard} ${selectedHand === 'right' ? styles.selected : ''}`}
+          onClick={() => onHandSelect('right')}
+        >
+          <h3 className={styles.handTitle}>右手首</h3>
+          <p className={styles.handDescription}>右手首の可動域を測定します</p>
+          <div className={styles.movementTags}>
+            <span className={styles.tag}>掌屈</span>
+            <span className={styles.tag}>背屈</span>
+            <span className={styles.tag}>尺屈</span>
+            <span className={styles.tag}>橈屈</span>
+          </div>
+        </div>
+
+        <div
+          className={`${styles.handCard} ${selectedHand === 'left' ? styles.selected : ''}`}
+          onClick={() => onHandSelect('left')}
+        >
+          <h3 className={styles.handTitle}>左手首</h3>
+          <p className={styles.handDescription}>左手首の可動域を測定します</p>
+          <div className={styles.movementTags}>
+            <span className={styles.tag}>掌屈</span>
+            <span className={styles.tag}>背屈</span>
+            <span className={styles.tag}>尺屈</span>
+            <span className={styles.tag}>橈屈</span>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
 /**
- * 測定情報セクション
+ * 測定情報コンポーネント
  */
-const MeasurementInfo: React.FC = () => {
+const MeasurementInfoSection: React.FC = () => {
   return (
-    <div className={styles.measurementInfo}>
-      <h2 className={styles.infoTitle}>測定について</h2>
+    <div className={styles.measurementInfoSection}>
+      <h2 className={styles.infoSectionTitle}>測定について</h2>
+
       <div className={styles.infoGrid}>
         <div className={styles.infoItem}>
           <h3 className={styles.infoItemTitle}>所要時間</h3>
           <p className={styles.infoItemText}>各部位約3〜5分程度</p>
         </div>
+
         <div className={styles.infoItem}>
           <h3 className={styles.infoItemTitle}>準備</h3>
           <p className={styles.infoItemText}>
             カメラが使用できる環境でご利用ください
           </p>
         </div>
+
         <div className={styles.infoItem}>
           <h3 className={styles.infoItemTitle}>測定方法</h3>
           <p className={styles.infoItemText}>
@@ -137,20 +194,79 @@ const MeasurementInfo: React.FC = () => {
 };
 
 /**
+ * カメラプレビューコンポーネント
+ */
+const CameraPreview: React.FC<{
+  cameraState: CameraState;
+}> = ({ cameraState }) => {
+  if (cameraState.error) {
+    return (
+      <div className={styles.cameraError}>
+        <div className={styles.errorMessage}>カメラアクセスに失敗しました</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.cameraContainer}>
+      <div className={styles.cameraFrame}>
+        <div className={styles.frameInner}>
+          {cameraState.isReady ? (
+            <video
+              className={styles.cameraVideo}
+              autoPlay
+              playsInline
+              muted
+              ref={(video) => {
+                if (video && cameraState.stream) {
+                  video.srcObject = cameraState.stream;
+                }
+              }}
+            />
+          ) : (
+            <div className={styles.cameraPlaceholder}>
+              <span>カメラ準備中...</span>
+            </div>
+          )}
+        </div>
+        <div className={styles.frameInstruction}>枠内に手を入れてください</div>
+      </div>
+    </div>
+  );
+};
+
+/**
  * メイン測定ページコンポーネント
  */
 const MeasurementPage: React.FC = () => {
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // 状態管理
-  const [setupState, setSetupState] = useState<SetupState>({
+  // 測定セットアップ状態管理
+  const [setup, setSetup] = useState<MeasurementSetup>({
     selectedHand: null,
-    selectedParts: ['wrist'], // デフォルトで手首を選択
-    cameraReady: false,
-    cameraError: null,
+    currentStep: 'instructions',
   });
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+
+  // カメラ状態管理
+  const [cameraState, setCameraState] = useState<CameraState>({
+    stream: null,
+    isReady: false,
+    error: null,
+  });
+
+  /**
+   * 手の選択ハンドラー
+   */
+  const handleHandSelect = (hand: HandSelection) => {
+    setSetup((prev) => ({ ...prev, selectedHand: hand }));
+  };
+
+  /**
+   * 次のステップへ進む
+   */
+  const handleNextStep = () => {
+    setSetup((prev) => ({ ...prev, currentStep: 'selection' }));
+  };
 
   /**
    * カメラ初期化
@@ -165,27 +281,19 @@ const MeasurementPage: React.FC = () => {
         },
       });
 
-      setCameraStream(stream);
-      setSetupState((prev) => ({
-        ...prev,
-        cameraReady: true,
-        cameraError: null,
-      }));
+      setCameraState({
+        stream,
+        isReady: true,
+        error: null,
+      });
     } catch (error) {
       console.error('カメラ初期化エラー:', error);
-      setSetupState((prev) => ({
-        ...prev,
-        cameraReady: false,
-        cameraError: 'カメラへのアクセスを許可してください',
-      }));
+      setCameraState({
+        stream: null,
+        isReady: false,
+        error: 'カメラへのアクセスを許可してください',
+      });
     }
-  };
-
-  /**
-   * 手の選択
-   */
-  const handleHandSelection = (hand: HandSelection) => {
-    setSetupState((prev) => ({ ...prev, selectedHand: hand }));
   };
 
   /**
@@ -199,12 +307,8 @@ const MeasurementPage: React.FC = () => {
    * 測定開始
    */
   const handleStartMeasurement = () => {
-    if (setupState.selectedHand && setupState.cameraReady) {
-      // 実際の測定画面に遷移
-      router.push(`/measurement/capture?hand=${setupState.selectedHand}`);
-    } else if (setupState.selectedHand && !setupState.cameraReady) {
-      // カメラが準備できていない場合は先にカメラテストを促す
-      alert('カメラをテストしてから測定を開始してください');
+    if (setup.selectedHand) {
+      router.push(`/measurement/capture?hand=${setup.selectedHand}`);
     }
   };
 
@@ -212,78 +316,62 @@ const MeasurementPage: React.FC = () => {
    * 初期化
    */
   useEffect(() => {
+    // カメラを自動で初期化
+    initializeCamera();
+
     return () => {
       // クリーンアップ
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop());
+      if (cameraState.stream) {
+        cameraState.stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [cameraStream]);
+  }, []);
 
   return (
     <div className={styles.measurementPage}>
-      <div className={styles.setupSection}>
-        <div className={styles.setupContent}>
-          {/* 測定部位選択 */}
-          <div className={styles.selectionSection}>
-            <h1 className={styles.title}>
-              測定部位を選択してください
-              <span className={styles.required}>※どちらか選択してください</span>
-            </h1>
-
-            <div className={styles.handSelection}>
-              <HandSelectionCard
-                hand="right"
-                isSelected={setupState.selectedHand === 'right'}
-                onSelect={handleHandSelection}
+      {/* メインコンテンツエリア */}
+      <div className={styles.mainContent}>
+        {/* 左側: コンテンツセクション */}
+        <div className={styles.leftSection}>
+          {setup.currentStep === 'instructions' ? (
+            <InstructionsSection onNext={handleNextStep} />
+          ) : (
+            <>
+              <HandSelectionSection
+                selectedHand={setup.selectedHand}
+                onHandSelect={handleHandSelect}
               />
-              <HandSelectionCard
-                hand="left"
-                isSelected={setupState.selectedHand === 'left'}
-                onSelect={handleHandSelection}
-              />
-            </div>
-          </div>
-
-          {/* 測定について */}
-          <MeasurementInfo />
-
-          {/* アクションボタン */}
-          <div className={styles.actionButtons}>
-            <button
-              className={styles.testButton}
-              onClick={handleCameraTest}
-              disabled={!setupState.selectedHand}
-            >
-              カメラをテストする
-            </button>
-            <button
-              className={styles.startButton}
-              onClick={handleStartMeasurement}
-              disabled={!setupState.selectedHand || !setupState.cameraReady}
-            >
-              測定へ進む →
-            </button>
-          </div>
+              <MeasurementInfoSection />
+            </>
+          )}
         </div>
-      </div>
 
-      {/* カメラプレビューセクション */}
-      <div className={styles.cameraSection}>
-        <div className={styles.cameraWrapper}>
+        {/* 右側: カメラセクション */}
+        <div className={styles.rightSection}>
           <div className={styles.cameraHeader}>
             <span className={styles.statusBadge}>
-              {setupState.cameraReady ? '測定中' : 'カメラ準備中'}
+              {cameraState.isReady ? '測定中' : 'カメラ準備中'}
             </span>
           </div>
-          <CameraPreview
-            videoRef={videoRef}
-            stream={cameraStream}
-            isReady={setupState.cameraReady}
-            error={setupState.cameraError}
-          />
+          <CameraPreview cameraState={cameraState} />
         </div>
       </div>
+
+      {/* 下部: ボタンセクション（手首選択ステップでのみ表示） */}
+      {setup.currentStep === 'selection' && (
+        <div className={styles.bottomSection}>
+          <button className={styles.testButton} onClick={handleCameraTest}>
+            カメラをテストする
+          </button>
+          <button
+            className={styles.startButton}
+            onClick={handleStartMeasurement}
+            disabled={!setup.selectedHand}
+          >
+            測定へ進む →
+          </button>
+        </div>
+      )}
     </div>
   );
 };
