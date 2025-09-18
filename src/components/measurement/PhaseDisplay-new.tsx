@@ -22,7 +22,7 @@ export interface PhaseInfo {
   id: MeasurementPhase;
   name: string;
   description: string;
-  targetAngle: 'flexion' | 'extension' | 'ulnarDeviation' | 'radialDeviation';
+  targetAngle: string;
   normalRange: { min: number; max: number };
   instruction: string;
 }

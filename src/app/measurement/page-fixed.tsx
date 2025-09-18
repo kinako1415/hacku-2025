@@ -202,9 +202,6 @@ const MeasurementPage: React.FC = () => {
     if (setupState.selectedHand && setupState.cameraReady) {
       // 実際の測定画面に遷移
       router.push(`/measurement/capture?hand=${setupState.selectedHand}`);
-    } else if (setupState.selectedHand && !setupState.cameraReady) {
-      // カメラが準備できていない場合は先にカメラテストを促す
-      alert('カメラをテストしてから測定を開始してください');
     }
   };
 
