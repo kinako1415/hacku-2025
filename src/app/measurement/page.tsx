@@ -128,7 +128,7 @@ const HandSelectionSection: React.FC<{
     <div className={styles.handSelectionSection}>
       <h2 className={styles.selectionTitle}>
         測定部位を選択してください
-        <span className={styles.selectionNote}>どちらか選択してください</span>
+        <span className={styles.selectionNote}> *どちらか選択してください</span>
       </h2>
 
       <div className={styles.handCards}>
@@ -167,7 +167,11 @@ const HandSelectionSection: React.FC<{
 /**
  * 測定情報コンポーネント
  */
-const MeasurementInfoSection: React.FC = () => {
+const MeasurementInfoSection: React.FC<{
+  selectedHand: HandSelection | null;
+  onCameraTest: () => void;
+  onStartMeasurement: () => void;
+}> = ({ selectedHand, onCameraTest, onStartMeasurement }) => {
   return (
     <div className={styles.measurementInfoSection}>
       <h2 className={styles.infoSectionTitle}>測定について</h2>
@@ -192,6 +196,20 @@ const MeasurementInfoSection: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* ボタンセクション */}
+      <div className={styles.bottomSection}>
+        <button className={styles.testButton} onClick={onCameraTest}>
+          カメラをテストする
+        </button>
+        <button
+          className={styles.startButton}
+          onClick={onStartMeasurement}
+          disabled={!selectedHand}
+        >
+          測定へ進む →
+        </button>
+      </div>
     </div>
   );
 };
@@ -201,7 +219,8 @@ const MeasurementInfoSection: React.FC = () => {
  */
 const CameraPreview: React.FC<{
   cameraState: CameraState;
-}> = ({ cameraState }) => {
+  isInactive?: boolean;
+}> = ({ cameraState, isInactive = false }) => {
   if (cameraState.error) {
     return (
       <div className={styles.cameraError}>
@@ -211,12 +230,16 @@ const CameraPreview: React.FC<{
   }
 
   return (
-    <div className={styles.cameraContainer}>
+    <div
+      className={`${styles.cameraContainer} ${isInactive ? styles.inactive : ''}`}
+    >
       {/* 点線の枠（absolute配置） */}
       <div className={styles.dashedFrame}></div>
 
-      {/* 指示テキスト */}
-      <div className={styles.frameInstruction}>枠内に手を入れてください</div>
+      {/* 指示テキスト - アクティブ時のみ表示 */}
+      {!isInactive && (
+        <div className={styles.frameInstruction}>枠内に手を入れてください</div>
+      )}
 
       <div className={styles.cameraFrame}>
         <div className={styles.frameInner}>
@@ -349,37 +372,33 @@ const MeasurementPage: React.FC = () => {
                 selectedHand={setup.selectedHand}
                 onHandSelect={handleHandSelect}
               />
-              <MeasurementInfoSection />
+              <MeasurementInfoSection
+                selectedHand={setup.selectedHand}
+                onCameraTest={handleCameraTest}
+                onStartMeasurement={handleStartMeasurement}
+              />
             </>
           )}
         </div>
 
         {/* 右側: カメラセクション */}
         <div className={styles.rightContent}>
-          <div className={styles.cameraHeader}>
-            <span className={styles.statusBadge}>
-              {cameraState.isReady ? '測定中' : 'カメラ準備中'}
-            </span>
-          </div>
-          <CameraPreview cameraState={cameraState} />
+          {/* ヘッダー - アクティブ時のみ表示 */}
+          {!(setup.currentStep === 'instructions' || !setup.selectedHand) && (
+            <div className={styles.cameraHeader}>
+              <span className={styles.statusBadge}>
+                {cameraState.isReady ? '測定中' : 'カメラ準備中'}
+              </span>
+            </div>
+          )}
+          <CameraPreview
+            cameraState={cameraState}
+            isInactive={
+              setup.currentStep === 'instructions' || !setup.selectedHand
+            }
+          />
         </div>
       </div>
-
-      {/* 下部: ボタンセクション（手首選択ステップでのみ表示） */}
-      {setup.currentStep === 'selection' && (
-        <div className={styles.bottomSection}>
-          <button className={styles.testButton} onClick={handleCameraTest}>
-            カメラをテストする
-          </button>
-          <button
-            className={styles.startButton}
-            onClick={handleStartMeasurement}
-            disabled={!setup.selectedHand}
-          >
-            測定へ進む →
-          </button>
-        </div>
-      )}
     </div>
   );
 };
