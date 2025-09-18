@@ -5,54 +5,165 @@
 .measurementPage {
   min-height: 100vh;
   display: flex;
-  background: #f5f7fa;
+  flex-direction: column;
+  background: #f8fafc;
 }
 
-/* 左側：セットアップセクション */
-.setupSection {
+/* メインコンテンツエリア */
+.mainContent {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 120px);
+}
+
+/* 左側：説明セクション */
+.leftSection {
   flex: 1;
   max-width: 50%;
-  padding: 40px 32px;
+  padding: 32px 40px;
   background: white;
   overflow-y: auto;
 }
 
-.setupContent {
-  max-width: 600px;
-  margin: 0 auto;
+/* 右側：カメラセクション */
+.rightSection {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  background: #64748b;
+  position: relative;
 }
 
-/* タイトル */
+/* カメラヘッダー */
+.cameraHeader {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+}
+
+.statusBadge {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* 説明セクション */
+.instructionsSection {
+  max-width: 500px;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 8px;
-  line-height: 1.4;
+  color: #1f2937;
+  margin-bottom: 32px;
 }
 
-.required {
+.instructionItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-right: 16px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.stepDescription {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 説明セクションの次へボタン */
+.instructionsNext {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.nextButton {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 手首選択セクション */
+.handSelectionSection {
+  margin: 40px 0;
+}
+
+.selectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.selectionNote {
   display: block;
-  font-size: 0.9rem;
-  color: #e53e3e;
+  font-size: 0.875rem;
+  color: #ef4444;
   font-weight: 400;
   margin-top: 4px;
 }
 
-/* 手首選択 */
-.selectionSection {
-  margin-bottom: 40px;
-}
-
-.handSelection {
+.handCards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .handCard {
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e5e7eb;
   border-radius: 12px;
   padding: 24px;
   cursor: pointer;
@@ -60,33 +171,33 @@
   background: white;
 
   &:hover {
-    border-color: #3182ce;
+    border-color: #3b82f6;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 
   &.selected {
-    border-color: #3182ce;
-    background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
+    border-color: #3b82f6;
+    background: #3b82f6;
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.3);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
   }
 }
 
 .handTitle {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
 
 .handDescription {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   margin: 0 0 16px 0;
   opacity: 0.8;
 }
 
-.measurementTags {
+.movementTags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -96,24 +207,24 @@
   background: rgba(255, 255, 255, 0.2);
   padding: 4px 12px;
   border-radius: 16px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
 
   .handCard:not(.selected) & {
-    background: #f7fafc;
-    color: #4a5568;
+    background: #f3f4f6;
+    color: #4b5563;
   }
 }
 
-/* 測定情報 */
-.measurementInfo {
-  margin-bottom: 32px;
+/* 測定情報セクション */
+.measurementInfoSection {
+  margin: 40px 0;
 }
 
-.infoTitle {
-  font-size: 1.2rem;
+.infoSectionTitle {
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #2d3748;
+  color: #1f2937;
   margin-bottom: 16px;
 }
 
@@ -121,11 +232,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
 }
 
 .infoItem {
@@ -133,112 +239,46 @@
 }
 
 .infoItemTitle {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #2d3748;
+  color: #1f2937;
   margin-bottom: 8px;
 }
 
 .infoItemText {
-  font-size: 0.9rem;
-  color: #718096;
+  font-size: 0.75rem;
+  color: #6b7280;
   line-height: 1.4;
   margin: 0;
 }
 
-/* アクションボタン */
-.actionButtons {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-}
-
-.testButton,
-.startButton {
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 160px;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.testButton {
-  background: white;
-  color: #3182ce;
-  border: 2px solid #3182ce;
-
-  &:hover:not(:disabled) {
-    background: #3182ce;
-    color: white;
-  }
-}
-
-.startButton {
-  background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
-  color: white;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.3);
-  }
-}
-
-/* 右側：カメラセクション */
-.cameraSection {
+/* カメラコンテナ */
+.cameraContainer {
   flex: 1;
-  max-width: 50%;
-  background: #2d3748;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px;
-  position: relative;
 }
 
-.cameraWrapper {
+.cameraFrame {
+  position: relative;
   width: 100%;
-  max-width: 640px;
+  max-width: 480px;
   aspect-ratio: 4/3;
-  background: #1a202c;
+  border: 3px dashed #3b82f6;
   border-radius: 12px;
-  overflow: hidden;
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.05);
 }
 
-.cameraHeader {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
-}
-
-.statusBadge {
-  background: rgba(56, 178, 172, 0.9);
-  color: white;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  backdrop-filter: blur(8px);
-}
-
-/* カメラプレビュー */
-.cameraContainer {
+.frameInner {
   width: 100%;
   height: 100%;
-  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,98 +291,154 @@
 }
 
 .cameraPlaceholder {
-  width: 100%;
-  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #a0aec0;
-  text-align: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-weight: 500;
 }
 
-.placeholderText,
-.instructions {
+.frameInstruction {
   position: absolute;
-  top: 20px;
+  bottom: -40px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.9rem;
   font-weight: 500;
-  z-index: 10;
-}
-
-.handFrame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 70%;
-  height: 60%;
-  border: 3px dashed #4299e1;
-  border-radius: 12px;
-  background: rgba(66, 153, 225, 0.1);
-  z-index: 5;
+  font-size: 1rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .cameraError {
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fed7d7;
-  color: #c53030;
-}
-
-.errorMessage {
-  text-align: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
   font-weight: 500;
 }
 
-/* レスポンシブ */
-@media (max-width: 1024px) {
-  .measurementPage {
-    flex-direction: column;
-  }
+/* 下部セクション */
+.bottomSection {
+  padding: 24px 40px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
 
-  .setupSection,
-  .cameraSection {
-    max-width: 100%;
-  }
+.testButton,
+.startButton {
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  min-width: 160px;
+  justify-content: center;
 
-  .cameraSection {
-    min-height: 400px;
-  }
-
-  .handSelection {
-    grid-template-columns: 1fr;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
+.testButton {
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+
+  &:hover:not(:disabled) {
+    background: #3b82f6;
+    color: white;
+  }
+}
+
+.startButton {
+  background: #3b82f6;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* レスポンシブデザイン */
 @media (max-width: 768px) {
-  .setupSection {
-    padding: 24px 20px;
+  .mainContent {
+    flex-direction: column;
   }
 
-  .cameraSection {
-    padding: 24px 20px;
-    min-height: 300px;
+  .leftSection,
+  .rightSection {
+    max-width: 100%;
   }
 
-  .title {
-    font-size: 1.3rem;
+  .rightSection {
+    min-height: 400px;
   }
 
-  .handCard {
-    padding: 20px;
+  .instructionsSection {
+    max-width: 100%;
+  }
+
+  .stepNumber {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .stepTitle {
+    font-size: 1rem;
+  }
+
+  .stepDescription {
+    font-size: 0.8rem;
+  }
+
+  .handCards {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .infoGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .bottomSection {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .testButton,
+  .startButton {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .cameraFrame {
+    max-width: 360px;
+  }
+
+  .frameInstruction {
+    font-size: 0.875rem;
   }
 }
