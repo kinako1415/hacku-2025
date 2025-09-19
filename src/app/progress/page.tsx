@@ -113,7 +113,7 @@ const fetchMeasurements = async (
       .reverse() // 最新のデータが先頭に来るようにソート
       .toArray();
 
-    const realMeasurements: MotionMeasurement[] = [];
+    const allRealMeasurements: MotionMeasurement[] = [];
 
     for (const session of sessions) {
       const results = await db.getSessionResults(session.sessionId);
@@ -164,9 +164,35 @@ const fetchMeasurements = async (
         // motionMeasurement.thumbAdduction = latestAngles['thumbAdduction'] || 0;
         // motionMeasurement.thumbAbduction = latestAngles['thumbAbduction'] || 0;
 
-        realMeasurements.push(motionMeasurement);
+        allRealMeasurements.push(motionMeasurement);
       }
     }
+
+    // 日付ごとに最新の測定結果のみを保持
+    const latestMeasurementsByDate = new Map<string, MotionMeasurement>();
+    allRealMeasurements.forEach((measurement) => {
+      const date = new Date(measurement.measurementDate);
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+      // 既にその日のデータがある場合、より新しいもので上書き
+      if (
+        !latestMeasurementsByDate.has(dateKey) ||
+        new Date(measurement.measurementDate).getTime() >
+          new Date(
+            latestMeasurementsByDate.get(dateKey)!.measurementDate
+          ).getTime()
+      ) {
+        latestMeasurementsByDate.set(dateKey, measurement);
+      }
+    });
+
+    const realMeasurements = Array.from(latestMeasurementsByDate.values()).sort(
+      (a, b) =>
+        new Date(a.measurementDate).getTime() -
+        new Date(b.measurementDate).getTime()
+    );
 
     if (realMeasurements.length === 0) {
       console.log('実際のデータがないため、サンプルデータを使用します。');
