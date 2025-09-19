@@ -22,7 +22,7 @@
 
 .progressPage {
   min-height: 100vh;
-  background: #ffffff; /* 明るい白背景 */
+  background: #e9effe; /* rootページと同じ背景色 */
   display: flex;
   flex-direction: column;
   padding: 0 24px;
@@ -143,7 +143,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
 
   h2 {
     font-size: 1.4rem;
@@ -185,7 +185,7 @@
     border-color: #3182ce;
     color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+    /* box-shadow を削除 */
   }
 
   @media (max-width: 480px) {
@@ -200,7 +200,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
 
   h2 {
     font-size: 1.4rem;
@@ -229,14 +229,14 @@
   background: #ffffff;
   border-radius: 20px;
   padding: 32px 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
   text-align: center;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    /* box-shadow を削除 */
   }
 
   h3 {
@@ -288,7 +288,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
 
   h2 {
     font-size: 1.4rem;
@@ -302,7 +302,7 @@
   background: #ffffff;
   border-radius: 20px;
   padding: 32px 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
   border: 1px solid #f0f0f0;
 }
 
@@ -315,7 +315,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
 
   h2 {
     font-size: 1.4rem;
@@ -346,7 +346,7 @@
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(154, 230, 180, 0.3);
+    /* box-shadow を削除 */
   }
 }
 
@@ -382,19 +382,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #e9effe; /* rootページと同じ背景色 */
 }
 
 .loadingSpinner {
   text-align: center;
-  color: #ffffff;
+  color: #2d3748; /* ダークテキスト色に変更 */
 }
 
 .spinner {
   width: 56px;
   height: 56px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-top: 5px solid #ffffff;
+  border: 5px solid rgba(45, 55, 72, 0.2); /* 明るい背景用のボーダー色 */
+  border-top: 5px solid #0542fc; /* ブルーのアクセント色 */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 24px;
@@ -504,89 +504,5 @@
   .periodButton {
     flex: 1;
     text-align: center;
-  }
-}
-
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  .progressPage {
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-  }
-
-  .header {
-    background: #2d3748;
-    border-bottom: 1px solid #4a5568;
-  }
-
-  .title {
-    color: #f7fafc;
-  }
-
-  .navLink {
-    color: #cbd5e0;
-
-    &:hover {
-      background: #4a5568;
-      color: #f7fafc;
-    }
-  }
-
-  .periodSelector,
-  .statsSection,
-  .chartsSection,
-  .insightsSection {
-    background: #2d3748;
-    color: #f7fafc;
-  }
-
-  .periodSelector h2,
-  .statsSection h2,
-  .chartsSection h2,
-  .insightsSection h2 {
-    color: #f7fafc;
-  }
-
-  .statCard {
-    background: linear-gradient(135deg, #4a5568, #2d3748);
-    border-color: #718096;
-  }
-
-  .statLabel {
-    color: #a0aec0;
-  }
-
-  .statValue {
-    color: #f7fafc;
-  }
-
-  .periodButton {
-    background: #4a5568;
-    border-color: #718096;
-    color: #cbd5e0;
-
-    &:hover {
-      background: #718096;
-      border-color: #a0aec0;
-      color: #f7fafc;
-    }
-
-    &.active {
-      background: #4299e1;
-      border-color: #3182ce;
-      color: #ffffff;
-    }
-  }
-
-  .insightCard {
-    background: linear-gradient(135deg, #1a202c, #2d3748);
-    border-color: #4a5568;
-  }
-
-  .insightContent h3 {
-    color: #e2e8f0;
-  }
-
-  .insightContent p {
-    color: #cbd5e0;
   }
 }

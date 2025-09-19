@@ -70,14 +70,14 @@
   padding: 1.5rem;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  /* box-shadow削除 */
   border: 1px solid #f0f0f0;
   min-width: 140px;
   transition: all 0.3s ease;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+    /* box-shadow削除 */
   }
 
   &__value {
@@ -202,7 +202,7 @@
     background: #ffffff;
     color: #494949;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* box-shadow削除 */
   }
 
   &--active {
@@ -210,7 +210,7 @@
     color: #0542fc;
     border-bottom-color: #0542fc;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(5, 66, 252, 0.2);
+    /* box-shadow削除 */
   }
 
   &__label {
