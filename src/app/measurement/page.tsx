@@ -19,7 +19,10 @@ import {
   Point3D,
 } from '@/lib/utils/angle-calculator';
 import { useMeasurementService } from '@/hooks/useMeasurementService';
-import { createMeasurement } from '@/lib/data-manager/models/motion-measurement';
+import {
+  createMeasurement,
+  CreateMeasurementInput,
+} from '@/lib/data-manager/models/motion-measurement';
 
 /**
  * MediaPipe 型定義
@@ -1186,8 +1189,47 @@ const MeasurementPage: React.FC = () => {
     }));
   };
 
-  const handleSave = () => {
-    router.push('/progress');
+  const handleSave = async () => {
+    // 各ステップの最大角度を計算
+    const maxAnglesMap = new Map<string, number>();
+    measurementSteps.forEach((step) => {
+      const stepResults = measurementResults.filter(
+        (r) => r.stepId === step.id
+      );
+      if (stepResults.length > 0) {
+        const maxAngle = Math.max(...stepResults.map((r) => r.angle));
+        maxAnglesMap.set(step.id, Math.round(maxAngle));
+      } else {
+        maxAnglesMap.set(step.id, 0); // データがない場合は0
+      }
+    });
+
+    // MotionMeasurementオブジェクトを構築
+    const motionMeasurementInput: CreateMeasurementInput = {
+      userId: 'test-user-id', // TODO: 実際のユーザーIDに置き換える
+      measurementDate: new Date(),
+      wristFlexion: maxAnglesMap.get('palmar-flexion') || 0,
+      wristExtension: maxAnglesMap.get('dorsal-flexion') || 0,
+      wristUlnarDeviation: maxAnglesMap.get('ulnar-deviation') || 0,
+      wristRadialDeviation: maxAnglesMap.get('radial-deviation') || 0,
+      thumbFlexion: 0, // TODO: 親指の測定ステップが追加されたら更新
+      thumbExtension: 0, // TODO: 親指の測定ステップが追加されたら更新
+      thumbAdduction: 0, // TODO: 親指の測定ステップが追加されたら更新
+      thumbAbduction: 0, // TODO: 親指の測定ステップが追加されたら更新
+      accuracyScore: 1.0, // TODO: 実際の精度スコアを計算して設定
+      handUsed: setup.selectedHand || 'right', // 選択された手、デフォルトは右手
+    };
+
+    try {
+      const finalMotionMeasurement = createMeasurement(motionMeasurementInput);
+      await saveMotionMeasurement(finalMotionMeasurement);
+      console.log('最終測定結果を保存しました:', finalMotionMeasurement);
+      router.push('/progress');
+    } catch (error) {
+      console.error('最終測定結果の保存に失敗しました:', error);
+      // エラーメッセージをユーザーに表示するなどの処理
+      alert('測定結果の保存に失敗しました。');
+    }
   };
 
   const handleRetry = () => {

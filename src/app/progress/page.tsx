@@ -5,11 +5,11 @@
 
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { db, MeasurementSession } from '@/lib/database/measurement-db';
 import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
-import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
@@ -107,19 +107,77 @@ const fetchMeasurements = async (
       return { measurements: sampleData, isRealData: false };
     }
 
-    // RehabDatabaseのdb.measurementsからデータを取得
-    const realMeasurements = await db.measurements
-      .where('userId')
-      .equals(userId)
+    // MeasurementDatabaseのdb.sessionsからデータを取得
+    const sessions = await db.sessions
+      .orderBy('startTime')
       .reverse() // 最新のデータが先頭に来るようにソート
       .toArray();
+
+    const realMeasurements: MotionMeasurement[] = [];
+
+    for (const session of sessions) {
+      const results = await db.getSessionResults(session.sessionId);
+
+      if (results.length > 0) {
+        const motionMeasurement: MotionMeasurement = {
+          id: session.sessionId,
+          userId: userId, // またはセッションから取得可能なuserId
+          measurementDate: new Date(session.startTime),
+          wristFlexion: 0,
+          wristExtension: 0,
+          wristUlnarDeviation: 0,
+          wristRadialDeviation: 0,
+          thumbFlexion: 0,
+          thumbExtension: 0,
+          thumbAdduction: 0,
+          thumbAbduction: 0,
+          accuracyScore: 1, // 仮の値
+          handUsed: session.hand,
+          comparisonResult: {
+            wristFlexion: { status: 'normal', within_range: true },
+            wristExtension: { status: 'normal', within_range: true },
+            wristUlnarDeviation: { status: 'normal', within_range: true },
+            wristRadialDeviation: { status: 'normal', within_range: true },
+            thumbFlexion: { status: 'normal', within_range: true },
+            thumbExtension: { status: 'normal', within_range: true },
+            thumbAdduction: { status: 'normal', within_range: true },
+            thumbAbduction: { status: 'normal', within_range: true },
+            overallStatus: 'normal' as const,
+          },
+          createdAt: new Date(session.startTime),
+        };
+
+        // resultsをstepNameでグループ化し、各stepNameの最新のangleを取得
+        const latestAngles: { [key: string]: number } = {};
+        results.forEach((result) => {
+          latestAngles[result.stepName] = result.angle;
+        });
+
+        // MotionMeasurementの各プロパティに割り当て
+        motionMeasurement.wristFlexion = latestAngles['wristFlexion'] || 0;
+        motionMeasurement.wristExtension = latestAngles['wristExtension'] || 0;
+        motionMeasurement.wristUlnarDeviation =
+          latestAngles['wristUlnarDeviation'] || 0;
+        motionMeasurement.wristRadialDeviation =
+          latestAngles['wristRadialDeviation'] || 0;
+        motionMeasurement.thumbFlexion = latestAngles['thumbFlexion'] || 0;
+        motionMeasurement.thumbExtension = latestAngles['thumbExtension'] || 0;
+        motionMeasurement.thumbAdduction = latestAngles['thumbAdduction'] || 0;
+        motionMeasurement.thumbAbduction = latestAngles['thumbAbduction'] || 0;
+
+        realMeasurements.push(motionMeasurement);
+      }
+    }
 
     if (realMeasurements.length === 0) {
       console.log('実際のデータがないため、サンプルデータを使用します。');
       return { measurements: generateSampleData(), isRealData: false };
     }
 
-    console.log('RehabDatabaseから取得した実際のデータを使用:', realMeasurements);
+    console.log(
+      'MeasurementDatabaseから取得した実際のデータを使用:',
+      realMeasurements
+    );
     return {
       measurements: realMeasurements,
       isRealData: true,
