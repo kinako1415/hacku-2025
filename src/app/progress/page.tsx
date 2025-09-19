@@ -213,6 +213,7 @@ interface ProgressStats {
   totalMeasurements: number;
   improvementRate: number;
   consecutiveDays: number;
+  latestMeasurementDate: Date | null;
 }
 
 const calculateProgressStats = (
@@ -224,6 +225,7 @@ const calculateProgressStats = (
       totalMeasurements: 0,
       improvementRate: 0,
       consecutiveDays: 0,
+      latestMeasurementDate: null,
     };
   }
 
@@ -241,10 +243,24 @@ const calculateProgressStats = (
   // 連続記録日数の計算
   const consecutiveDays = calculateConsecutiveDays(measurements);
 
+  // 最新測定日の取得
+  const sortedMeasurements = measurements
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(b.measurementDate).getTime() -
+        new Date(a.measurementDate).getTime()
+    );
+  const latestMeasurementDate =
+    sortedMeasurements.length > 0 && sortedMeasurements[0]
+      ? new Date(sortedMeasurements[0].measurementDate)
+      : null;
+
   return {
     totalMeasurements: measurements.length,
     improvementRate: Math.round(improvementRate),
     consecutiveDays,
+    latestMeasurementDate,
   };
 };
 
@@ -362,6 +378,19 @@ const ProgressPage: React.FC = () => {
                 <p className={styles.statValue}>{stats.consecutiveDays}日</p>
                 <span className={styles.statDescription}>連続記録日数</span>
               </div>
+
+              {/* 最新測定カード - 他のカードと同じデザイン */}
+              {stats.latestMeasurementDate && (
+                <div className={styles.statCard}>
+                  <h3>最新測定</h3>
+                  <p className={styles.statValue}>
+                    {stats.latestMeasurementDate.toLocaleDateString('ja-JP')}
+                  </p>
+                  <span className={styles.statDescription}>
+                    最後に測定した日
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
