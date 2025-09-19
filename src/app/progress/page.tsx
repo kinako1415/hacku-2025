@@ -27,7 +27,7 @@ import styles from './page.module.scss';
  * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
  * 本番環境やユーザーテスト時はfalseに設定してください。
  */
-const FORCE_USE_SAMPLE_DATA = false;
+const FORCE_USE_SAMPLE_DATA = true;
 
 /**
  * テスト用サンプルデータを生成

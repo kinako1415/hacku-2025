@@ -5,7 +5,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
   max-width: 100%;
 
   &__header {
@@ -169,7 +169,8 @@
     display: flex;
     border-bottom: 1px solid #e5e7eb;
     background: #f9fafb;
-    overflow-x: auto;
+    overflow: hidden; /* 横スクロールを無効化 */
+    flex-wrap: wrap; /* 必要に応じて折り返し */
   }
 
   &__content {
@@ -186,17 +187,19 @@
 .tab {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.5rem 2rem;
+  gap: 0.3rem;
+  padding: 1rem 1.2rem; /* 縦幅を小さく、横幅も調整 */
   border: none;
   background: #f8f9fa;
   color: #808080;
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 16px 16px 0 0;
-  min-width: 180px;
+  min-width: 120px; /* 横幅を狭く */
+  max-width: 180px; /* 最大横幅も制限 */
   text-align: center;
   border-bottom: 4px solid transparent;
+  flex: 1; /* フレックスで均等に分配 */
 
   &:hover {
     background: #ffffff;
@@ -214,12 +217,12 @@
   }
 
   &__label {
-    font-size: 1.1rem;
+    font-size: 1rem; /* フォントサイズを少し小さく */
     font-weight: 700;
   }
 
   &__description {
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* 説明文も少し小さく */
     opacity: 0.8;
     line-height: 1.3;
   }

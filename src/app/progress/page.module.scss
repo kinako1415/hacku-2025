@@ -148,7 +148,8 @@
   width: calc(50% - 8px); /* 画面の半分から8px（ギャップの半分）を引く */
   flex-shrink: 0; /* サイズ固定 */
   margin-top: 86px;
-  
+  height: stretch;
+
   @media (max-width: 768px) {
     width: 100%; /* モバイルでは全幅 */
   }
@@ -160,6 +161,7 @@
   flex-shrink: 0; /* サイズ固定 */
   min-width: 0; /* flex shrinkingを有効にする */
   margin-top: 16px;
+  height: 100%;
 
   @media (max-width: 768px) {
     width: 100%; /* モバイルでは全幅 */
@@ -234,6 +236,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px; /* セクション内のギャップ */
+  height: stretch;
 
   h2 {
     font-size: 1.4rem;
