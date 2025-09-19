@@ -2,6 +2,24 @@
  * 進捗ページのスタイル
  */
 
+/* サンプルデータ使用時のバナー */
+.sampleDataBanner {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 -24px 0 -24px;
+  border-radius: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
+
 .progressPage {
   min-height: 100vh;
   background: #ffffff; /* 明るい白背景 */

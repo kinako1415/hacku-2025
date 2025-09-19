@@ -44,7 +44,11 @@ const MOTION_TYPES: { type: MotionType; label: string; description: string }[] =
       label: '背屈',
       description: '手首を手の甲側に曲げる可動域',
     },
-    { type: 'radial', label: '橈屈', description: '手首を親指側に曲げる可動域' },
+    {
+      type: 'radial',
+      label: '橈屈',
+      description: '手首を親指側に曲げる可動域',
+    },
     { type: 'ulnar', label: '尺屈', description: '手首を小指側に曲げる可動域' },
   ];
 

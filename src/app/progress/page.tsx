@@ -18,11 +18,92 @@ import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
- * 実際のデータベースから測定データを取得
+ * 開発者用設定: サンプルデータを強制使用するかどうか
+ *
+ * 使用方法:
+ * - true:  サンプルデータを強制使用（実際のデータがあっても無視）
+ * - false: 実際のデータを優先使用（データがない場合のみサンプルデータ）
+ *
+ * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
+ * 本番環境やユーザーテスト時はfalseに設定してください。
+ */
+const FORCE_USE_SAMPLE_DATA = true;
+
+/**
+ * テスト用サンプルデータを生成
+ */
+const generateSampleData = (): MotionMeasurement[] => {
+  const sampleData: MotionMeasurement[] = [];
+  const today = new Date();
+
+  // 過去30日間のサンプルデータを生成
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+
+    // ランダムな進歩を含むリアルなデータを生成
+    const baseProgress = (29 - i) / 29; // 0から1への進歩
+    const randomVariation = (Math.random() - 0.5) * 0.2; // ±10%のばらつき
+
+    sampleData.push({
+      id: `sample-${i}`,
+      userId: 'sample-user',
+      measurementDate: date,
+      wristFlexion: Math.max(
+        20,
+        Math.min(90, 30 + baseProgress * 45 + randomVariation * 20)
+      ), // 30°から75°へ進歩
+      wristExtension: Math.max(
+        15,
+        Math.min(70, 25 + baseProgress * 35 + randomVariation * 15)
+      ), // 25°から60°へ進歩
+      wristUlnarDeviation: Math.max(
+        10,
+        Math.min(55, 20 + baseProgress * 25 + randomVariation * 10)
+      ), // 20°から45°へ進歩
+      wristRadialDeviation: Math.max(
+        5,
+        Math.min(25, 10 + baseProgress * 12 + randomVariation * 5)
+      ), // 10°から22°へ進歩
+      thumbFlexion: Math.max(
+        20,
+        Math.min(90, 40 + baseProgress * 30 + randomVariation * 15)
+      ),
+      thumbExtension: 0,
+      thumbAdduction: 0,
+      thumbAbduction: Math.max(
+        10,
+        Math.min(60, 20 + baseProgress * 25 + randomVariation * 10)
+      ),
+      accuracyScore: Math.max(
+        0.6,
+        Math.min(1.0, 0.7 + baseProgress * 0.2 + randomVariation * 0.1)
+      ),
+      handUsed: 'right' as const,
+      comparisonResult: {
+        wristFlexion: { status: 'normal', within_range: true },
+        wristExtension: { status: 'normal', within_range: true },
+        wristUlnarDeviation: { status: 'normal', within_range: true },
+        wristRadialDeviation: { status: 'normal', within_range: true },
+        thumbFlexion: { status: 'normal', within_range: true },
+        thumbExtension: { status: 'normal', within_range: true },
+        thumbAdduction: { status: 'normal', within_range: true },
+        thumbAbduction: { status: 'normal', within_range: true },
+        overallStatus: 'normal' as const,
+      },
+      createdAt: date,
+    });
+  }
+
+  return sampleData;
+};
+
+/**
+ * 実際のデータベースから測定データを取得（サンプルデータを含む）
  */
 const fetchMeasurements = async (
   userId: string = 'default-user'
-): Promise<MotionMeasurement[]> => {
+): Promise<{ measurements: MotionMeasurement[]; isRealData: boolean }> => {
   try {
     const measurements = await db.measurements
       .where('userId')
@@ -31,10 +112,27 @@ const fetchMeasurements = async (
       .toArray();
 
     console.log('進捗ページ: 取得した測定データ:', measurements);
-    return measurements;
+
+    // 開発者設定に基づいてデータソースを決定
+    if (FORCE_USE_SAMPLE_DATA) {
+      const sampleData = generateSampleData();
+      console.log('開発者設定により、サンプルデータを強制使用:', sampleData);
+      return { measurements: sampleData, isRealData: false };
+    }
+
+    // 実際のデータがない場合はサンプルデータを使用
+    if (measurements.length === 0) {
+      const sampleData = generateSampleData();
+      console.log('実際のデータがないため、サンプルデータを使用:', sampleData);
+      return { measurements: sampleData, isRealData: false };
+    }
+
+    console.log('実際のデータを使用:', measurements);
+    return { measurements, isRealData: true };
   } catch (error) {
     console.error('測定データの取得に失敗:', error);
-    return [];
+    // エラーの場合もサンプルデータを返す
+    return { measurements: generateSampleData(), isRealData: false };
   }
 };
 
@@ -146,18 +244,20 @@ const ProgressPage: React.FC = () => {
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
   const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usingRealData, setUsingRealData] = useState(true);
 
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [measurementData, recordData] = await Promise.all([
+        const [measurementResult, recordData] = await Promise.all([
           fetchMeasurements(),
           fetchCalendarRecords(),
         ]);
 
-        setMeasurements(measurementData);
+        setMeasurements(measurementResult.measurements);
+        setUsingRealData(measurementResult.isRealData);
         setCalendarRecords(recordData);
       } catch (error) {
         console.error('データの読み込みに失敗:', error);
@@ -186,6 +286,13 @@ const ProgressPage: React.FC = () => {
 
   return (
     <div className={styles.progressPage}>
+      {!usingRealData && (
+        <div className={styles.sampleDataBanner}>
+          ⚠️ {FORCE_USE_SAMPLE_DATA ? '開発者設定により' : ''}
+          サンプルデータを表示中です
+        </div>
+      )}
+
       <div className={styles.pageHeader}>
         <h1 className={styles.title}>
           <span className={styles.titleIcon}>📊</span>
@@ -221,7 +328,7 @@ const ProgressPage: React.FC = () => {
           <MotionChartsContainer measurements={measurements} />
         </div>
 
-        {measurements.length === 0 && (
+        {measurements.length === 0 && usingRealData && (
           <div className={styles.noDataMessage}>
             <p>選択した期間にデータがありません。</p>
             <p>測定を開始してデータを蓄積してください。</p>
