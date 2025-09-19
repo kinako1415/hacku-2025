@@ -397,6 +397,7 @@
   object-fit: cover; /* 画面全体をカバーして全画面表示 */
   z-index: 2;
   border-radius: 36px;
+  transform: scaleX(-1); // ← 追加：キャンバスもミラー表示
 }
 
 /* 測定用カメラ（適切なアスペクト比保持） */
@@ -407,7 +408,6 @@
   background: transparent; /* 背景を透明に */
   border-radius: 36px;
   z-index: 1;
-
   box-shadow: none; /* 影を除去してシームレスに */
 }
 
@@ -415,8 +415,8 @@
 .measurementCanvas {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: -30%;
+  width: 80vw; /* 測定用カメラと同じサイズ */
   height: 100%;
   pointer-events: none;
   z-index: 8;
