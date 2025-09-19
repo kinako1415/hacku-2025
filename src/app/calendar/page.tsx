@@ -1,18 +1,33 @@
-/**
- * カレンダーページ
- * リハビリテーション記録のカレンダー表示と記録詳細管理
- */
+'use client';
 
-import React from 'react';
-
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.scss';
 import Card from '@/components/layout/card';
 import { Calendar } from '@/components/calendar/Calendar';
+import { db } from '@/lib/database/measurement-db'; // DBをインポート
 
 /**
  * カレンダーページコンポーネント
  */
 export default function CalendarPage(): React.JSX.Element {
+  const [measuredDates, setMeasuredDates] = useState<Date[]>([]);
+
+  useEffect(() => {
+    const fetchMeasuredDates = async () => {
+      try {
+        const sessions = await db.getSessions();
+        const dates = sessions
+          .filter(session => session.isCompleted && session.endTime)
+          .map(session => new Date(session.endTime!));
+        setMeasuredDates(dates);
+      } catch (error) {
+        console.error("測定日の取得に失敗しました:", error);
+      }
+    };
+
+    fetchMeasuredDates();
+  }, []);
+
   return (
     <div className={styles.calendarPage}>
       <div className={styles.leftSidebar}>
@@ -46,7 +61,7 @@ export default function CalendarPage(): React.JSX.Element {
       </div>
 
       <div className={styles.rightContent}>
-        <Calendar />
+        <Calendar measuredDates={measuredDates} />
       </div>
     </div>
   );

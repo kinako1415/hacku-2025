@@ -9,11 +9,13 @@ import dayjs from 'dayjs';
 type CalendarProps = {
   selectedDate?: string;
   onDateChange?: (date: string) => void;
+  measuredDates?: Date[];
 };
 
 export const Calendar: FC<CalendarProps> = ({
   selectedDate: externalSelectedDate,
   onDateChange,
+  measuredDates = [],
 }) => {
   const {
     selectedMonth,
@@ -46,17 +48,9 @@ export const Calendar: FC<CalendarProps> = ({
   const weekView = false;
   const now = dayjs();
 
-  // 仮のデータ：測定した日付のリスト
-  const sokuteibi = [
-    new Date('2025-09-08'), // 2025年9月8日に測定済み
-    new Date('2025-09-11'), // 2025年9月8日に測定済み
-    new Date('2025-09-15'), // 2025年9月15日に測定済み
-    new Date('2025-09-16'), // 2025年9月16日に測定済み
-  ];
-
   // 測定済みの日付をチェックする関数
   const isMeasuredDate = (date: dayjs.Dayjs) => {
-    return sokuteibi.some((measuredDate) =>
+    return measuredDates.some((measuredDate) =>
       date.isSame(dayjs(measuredDate), 'day')
     );
   };
