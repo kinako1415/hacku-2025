@@ -460,20 +460,22 @@ const CameraPreview: React.FC<{
       <div className={styles.cameraFrame}>
         <div className={styles.frameInner}>
           {cameraState.isReady ? (
-            <video
-              className={styles.cameraVideo}
-              autoPlay
-              playsInline
-              muted
-              ref={
-                videoRef ||
-                ((video) => {
-                  if (video && cameraState.stream) {
-                    video.srcObject = cameraState.stream;
-                  }
-                })
-              }
-            />
+            <>
+              <video
+                className={styles.cameraVideo}
+                autoPlay
+                playsInline
+                muted
+                ref={
+                  videoRef ||
+                  ((video) => {
+                    if (video && cameraState.stream) {
+                      video.srcObject = cameraState.stream;
+                    }
+                  })
+                }
+              />
+            </>
           ) : (
             <div className={styles.cameraPlaceholder}>
               <span>カメラ準備中...</span>
