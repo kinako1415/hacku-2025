@@ -154,16 +154,15 @@ const fetchMeasurements = async (
         });
 
         // MotionMeasurementの各プロパティに割り当て
-        motionMeasurement.wristFlexion = latestAngles['wristFlexion'] || 0;
-        motionMeasurement.wristExtension = latestAngles['wristExtension'] || 0;
-        motionMeasurement.wristUlnarDeviation =
-          latestAngles['wristUlnarDeviation'] || 0;
-        motionMeasurement.wristRadialDeviation =
-          latestAngles['wristRadialDeviation'] || 0;
-        motionMeasurement.thumbFlexion = latestAngles['thumbFlexion'] || 0;
-        motionMeasurement.thumbExtension = latestAngles['thumbExtension'] || 0;
-        motionMeasurement.thumbAdduction = latestAngles['thumbAdduction'] || 0;
-        motionMeasurement.thumbAbduction = latestAngles['thumbAbduction'] || 0;
+        motionMeasurement.wristFlexion = latestAngles['掌屈'] || 0;
+        motionMeasurement.wristExtension = latestAngles['背屈'] || 0;
+        motionMeasurement.wristUlnarDeviation = latestAngles['尺屈'] || 0;
+        motionMeasurement.wristRadialDeviation = latestAngles['橈屈'] || 0;
+        // 他のthumb関連の角度も同様にマッピングが必要であれば追加
+        // motionMeasurement.thumbFlexion = latestAngles['thumbFlexion'] || 0;
+        // motionMeasurement.thumbExtension = latestAngles['thumbExtension'] || 0;
+        // motionMeasurement.thumbAdduction = latestAngles['thumbAdduction'] || 0;
+        // motionMeasurement.thumbAbduction = latestAngles['thumbAbduction'] || 0;
 
         realMeasurements.push(motionMeasurement);
       }

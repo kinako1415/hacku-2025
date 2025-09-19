@@ -73,10 +73,37 @@ class MeasurementDatabase extends Dexie {
    * 測定結果を保存
    */
   async saveMeasurementResult(result: Omit<MeasurementResult, 'id' | 'timestamp'>): Promise<void> {
-    await this.results.add({
-      ...result,
-      timestamp: Date.now(),
-    });
+    const newTimestamp = Date.now();
+    const newDate = new Date(newTimestamp);
+    newDate.setHours(0, 0, 0, 0); // 日付部分のみを比較するために時間をリセット
+
+    // 同じセッション、同じステップ、同じハンドで、かつ同じ日の既存の結果を検索
+    const existingResult = await this.results
+      .where({
+        sessionId: result.sessionId,
+        stepId: result.stepId,
+        hand: result.hand,
+      })
+      .filter(r => {
+        const existingDate = new Date(r.timestamp);
+        existingDate.setHours(0, 0, 0, 0);
+        return existingDate.getTime() === newDate.getTime();
+      })
+      .first();
+
+    if (existingResult && existingResult.id) {
+      // 既存の結果があれば更新
+      await this.results.update(existingResult.id, {
+        ...result,
+        timestamp: newTimestamp,
+      });
+    } else {
+      // なければ新規追加
+      await this.results.add({
+        ...result,
+        timestamp: newTimestamp,
+      });
+    }
   }
 
   /**
