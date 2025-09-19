@@ -139,34 +139,58 @@
 }
 
 .normalRange {
-  &__text {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin: 0;
+  &__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
   }
 
-  &__indicator {
-    position: relative;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
   }
 
-  &__bar {
-    width: 100%;
-    height: 100%;
-    border-radius: 4px;
+  &__value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  &__status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   &__current {
-    position: absolute;
-    top: -2px;
-    width: 4px;
-    height: 12px;
-    border-radius: 2px;
-    transform: translateX(-50%);
-    border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  &__badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+
+    &--good {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    &--fair {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &--poor {
+      background: #fee2e2;
+      color: #991b1b;
+    }
   }
 }
 

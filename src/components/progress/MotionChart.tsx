@@ -346,26 +346,27 @@ export const MotionChart: React.FC<MotionChartProps> = ({
 
       {/* 正常範囲の表示 */}
       <div className={styles.motionChart__normalRange}>
-        <p className={styles.normalRange__text}>
-          正常可動域: {config.normalRange.max}°
-        </p>
-        <div className={styles.normalRange__indicator}>
-          <div
-            className={styles.normalRange__bar}
-            style={{
-              background: `linear-gradient(90deg, 
-                #E5E7EB 0%, 
-                ${config.color}20 ${(config.normalRange.min / config.normalRange.max) * 100}%, 
-                ${config.color}40 100%)`,
-            }}
-          />
-          <span
-            className={styles.normalRange__current}
-            style={{
-              left: `${Math.min(100, (statistics.latest / config.normalRange.max) * 100)}%`,
-              backgroundColor: config.color,
-            }}
-          />
+        <div className={styles.normalRange__info}>
+          <span className={styles.normalRange__label}>正常可動域</span>
+          <span className={styles.normalRange__value}>{config.normalRange.max}°</span>
+        </div>
+        <div className={styles.normalRange__status}>
+          <span className={styles.normalRange__current}>
+            現在: {statistics.latest.toFixed(1)}°
+          </span>
+          <span className={`${styles.normalRange__badge} ${
+            statistics.latest >= config.normalRange.max * 0.8 
+              ? styles['normalRange__badge--good']
+              : statistics.latest >= config.normalRange.max * 0.6
+              ? styles['normalRange__badge--fair'] 
+              : styles['normalRange__badge--poor']
+          }`}>
+            {statistics.latest >= config.normalRange.max * 0.8 
+              ? '良好' 
+              : statistics.latest >= config.normalRange.max * 0.6
+              ? '改善中'
+              : '要改善'}
+          </span>
         </div>
       </div>
     </div>
