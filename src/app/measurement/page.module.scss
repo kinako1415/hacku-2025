@@ -370,10 +370,11 @@
 .dashedFrame {
   position: absolute;
   inset: 140px 100px;
-  border: 3px dashed #0542fc;
+  border: 3px dashed rgba(5, 66, 252, 0.8); /* 透明度を追加 */
   border-radius: 24px;
   pointer-events: none; /* クリックイベントを通す */
   z-index: 10;
+  box-shadow: 0 0 20px rgba(5, 66, 252, 0.3); /* グロー効果を追加 */
 }
 
 .frameInner {
@@ -386,11 +387,65 @@
   justify-content: center;
 }
 
-.cameraVideo {
+/* 背景カメラ（測定用カメラと同じアスペクト比で自然に延長） */
+.backgroundCameraVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* 画面全体をカバーして全画面表示 */
+  z-index: 2;
   border-radius: 36px;
+  transform: scaleX(-1); // ← 追加：キャンバスもミラー表示
+}
+
+/* 測定用カメラ（適切なアスペクト比保持） */
+.measurementCameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* アスペクト比を保持して測定精度を確保 */
+  background: transparent; /* 背景を透明に */
+  border-radius: 36px;
+  z-index: 1;
+  box-shadow: none; /* 影を除去してシームレスに */
+}
+
+/* 測定用キャンバス（MediaPipe描画用） */
+.measurementCanvas {
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 80vw; /* 測定用カメラと同じサイズ */
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* 隠れたビデオコンテナ（MediaPipe処理用） */
+.hiddenVideoContainer {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 640px;
+  height: 480px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hiddenVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hiddenCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .instructionsSection {
@@ -427,7 +482,7 @@
   top: 90px;
   left: 50%;
   transform: translateX(-50%);
-  background: #0542fc;
+  background: rgba(5, 66, 252, 0.9); /* 透明度を追加 */
   color: white;
   font-weight: 600;
   font-size: 16px;
@@ -436,6 +491,8 @@
   padding: 8px 16px;
   border-radius: 24px;
   z-index: 15; /* 点線枠より上に */
+  backdrop-filter: blur(10px); /* 背景ぼかし効果 */
+  box-shadow: 0 4px 20px rgba(5, 66, 252, 0.3); /* 影を追加 */
 }
 
 .cameraError {
