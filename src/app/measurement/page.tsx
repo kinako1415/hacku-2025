@@ -149,15 +149,15 @@ const measurementSteps: MeasurementStep[] = [
     id: 'ulnar-deviation',
     name: '尺屈',
     instruction: '小指側に手首を曲げてください',
-    description: '手首を小指側に最大まで曲げてください（0-30°）',
-    targetAngle: 30,
+    description: '手首を小指側に最大まで曲げてください',
+    targetAngle: 55,
   },
   {
     id: 'radial-deviation',
     name: '橈屈',
     instruction: '親指側に手首を曲げてください',
-    description: '手首を親指側に最大まで曲げてください（0-20°）',
-    targetAngle: 20,
+    description: '手首を親指側に最大まで曲げてください',
+    targetAngle: 25,
   },
 ];
 

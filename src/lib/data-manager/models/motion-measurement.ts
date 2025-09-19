@@ -74,8 +74,8 @@ export const NORMAL_RANGES = {
   wrist: {
     flexion: { min: 0, max: 90 }, // 掌屈
     extension: { min: 0, max: 70 }, // 背屈
-    ulnarDeviation: { min: 0, max: 55 }, // 尺屈
-    radialDeviation: { min: 0, max: 25 }, // 橈屈
+    ulnarDeviation: { min: 0, max: 90 }, // 尺屈（制限なし、垂直から90度まで）
+    radialDeviation: { min: 0, max: 90 }, // 橈屈（制限なし、垂直から90度まで）
   },
   thumb: {
     flexion: { min: 0, max: 90 }, // 屈曲

@@ -145,7 +145,6 @@ export const calculateWristAngles = (landmarks: Point3D[]): WristAngles => {
 
   // 基準ベクトル（垂直方向）
   const verticalVector = { x: 0, y: -1, z: 0 };
-  const horizontalVector = { x: 1, y: 0, z: 0 };
 
   // 屈曲・伸展角度（Y軸回転）
   const flexionExtensionAngle = calculateAngleBetweenVectors(
@@ -153,17 +152,22 @@ export const calculateWristAngles = (landmarks: Point3D[]): WristAngles => {
     verticalVector
   );
 
-  // 側屈角度（X軸回転）
+  // 側屈角度（手のひら中心から手首へのベクトルと垂直ベクトルの角度）
+  const palmToWristVector = calculateVector(palmCenter, wrist);
+
+  // 手のひら中心から手首へのベクトルと垂直ベクトルの角度を計算
   const deviationAngle = calculateAngleBetweenVectors(
-    { x: wristToPalmVector.x, y: 0, z: wristToPalmVector.z || 0 },
-    horizontalVector
+    palmToWristVector,
+    verticalVector
   );
 
-  // 角度の方向を判定
+  // 屈曲・伸展の角度の方向を判定
   const flexion = wristToPalmVector.y > 0 ? flexionExtensionAngle : 0;
   const extension = wristToPalmVector.y < 0 ? flexionExtensionAngle : 0;
-  const radialDeviation = wristToPalmVector.x > 0 ? deviationAngle : 0;
-  const ulnarDeviation = wristToPalmVector.x < 0 ? deviationAngle : 0;
+
+  // 側屈角度の方向を判定（X成分の符号で判定）
+  const radialDeviation = palmToWristVector.x > 0 ? deviationAngle : 0;
+  const ulnarDeviation = palmToWristVector.x < 0 ? deviationAngle : 0;
 
   return {
     flexion,
