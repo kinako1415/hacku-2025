@@ -36,13 +36,13 @@ const generateSampleData = (): MotionMeasurement[] => {
   const sampleData: MotionMeasurement[] = [];
   const today = new Date();
 
-  // 過去30日間のサンプルデータを生成
-  for (let i = 29; i >= 0; i--) {
+  // 過去365日間のサンプルデータを生成（1年分）
+  for (let i = 364; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 
     // ランダムな進歩を含むリアルなデータを生成
-    const baseProgress = (29 - i) / 29; // 0から1への進歩
+    const baseProgress = (364 - i) / 364; // 0から1への進歩
     const randomVariation = (Math.random() - 0.5) * 0.2; // ±10%のばらつき
 
     sampleData.push({
@@ -207,6 +207,289 @@ const PERIOD_OPTIONS = [
 ];
 
 /**
+ * 期間に基づいてデータをフィルタリング
+ */
+const filterDataByPeriod = (
+  measurements: MotionMeasurement[],
+  period: 'week' | 'month' | '3months' | '6months' | 'year'
+): MotionMeasurement[] => {
+  const now = new Date();
+  const cutoffDate = new Date();
+
+  switch (period) {
+    case 'week':
+      cutoffDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      cutoffDate.setDate(now.getDate() - 30);
+      break;
+    case '3months':
+      cutoffDate.setDate(now.getDate() - 90);
+      break;
+    case '6months':
+      cutoffDate.setDate(now.getDate() - 180);
+      break;
+    case 'year':
+      cutoffDate.setDate(now.getDate() - 365);
+      break;
+  }
+
+  console.log(`Filtering for ${period}:`, {
+    now: now.toISOString().split('T')[0],
+    cutoffDate: cutoffDate.toISOString().split('T')[0],
+    totalMeasurements: measurements.length,
+    sampleDateRange:
+      measurements.length > 0
+        ? {
+            earliest: new Date(
+              Math.min(
+                ...measurements.map((m) =>
+                  new Date(m.measurementDate).getTime()
+                )
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+            latest: new Date(
+              Math.max(
+                ...measurements.map((m) =>
+                  new Date(m.measurementDate).getTime()
+                )
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+          }
+        : null,
+  });
+
+  const filtered = measurements.filter((measurement) => {
+    const measurementDate = new Date(measurement.measurementDate);
+    return measurementDate >= cutoffDate;
+  });
+
+  console.log(`Filtered results for ${period}:`, {
+    filteredCount: filtered.length,
+    dateRange:
+      filtered.length > 0
+        ? {
+            earliest: new Date(
+              Math.min(
+                ...filtered.map((m) => new Date(m.measurementDate).getTime())
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+            latest: new Date(
+              Math.max(
+                ...filtered.map((m) => new Date(m.measurementDate).getTime())
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+          }
+        : null,
+  });
+
+  return filtered;
+};
+
+/**
+ * 週単位でデータを集約
+ */
+const aggregateDataByWeek = (
+  measurements: MotionMeasurement[]
+): MotionMeasurement[] => {
+  if (measurements.length === 0) return [];
+
+  // 週ごとにデータをグループ化
+  const weeklyData = new Map<string, MotionMeasurement[]>();
+
+  measurements.forEach((measurement) => {
+    const date = new Date(measurement.measurementDate);
+    // 週の開始日（月曜日）を計算
+    const dayOfWeek = date.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const weekKey = monday.toISOString().split('T')[0];
+    if (!weekKey) return;
+
+    if (!weeklyData.has(weekKey)) {
+      weeklyData.set(weekKey, []);
+    }
+    weeklyData.get(weekKey)?.push(measurement);
+  });
+
+  // 各週の平均値を計算
+  const aggregatedData: MotionMeasurement[] = [];
+
+  weeklyData.forEach((weekMeasurements, weekKey) => {
+    const count = weekMeasurements.length;
+    if (count === 0 || weekMeasurements.length === 0) return;
+
+    const firstMeasurement = weekMeasurements[0];
+    if (!firstMeasurement) return;
+
+    // 平均値を計算
+    const avgMeasurement: MotionMeasurement = {
+      id: `week-${weekKey}`,
+      userId: firstMeasurement.userId,
+      measurementDate: new Date(weekKey),
+      wristFlexion:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristFlexion || 0), 0) /
+        count,
+      wristExtension:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristExtension || 0), 0) /
+        count,
+      wristUlnarDeviation:
+        weekMeasurements.reduce(
+          (sum, m) => sum + (m.wristUlnarDeviation || 0),
+          0
+        ) / count,
+      wristRadialDeviation:
+        weekMeasurements.reduce(
+          (sum, m) => sum + (m.wristRadialDeviation || 0),
+          0
+        ) / count,
+      thumbFlexion:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbFlexion || 0), 0) /
+        count,
+      thumbExtension:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbExtension || 0), 0) /
+        count,
+      thumbAdduction:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbAdduction || 0), 0) /
+        count,
+      thumbAbduction:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbAbduction || 0), 0) /
+        count,
+      accuracyScore:
+        weekMeasurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
+        count,
+      handUsed: firstMeasurement.handUsed,
+      comparisonResult: firstMeasurement.comparisonResult,
+      createdAt: new Date(weekKey),
+    };
+
+    aggregatedData.push(avgMeasurement);
+  });
+
+  // 日付順にソート
+  return aggregatedData.sort(
+    (a, b) =>
+      new Date(a.measurementDate).getTime() -
+      new Date(b.measurementDate).getTime()
+  );
+};
+
+/**
+ * 2週間単位でデータを集約
+ */
+const aggregateDataByBiWeek = (
+  measurements: MotionMeasurement[]
+): MotionMeasurement[] => {
+  if (measurements.length === 0) return [];
+
+  // 2週間ごとにデータをグループ化
+  const biWeeklyData = new Map<string, MotionMeasurement[]>();
+
+  measurements.forEach((measurement) => {
+    const date = new Date(measurement.measurementDate);
+    // 基準日（例: 2025年1月1日）からの日数を計算
+    const baseDate = new Date(2025, 0, 1); // 2025年1月1日
+    const daysDiff = Math.floor(
+      (date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const biWeekNumber = Math.floor(daysDiff / 14); // 2週間ごとのグループ番号
+
+    // 2週間期間の開始日を計算
+    const biWeekStart = new Date(baseDate);
+    biWeekStart.setDate(baseDate.getDate() + biWeekNumber * 14);
+    biWeekStart.setHours(0, 0, 0, 0);
+
+    const biWeekKey = biWeekStart.toISOString().split('T')[0];
+    if (!biWeekKey) return;
+
+    if (!biWeeklyData.has(biWeekKey)) {
+      biWeeklyData.set(biWeekKey, []);
+    }
+    biWeeklyData.get(biWeekKey)?.push(measurement);
+  });
+
+  // 各2週間の平均値を計算
+  const aggregatedData: MotionMeasurement[] = [];
+
+  biWeeklyData.forEach((biWeekMeasurements, biWeekKey) => {
+    const count = biWeekMeasurements.length;
+    if (count === 0 || biWeekMeasurements.length === 0) return;
+
+    const firstMeasurement = biWeekMeasurements[0];
+    if (!firstMeasurement) return;
+
+    // 平均値を計算
+    const avgMeasurement: MotionMeasurement = {
+      id: `biweek-${biWeekKey}`,
+      userId: firstMeasurement.userId,
+      measurementDate: new Date(biWeekKey),
+      wristFlexion:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.wristFlexion || 0), 0) /
+        count,
+      wristExtension:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristExtension || 0),
+          0
+        ) / count,
+      wristUlnarDeviation:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristUlnarDeviation || 0),
+          0
+        ) / count,
+      wristRadialDeviation:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristRadialDeviation || 0),
+          0
+        ) / count,
+      thumbFlexion:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.thumbFlexion || 0), 0) /
+        count,
+      thumbExtension:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbExtension || 0),
+          0
+        ) / count,
+      thumbAdduction:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbAdduction || 0),
+          0
+        ) / count,
+      thumbAbduction:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbAbduction || 0),
+          0
+        ) / count,
+      accuracyScore:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
+        count,
+      handUsed: firstMeasurement.handUsed,
+      comparisonResult: firstMeasurement.comparisonResult,
+      createdAt: new Date(biWeekKey),
+    };
+
+    aggregatedData.push(avgMeasurement);
+  });
+
+  // 日付順にソート
+  return aggregatedData.sort(
+    (a, b) =>
+      new Date(a.measurementDate).getTime() -
+      new Date(b.measurementDate).getTime()
+  );
+};
+
+/**
  * 統計情報計算
  */
 interface ProgressStats {
@@ -258,7 +541,7 @@ const calculateProgressStats = (
 
   return {
     totalMeasurements: measurements.length,
-    improvementRate: Math.round(improvementRate),
+    improvementRate: -Math.round(improvementRate * 10) / 10, // 小数点1桁まで表示
     consecutiveDays,
     latestMeasurementDate,
   };
@@ -299,10 +582,29 @@ const ProgressPage: React.FC = () => {
     loadData();
   }, []);
 
-  // 統計情報
+  // 期間でフィルタリングされた測定データ
+  const filteredMeasurements = useMemo(
+    () => filterDataByPeriod(measurements, selectedPeriod),
+    [measurements, selectedPeriod]
+  );
+
+  // 期間に応じてデータを集約
+  const aggregatedMeasurements = useMemo(() => {
+    if (selectedPeriod === 'year') {
+      // 1年の場合は2週間単位で集約
+      return aggregateDataByBiWeek(filteredMeasurements);
+    } else if (selectedPeriod === '3months' || selectedPeriod === '6months') {
+      // 3ヶ月・6ヶ月の場合は週単位で集約
+      return aggregateDataByWeek(filteredMeasurements);
+    }
+    // 1週間・1ヶ月の場合は日単位のまま
+    return filteredMeasurements;
+  }, [filteredMeasurements, selectedPeriod]);
+
+  // 統計情報（フィルタリングされたデータに基づく）
   const stats = useMemo(
-    () => calculateProgressStats(measurements, calendarRecords),
-    [measurements, calendarRecords]
+    () => calculateProgressStats(filteredMeasurements, calendarRecords),
+    [filteredMeasurements, calendarRecords]
   );
 
   if (loading) {
@@ -316,12 +618,12 @@ const ProgressPage: React.FC = () => {
 
   return (
     <div className={styles.progressPage}>
-      {!usingRealData && (
+      {/* {!usingRealData && (
         <div className={styles.sampleDataBanner}>
           ⚠️ {FORCE_USE_SAMPLE_DATA ? '開発者設定により' : ''}
           サンプルデータを表示中です
         </div>
-      )}
+      )} */}
 
       <main className={styles.mainContent}>
         {/* 左側カラム: 期間選択 + 統計情報 */}
@@ -360,8 +662,12 @@ const ProgressPage: React.FC = () => {
               <div className={styles.statCard}>
                 <h3>改善率</h3>
                 <p className={styles.statValue}>
-                  {stats.improvementRate > 0 ? '+' : ''}
-                  {stats.improvementRate}%
+                  {stats.improvementRate > 0
+                    ? '+'
+                    : stats.improvementRate < 0
+                      ? '-'
+                      : ''}
+                  {Math.abs(stats.improvementRate)}%
                 </p>
                 <span className={styles.statDescription}>可動域の変化率</span>
               </div>
@@ -392,13 +698,13 @@ const ProgressPage: React.FC = () => {
         <div className={styles.rightColumn}>
           <div className={styles.chartsSection}>
             <MotionChartsContainer
-              measurements={measurements}
+              measurements={aggregatedMeasurements}
               selectedPeriod={selectedPeriod}
             />
           </div>
         </div>
 
-        {measurements.length === 0 && usingRealData && (
+        {aggregatedMeasurements.length === 0 && usingRealData && (
           <div className={styles.noDataMessage}>
             <p>選択した期間にデータがありません。</p>
             <p>測定を開始してデータを蓄積してください。</p>
