@@ -6,6 +6,9 @@ import Card from '@/components/layout/card';
 import { Calendar } from '@/components/calendar/Calendar';
 import { db } from '@/lib/database/measurement-db'; // DBをインポート
 
+import dayjs from 'dayjs';
+import { is } from 'zod/locales';
+
 /**
  * カレンダーページコンポーネント
  */
@@ -17,16 +20,26 @@ export default function CalendarPage(): React.JSX.Element {
       try {
         const sessions = await db.getSessions();
         const dates = sessions
-          .filter(session => session.isCompleted && session.endTime)
-          .map(session => new Date(session.endTime!));
+          .filter((session) => session.isCompleted && session.endTime)
+          .map((session) => new Date(session.endTime!));
         setMeasuredDates(dates);
       } catch (error) {
-        console.error("測定日の取得に失敗しました:", error);
+        console.error('測定日の取得に失敗しました:', error);
       }
     };
 
     fetchMeasuredDates();
   }, []);
+
+  const newestDate = measuredDates
+    .slice() // 元の配列を変更しないためコピー
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
+  const isTodayMeasured = newestDate
+    ? dayjs(newestDate).isSame(dayjs(), 'day')
+    : false;
+
+  console.log(isTodayMeasured);
 
   return (
     <div className={styles.calendarPage}>
@@ -35,7 +48,7 @@ export default function CalendarPage(): React.JSX.Element {
         <Card
           title="今日の記録"
           description="今日の測定状況を表示します"
-          role="未測定"
+          role={isTodayMeasured ? '測定済' : '未測定'}
           width={400}
           height={211}
           isBlue={true}

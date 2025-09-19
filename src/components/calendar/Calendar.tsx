@@ -5,7 +5,6 @@ import { FC, useEffect } from 'react';
 import Image from 'next/image';
 import { useCalendar } from './useCalendar';
 import dayjs from 'dayjs';
-
 import left from '@/assets/left.svg';
 import right from '@/assets/right.svg';
 
