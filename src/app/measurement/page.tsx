@@ -318,11 +318,11 @@ const MeasurementExecution: React.FC<{
         </h2>
       </div>
 
-      {/* ビデオとキャンバス */}
-      <div className={styles.videoContainer}>
+      {/* ビデオとキャンバス - MediaPipe用（非表示） */}
+      <div className={styles.hiddenVideoContainer}>
         <video
           ref={videoRef}
-          className={styles.video}
+          className={styles.hiddenVideo}
           autoPlay
           playsInline
           muted
@@ -330,7 +330,7 @@ const MeasurementExecution: React.FC<{
         />
         <canvas
           ref={canvasRef}
-          className={styles.canvas}
+          className={styles.hiddenCanvas}
           style={{ transform: 'scaleX(-1)' }} // ミラー表示に合わせる
         />
       </div>
@@ -436,7 +436,8 @@ const CameraPreview: React.FC<{
   cameraState: CameraState;
   isInactive?: boolean;
   videoRef?: React.RefObject<HTMLVideoElement>;
-}> = ({ cameraState, isInactive = false, videoRef }) => {
+  canvasRef?: React.RefObject<HTMLCanvasElement>;
+}> = ({ cameraState, isInactive = false, videoRef, canvasRef }) => {
   if (cameraState.error) {
     return (
       <div className={styles.cameraError}>
@@ -449,6 +450,21 @@ const CameraPreview: React.FC<{
     <div
       className={`${styles.cameraContainer} ${isInactive ? styles.inactive : ''}`}
     >
+      {/* 背景カメラ（UI装飾用・引き延ばし） */}
+      {cameraState.isReady && cameraState.stream && (
+        <video
+          className={styles.backgroundCameraVideo}
+          autoPlay
+          playsInline
+          muted
+          ref={(video) => {
+            if (video && cameraState.stream && !videoRef) {
+              video.srcObject = cameraState.stream;
+            }
+          }}
+        />
+      )}
+
       {/* 点線の枠（absolute配置） */}
       <div className={styles.dashedFrame}></div>
 
@@ -461,20 +477,30 @@ const CameraPreview: React.FC<{
         <div className={styles.frameInner}>
           {cameraState.isReady ? (
             <>
+              {/* 測定用カメラ（適切なアスペクト比保持） */}
               <video
-                className={styles.cameraVideo}
+                className={styles.measurementCameraVideo}
                 autoPlay
                 playsInline
                 muted
                 ref={
                   videoRef ||
                   ((video) => {
-                    if (video && cameraState.stream) {
+                    // videoRefが渡されていない場合のみ、独自にストリーム設定
+                    if (video && cameraState.stream && !videoRef) {
                       video.srcObject = cameraState.stream;
                     }
                   })
                 }
               />
+              {/* 測定用キャンバス（MediaPipe描画用） */}
+              {canvasRef && (
+                <canvas
+                  ref={canvasRef}
+                  className={styles.measurementCanvas}
+                  style={{ transform: 'scaleX(-1)' }} // ミラー表示に合わせる
+                />
+              )}
             </>
           ) : (
             <div className={styles.cameraPlaceholder}>
@@ -520,6 +546,14 @@ const MeasurementPage: React.FC = () => {
 
   // 最後の角度更新時刻
   const lastAngleUpdateRef = useRef<number>(0);
+
+  // 最新のsetup状態を参照するためのref
+  const setupRef = useRef(setup);
+
+  // setupRefを常に最新の状態に更新
+  useEffect(() => {
+    setupRef.current = setup;
+  }, [setup]);
 
   /**
    * MediaPipe Handsの初期化
@@ -848,10 +882,18 @@ const MeasurementPage: React.FC = () => {
 
     let frameCount = 0;
     const detectFrame = async () => {
+      console.log('detectFrame実行中:', {
+        videoExists: !!videoRef.current,
+        handsExists: !!handsRef.current,
+        currentStep: setupRef.current.currentStep,
+        videoReadyState: videoRef.current?.readyState,
+        videoSrc: !!videoRef.current?.srcObject,
+      });
+
       if (
         videoRef.current &&
         handsRef.current &&
-        setup.currentStep === 'measurement'
+        setupRef.current.currentStep === 'measurement'
       ) {
         try {
           frameCount++;
@@ -865,10 +907,12 @@ const MeasurementPage: React.FC = () => {
         } catch (error) {
           console.error('MediaPipe送信エラー:', error);
         }
+      } else {
+        console.log('検出条件が満たされていません');
       }
 
       // 測定画面にいる間は常に検出を続ける
-      if (setup.currentStep === 'measurement') {
+      if (setupRef.current.currentStep === 'measurement') {
         animationFrameRef.current = requestAnimationFrame(detectFrame);
       }
     };
@@ -974,6 +1018,11 @@ const MeasurementPage: React.FC = () => {
     };
   }, []);
 
+  // デバッグ用：setup状態の監視
+  useEffect(() => {
+    console.log('Setup状態変更:', setup);
+  }, [setup]);
+
   /**
    * 手の選択ハンドラー
    */
@@ -1033,12 +1082,18 @@ const MeasurementPage: React.FC = () => {
    * 測定開始
    */
   const handleStartMeasurement = () => {
+    console.log('handleStartMeasurement呼び出し:', {
+      selectedHand: setup.selectedHand,
+    });
     if (setup.selectedHand) {
+      console.log('測定画面に遷移します');
       setSetup((prev) => ({
         ...prev,
         currentStep: 'measurement',
         currentAngle: 0, // MediaPipeからリアルタイム取得
       }));
+    } else {
+      console.log('手が選択されていません');
     }
   };
 
@@ -1111,7 +1166,9 @@ const MeasurementPage: React.FC = () => {
             isInactive={
               setup.currentStep === 'instructions' || !setup.selectedHand
             }
-            {...(setup.currentStep === 'measurement' ? { videoRef } : {})}
+            {...(setup.currentStep === 'measurement'
+              ? { videoRef, canvasRef }
+              : {})}
           />
         </div>
       </div>
