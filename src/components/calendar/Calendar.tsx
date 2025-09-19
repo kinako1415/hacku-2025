@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { useCalendar } from './useCalendar';
 import dayjs from 'dayjs';
 
+import left from '@/assets/left.svg';
+import right from '@/assets/right.svg';
+
 type CalendarProps = {
   selectedDate?: string;
   onDateChange?: (date: string) => void;
@@ -115,14 +118,14 @@ export const Calendar: FC<CalendarProps> = ({
             className={style.navButton}
             onClick={handlePrevMonth}
           >
-            <Image src="/left.svg" alt="前の月" width={20} height={20} />
+            <Image src={left} alt="前の月" width={20} height={20} />
           </button>
           <button
             type="button"
             className={style.navButton}
             onClick={handleNextMonth}
           >
-            <Image src="/right.svg" alt="次の月" width={20} height={20} />
+            <Image src={right} alt="次の月" width={20} height={20} />
           </button>
         </div>
 

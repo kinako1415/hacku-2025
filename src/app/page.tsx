@@ -3,6 +3,8 @@ import Card from '@/components/layout/card';
 import Link from 'next/link';
 import Image from 'next/image';
 
+import icon from '@/assets/homeDescription.svg';
+
 export default function Home() {
   return (
     <div className={styles.homePage}>
@@ -32,12 +34,7 @@ export default function Home() {
           />
         </Link>
       </div>
-      <Image
-        src="homeDescription.svg"
-        alt="Top Illustration"
-        width={1060}
-        height={220}
-      />
+      <Image src={icon} alt="Top Illustration" width={1060} height={220} />
     </div>
   );
 }
