@@ -8,12 +8,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
-import type {
-  CalendarRecord,
-  PainLevel,
-  MotivationLevel,
-  PerformanceLevel,
-} from '@/lib/data-manager/models/calendar-record';
+import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 

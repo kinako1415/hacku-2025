@@ -866,3 +866,85 @@
     cursor: not-allowed;
   }
 }
+
+/* 測定結果セクション */
+.resultSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  height: 100%;
+  gap: 32px;
+}
+
+.resultTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.resultSummary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.resultItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.resultName {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.resultAngle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0542fc;
+}
+
+.resultControls {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.retryButton,
+.saveButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.retryButton {
+  background: #e5e7eb;
+  color: #374151;
+
+  &:hover {
+    background: #d1d5db;
+  }
+}
+
+.saveButton {
+  background: #0542fc;
+  color: white;
+
+  &:hover {
+    background: #2563eb;
+  }
+}

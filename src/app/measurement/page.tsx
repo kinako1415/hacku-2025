@@ -533,10 +533,53 @@ const CameraPreview: React.FC<{
 };
 
 /**
+ * 測定結果表示コンポーネント
+ */
+const MeasurementResultSection: React.FC<{
+  results: DBMeasurementResult[];
+  onSave: () => void;
+  onRetry: () => void;
+}> = ({ results, onSave, onRetry }) => {
+  // 各ステップの最大角度を計算
+  const maxAngles = measurementSteps.map(step => {
+    const stepResults = results.filter(r => r.stepId === step.id);
+    if (stepResults.length === 0) {
+      return { name: step.name, angle: 0 };
+    }
+    const maxAngle = Math.max(...stepResults.map(r => r.angle));
+    return { name: step.name, angle: Math.round(maxAngle) };
+  });
+
+  return (
+    <div className={styles.resultSection}>
+      <h1 className={styles.resultTitle}>測定結果</h1>
+      <div className={styles.resultSummary}>
+        {maxAngles.map(result => (
+          <div key={result.name} className={styles.resultItem}>
+            <span className={styles.resultName}>{result.name}</span>
+            <span className={styles.resultAngle}>{result.angle}°</span>
+          </div>
+        ))}
+      </div>
+      <div className={styles.resultControls}>
+        <button className={styles.retryButton} onClick={onRetry}>
+          最初からやり直す
+        </button>
+        <button className={styles.saveButton} onClick={onSave}>
+          結果を保存して終了
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/**
  * メイン測定ページコンポーネント
  */
 const MeasurementPage: React.FC = () => {
   const router = useRouter();
+
+  const [measurementResults, setMeasurementResults] = useState<DBMeasurementResult[]>([]);
 
   // 測定セットアップ状態管理
   const [setup, setSetup] = useState<MeasurementSetup>({
@@ -922,7 +965,7 @@ const MeasurementPage: React.FC = () => {
   /**
    * 測定を停止
    */
-  const stopMeasurement = useCallback(() => {
+  const stopMeasurement = useCallback(async () => {
     // カメラストリームを停止
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
@@ -932,6 +975,18 @@ const MeasurementPage: React.FC = () => {
     // アニメーションフレームをキャンセル
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    if (setupRef.current.sessionId) {
+      try {
+        // セッションを完了としてマーク
+        await db.completeSession(setupRef.current.sessionId);
+        // 最終結果を取得
+        const finalResults = await db.getSessionResults(setupRef.current.sessionId);
+        setMeasurementResults(finalResults);
+      } catch (error) {
+        console.error("結果の取得またはセッション完了エラー:", error);
+      }
     }
 
     setSetup((prev) => ({
@@ -1151,6 +1206,28 @@ const MeasurementPage: React.FC = () => {
     }));
   };
 
+  const handleSave = () => {
+    router.push('/progress');
+  };
+
+  const handleRetry = () => {
+    setSetup({
+      selectedHand: null,
+      currentStep: 'instructions',
+      currentMeasurementStep: 0,
+      currentAngle: 0,
+      phase: 'preparation',
+      sessionId: null,
+      mediaPipeReady: false,
+      isCapturing: false,
+      countdown: null,
+      isPhotoTaken: false,
+    });
+    setMeasurementResults([]);
+    // カメラを再初期化
+    initializeCamera();
+  };
+
   /**
    * 初期化
    */
@@ -1172,7 +1249,13 @@ const MeasurementPage: React.FC = () => {
       <div className={styles.mainContent}>
         {/* 左側: コンテンツセクション */}
         <div className={styles.leftContent}>
-          {setup.currentStep === 'instructions' ? (
+          {setup.phase === 'complete' ? (
+            <MeasurementResultSection
+              results={measurementResults}
+              onSave={handleSave}
+              onRetry={handleRetry}
+            />
+          ) : setup.currentStep === 'instructions' ? (
             <InstructionsSection onNext={handleNextStep} />
           ) : setup.currentStep === 'measurement' ? (
             <MeasurementExecution
