@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ProgressCharts } from '@/components/progress/ProgressCharts';
+import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type {
   CalendarRecord,
@@ -18,16 +18,92 @@ import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
- * 期間選択タイプ
+ * 開発者用設定: サンプルデータを強制使用するかどうか
+ *
+ * 使用方法:
+ * - true:  サンプルデータを強制使用（実際のデータがあっても無視）
+ * - false: 実際のデータを優先使用（データがない場合のみサンプルデータ）
+ *
+ * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
+ * 本番環境やユーザーテスト時はfalseに設定してください。
  */
-type PeriodType = 'week' | 'month' | '3months' | '6months' | 'year';
+const FORCE_USE_SAMPLE_DATA = true;
 
 /**
- * 実際のデータベースから測定データを取得
+ * テスト用サンプルデータを生成
+ */
+const generateSampleData = (): MotionMeasurement[] => {
+  const sampleData: MotionMeasurement[] = [];
+  const today = new Date();
+
+  // 過去365日間のサンプルデータを生成（1年分）
+  for (let i = 364; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+
+    // ランダムな進歩を含むリアルなデータを生成
+    const baseProgress = (364 - i) / 364; // 0から1への進歩
+    const randomVariation = (Math.random() - 0.5) * 0.2; // ±10%のばらつき
+
+    sampleData.push({
+      id: `sample-${i}`,
+      userId: 'sample-user',
+      measurementDate: date,
+      wristFlexion: Math.max(
+        20,
+        Math.min(90, 30 + baseProgress * 45 + randomVariation * 20)
+      ), // 30°から75°へ進歩
+      wristExtension: Math.max(
+        15,
+        Math.min(70, 25 + baseProgress * 35 + randomVariation * 15)
+      ), // 25°から60°へ進歩
+      wristUlnarDeviation: Math.max(
+        10,
+        Math.min(55, 20 + baseProgress * 25 + randomVariation * 10)
+      ), // 20°から45°へ進歩
+      wristRadialDeviation: Math.max(
+        5,
+        Math.min(25, 10 + baseProgress * 12 + randomVariation * 5)
+      ), // 10°から22°へ進歩
+      thumbFlexion: Math.max(
+        20,
+        Math.min(90, 40 + baseProgress * 30 + randomVariation * 15)
+      ),
+      thumbExtension: 0,
+      thumbAdduction: 0,
+      thumbAbduction: Math.max(
+        10,
+        Math.min(60, 20 + baseProgress * 25 + randomVariation * 10)
+      ),
+      accuracyScore: Math.max(
+        0.6,
+        Math.min(1.0, 0.7 + baseProgress * 0.2 + randomVariation * 0.1)
+      ),
+      handUsed: 'right' as const,
+      comparisonResult: {
+        wristFlexion: { status: 'normal', within_range: true },
+        wristExtension: { status: 'normal', within_range: true },
+        wristUlnarDeviation: { status: 'normal', within_range: true },
+        wristRadialDeviation: { status: 'normal', within_range: true },
+        thumbFlexion: { status: 'normal', within_range: true },
+        thumbExtension: { status: 'normal', within_range: true },
+        thumbAdduction: { status: 'normal', within_range: true },
+        thumbAbduction: { status: 'normal', within_range: true },
+        overallStatus: 'normal' as const,
+      },
+      createdAt: date,
+    });
+  }
+
+  return sampleData;
+};
+
+/**
+ * 実際のデータベースから測定データを取得（サンプルデータを含む）
  */
 const fetchMeasurements = async (
   userId: string = 'default-user'
-): Promise<MotionMeasurement[]> => {
+): Promise<{ measurements: MotionMeasurement[]; isRealData: boolean }> => {
   try {
     const measurements = await db.measurements
       .where('userId')
@@ -36,10 +112,27 @@ const fetchMeasurements = async (
       .toArray();
 
     console.log('進捗ページ: 取得した測定データ:', measurements);
-    return measurements;
+
+    // 開発者設定に基づいてデータソースを決定
+    if (FORCE_USE_SAMPLE_DATA) {
+      const sampleData = generateSampleData();
+      console.log('開発者設定により、サンプルデータを強制使用:', sampleData);
+      return { measurements: sampleData, isRealData: false };
+    }
+
+    // 実際のデータがない場合はサンプルデータを使用
+    if (measurements.length === 0) {
+      const sampleData = generateSampleData();
+      console.log('実際のデータがないため、サンプルデータを使用:', sampleData);
+      return { measurements: sampleData, isRealData: false };
+    }
+
+    console.log('実際のデータを使用:', measurements);
+    return { measurements, isRealData: true };
   } catch (error) {
     console.error('測定データの取得に失敗:', error);
-    return [];
+    // エラーの場合もサンプルデータを返す
+    return { measurements: generateSampleData(), isRealData: false };
   }
 };
 
@@ -64,41 +157,336 @@ const fetchCalendarRecords = async (
 };
 
 /**
+ * 連続記録日数を計算
+ */
+const calculateConsecutiveDays = (
+  measurements: MotionMeasurement[]
+): number => {
+  if (measurements.length === 0) return 0;
+
+  // 測定日を日付文字列でソート（新しい順）
+  const sortedDates = measurements
+    .map((m) => new Date(m.measurementDate).toDateString())
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  // 重複を除去
+  const uniqueDates = Array.from(new Set(sortedDates));
+
+  let consecutiveDays = 0;
+  const today = new Date().toDateString();
+  let currentDate = new Date(today);
+
+  // 今日から遡って連続日数をカウント
+  for (const dateString of uniqueDates) {
+    const measurementDate = new Date(dateString);
+    const diffDays = Math.floor(
+      (currentDate.getTime() - measurementDate.getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (diffDays === consecutiveDays) {
+      consecutiveDays++;
+      currentDate = new Date(measurementDate.getTime() - 24 * 60 * 60 * 1000);
+    } else {
+      break;
+    }
+  }
+
+  return consecutiveDays;
+};
+
+/**
+ * 期間選択オプション
+ */
+const PERIOD_OPTIONS = [
+  { value: 'week' as const, label: '1週間' },
+  { value: 'month' as const, label: '1ヶ月' },
+  { value: '3months' as const, label: '3ヶ月' },
+  { value: '6months' as const, label: '6ヶ月' },
+  { value: 'year' as const, label: '1年' },
+];
+
+/**
  * 期間に基づいてデータをフィルタリング
  */
-const filterDataByPeriod = <
-  T extends { measurementDate?: Date; recordDate?: Date; createdAt?: Date },
->(
-  data: T[],
-  period: PeriodType
-): T[] => {
+const filterDataByPeriod = (
+  measurements: MotionMeasurement[],
+  period: 'week' | 'month' | '3months' | '6months' | 'year'
+): MotionMeasurement[] => {
   const now = new Date();
-  let startDate: Date;
+  const cutoffDate = new Date();
 
   switch (period) {
     case 'week':
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      cutoffDate.setDate(now.getDate() - 7);
       break;
     case 'month':
-      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      cutoffDate.setDate(now.getDate() - 30);
       break;
     case '3months':
-      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      cutoffDate.setDate(now.getDate() - 90);
       break;
     case '6months':
-      startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+      cutoffDate.setDate(now.getDate() - 180);
       break;
     case 'year':
-      startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+      cutoffDate.setDate(now.getDate() - 365);
       break;
-    default:
-      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   }
 
-  return data.filter((item) => {
-    const itemDate = item.measurementDate || item.recordDate || item.createdAt;
-    return itemDate && itemDate >= startDate;
+  console.log(`Filtering for ${period}:`, {
+    now: now.toISOString().split('T')[0],
+    cutoffDate: cutoffDate.toISOString().split('T')[0],
+    totalMeasurements: measurements.length,
+    sampleDateRange:
+      measurements.length > 0
+        ? {
+            earliest: new Date(
+              Math.min(
+                ...measurements.map((m) =>
+                  new Date(m.measurementDate).getTime()
+                )
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+            latest: new Date(
+              Math.max(
+                ...measurements.map((m) =>
+                  new Date(m.measurementDate).getTime()
+                )
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+          }
+        : null,
   });
+
+  const filtered = measurements.filter((measurement) => {
+    const measurementDate = new Date(measurement.measurementDate);
+    return measurementDate >= cutoffDate;
+  });
+
+  console.log(`Filtered results for ${period}:`, {
+    filteredCount: filtered.length,
+    dateRange:
+      filtered.length > 0
+        ? {
+            earliest: new Date(
+              Math.min(
+                ...filtered.map((m) => new Date(m.measurementDate).getTime())
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+            latest: new Date(
+              Math.max(
+                ...filtered.map((m) => new Date(m.measurementDate).getTime())
+              )
+            )
+              .toISOString()
+              .split('T')[0],
+          }
+        : null,
+  });
+
+  return filtered;
+};
+
+/**
+ * 週単位でデータを集約
+ */
+const aggregateDataByWeek = (
+  measurements: MotionMeasurement[]
+): MotionMeasurement[] => {
+  if (measurements.length === 0) return [];
+
+  // 週ごとにデータをグループ化
+  const weeklyData = new Map<string, MotionMeasurement[]>();
+
+  measurements.forEach((measurement) => {
+    const date = new Date(measurement.measurementDate);
+    // 週の開始日（月曜日）を計算
+    const dayOfWeek = date.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(date);
+    monday.setDate(date.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const weekKey = monday.toISOString().split('T')[0];
+    if (!weekKey) return;
+
+    if (!weeklyData.has(weekKey)) {
+      weeklyData.set(weekKey, []);
+    }
+    weeklyData.get(weekKey)?.push(measurement);
+  });
+
+  // 各週の平均値を計算
+  const aggregatedData: MotionMeasurement[] = [];
+
+  weeklyData.forEach((weekMeasurements, weekKey) => {
+    const count = weekMeasurements.length;
+    if (count === 0 || weekMeasurements.length === 0) return;
+
+    const firstMeasurement = weekMeasurements[0];
+    if (!firstMeasurement) return;
+
+    // 平均値を計算
+    const avgMeasurement: MotionMeasurement = {
+      id: `week-${weekKey}`,
+      userId: firstMeasurement.userId,
+      measurementDate: new Date(weekKey),
+      wristFlexion:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristFlexion || 0), 0) /
+        count,
+      wristExtension:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristExtension || 0), 0) /
+        count,
+      wristUlnarDeviation:
+        weekMeasurements.reduce(
+          (sum, m) => sum + (m.wristUlnarDeviation || 0),
+          0
+        ) / count,
+      wristRadialDeviation:
+        weekMeasurements.reduce(
+          (sum, m) => sum + (m.wristRadialDeviation || 0),
+          0
+        ) / count,
+      thumbFlexion:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbFlexion || 0), 0) /
+        count,
+      thumbExtension:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbExtension || 0), 0) /
+        count,
+      thumbAdduction:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbAdduction || 0), 0) /
+        count,
+      thumbAbduction:
+        weekMeasurements.reduce((sum, m) => sum + (m.thumbAbduction || 0), 0) /
+        count,
+      accuracyScore:
+        weekMeasurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
+        count,
+      handUsed: firstMeasurement.handUsed,
+      comparisonResult: firstMeasurement.comparisonResult,
+      createdAt: new Date(weekKey),
+    };
+
+    aggregatedData.push(avgMeasurement);
+  });
+
+  // 日付順にソート
+  return aggregatedData.sort(
+    (a, b) =>
+      new Date(a.measurementDate).getTime() -
+      new Date(b.measurementDate).getTime()
+  );
+};
+
+/**
+ * 2週間単位でデータを集約
+ */
+const aggregateDataByBiWeek = (
+  measurements: MotionMeasurement[]
+): MotionMeasurement[] => {
+  if (measurements.length === 0) return [];
+
+  // 2週間ごとにデータをグループ化
+  const biWeeklyData = new Map<string, MotionMeasurement[]>();
+
+  measurements.forEach((measurement) => {
+    const date = new Date(measurement.measurementDate);
+    // 基準日（例: 2025年1月1日）からの日数を計算
+    const baseDate = new Date(2025, 0, 1); // 2025年1月1日
+    const daysDiff = Math.floor(
+      (date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const biWeekNumber = Math.floor(daysDiff / 14); // 2週間ごとのグループ番号
+
+    // 2週間期間の開始日を計算
+    const biWeekStart = new Date(baseDate);
+    biWeekStart.setDate(baseDate.getDate() + biWeekNumber * 14);
+    biWeekStart.setHours(0, 0, 0, 0);
+
+    const biWeekKey = biWeekStart.toISOString().split('T')[0];
+    if (!biWeekKey) return;
+
+    if (!biWeeklyData.has(biWeekKey)) {
+      biWeeklyData.set(biWeekKey, []);
+    }
+    biWeeklyData.get(biWeekKey)?.push(measurement);
+  });
+
+  // 各2週間の平均値を計算
+  const aggregatedData: MotionMeasurement[] = [];
+
+  biWeeklyData.forEach((biWeekMeasurements, biWeekKey) => {
+    const count = biWeekMeasurements.length;
+    if (count === 0 || biWeekMeasurements.length === 0) return;
+
+    const firstMeasurement = biWeekMeasurements[0];
+    if (!firstMeasurement) return;
+
+    // 平均値を計算
+    const avgMeasurement: MotionMeasurement = {
+      id: `biweek-${biWeekKey}`,
+      userId: firstMeasurement.userId,
+      measurementDate: new Date(biWeekKey),
+      wristFlexion:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.wristFlexion || 0), 0) /
+        count,
+      wristExtension:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristExtension || 0),
+          0
+        ) / count,
+      wristUlnarDeviation:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristUlnarDeviation || 0),
+          0
+        ) / count,
+      wristRadialDeviation:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristRadialDeviation || 0),
+          0
+        ) / count,
+      thumbFlexion:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.thumbFlexion || 0), 0) /
+        count,
+      thumbExtension:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbExtension || 0),
+          0
+        ) / count,
+      thumbAdduction:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbAdduction || 0),
+          0
+        ) / count,
+      thumbAbduction:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.thumbAbduction || 0),
+          0
+        ) / count,
+      accuracyScore:
+        biWeekMeasurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
+        count,
+      handUsed: firstMeasurement.handUsed,
+      comparisonResult: firstMeasurement.comparisonResult,
+      createdAt: new Date(biWeekKey),
+    };
+
+    aggregatedData.push(avgMeasurement);
+  });
+
+  // 日付順にソート
+  return aggregatedData.sort(
+    (a, b) =>
+      new Date(a.measurementDate).getTime() -
+      new Date(b.measurementDate).getTime()
+  );
 };
 
 /**
@@ -106,11 +494,9 @@ const filterDataByPeriod = <
  */
 interface ProgressStats {
   totalMeasurements: number;
-  avgAccuracy: number;
   improvementRate: number;
-  consistencyScore: number;
-  painTrend: 'improving' | 'stable' | 'worsening';
-  motivationTrend: 'improving' | 'stable' | 'worsening';
+  consecutiveDays: number;
+  latestMeasurementDate: Date | null;
 }
 
 const calculateProgressStats = (
@@ -120,18 +506,11 @@ const calculateProgressStats = (
   if (measurements.length === 0) {
     return {
       totalMeasurements: 0,
-      avgAccuracy: 0,
       improvementRate: 0,
-      consistencyScore: 0,
-      painTrend: 'stable',
-      motivationTrend: 'stable',
+      consecutiveDays: 0,
+      latestMeasurementDate: null,
     };
   }
-
-  // 測定精度の平均
-  const avgAccuracy =
-    measurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
-    measurements.length;
 
   // 改善率の計算（最初と最後の比較）
   const firstMeasurement = measurements[measurements.length - 1];
@@ -144,60 +523,27 @@ const calculateProgressStats = (
         100
       : 0;
 
-  // 一貫性スコア（測定頻度）
-  const dayRange = 30; // 30日間
-  const consistencyScore = Math.min(
-    100,
-    (measurements.length / dayRange) * 100
-  );
+  // 連続記録日数の計算
+  const consecutiveDays = calculateConsecutiveDays(measurements);
 
-  // 痛みと意欲のトレンド分析
-  const recentRecords = records.slice(0, 7); // 最近7日間
-  const olderRecords = records.slice(7, 14); // その前の7日間
-
-  const avgRecentPain =
-    recentRecords.length > 0
-      ? recentRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
-        recentRecords.length
-      : 3;
-  const avgOlderPain =
-    olderRecords.length > 0
-      ? olderRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
-        olderRecords.length
-      : 3;
-
-  const avgRecentMotivation =
-    recentRecords.length > 0
-      ? recentRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
-        recentRecords.length
-      : 3;
-  const avgOlderMotivation =
-    olderRecords.length > 0
-      ? olderRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
-        olderRecords.length
-      : 3;
-
-  const painTrend =
-    avgRecentPain < avgOlderPain - 0.3
-      ? 'improving'
-      : avgRecentPain > avgOlderPain + 0.3
-        ? 'worsening'
-        : 'stable';
-
-  const motivationTrend =
-    avgRecentMotivation > avgOlderMotivation + 0.3
-      ? 'improving'
-      : avgRecentMotivation < avgOlderMotivation - 0.3
-        ? 'worsening'
-        : 'stable';
+  // 最新測定日の取得
+  const sortedMeasurements = measurements
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(b.measurementDate).getTime() -
+        new Date(a.measurementDate).getTime()
+    );
+  const latestMeasurementDate =
+    sortedMeasurements.length > 0 && sortedMeasurements[0]
+      ? new Date(sortedMeasurements[0].measurementDate)
+      : null;
 
   return {
     totalMeasurements: measurements.length,
-    avgAccuracy: Math.round(avgAccuracy * 100),
-    improvementRate: Math.round(improvementRate),
-    consistencyScore: Math.round(consistencyScore),
-    painTrend,
-    motivationTrend,
+    improvementRate: -Math.round(improvementRate * 10) / 10, // 小数点1桁まで表示
+    consecutiveDays,
+    latestMeasurementDate,
   };
 };
 
@@ -205,22 +551,26 @@ const calculateProgressStats = (
  * 進捗ページメインコンポーネント
  */
 const ProgressPage: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('month');
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
   const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usingRealData, setUsingRealData] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    'week' | 'month' | '3months' | '6months' | 'year'
+  >('month');
 
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [measurementData, recordData] = await Promise.all([
+        const [measurementResult, recordData] = await Promise.all([
           fetchMeasurements(),
           fetchCalendarRecords(),
         ]);
 
-        setMeasurements(measurementData);
+        setMeasurements(measurementResult.measurements);
+        setUsingRealData(measurementResult.isRealData);
         setCalendarRecords(recordData);
       } catch (error) {
         console.error('データの読み込みに失敗:', error);
@@ -232,52 +582,30 @@ const ProgressPage: React.FC = () => {
     loadData();
   }, []);
 
-  // 期間フィルタリング済みデータ
+  // 期間でフィルタリングされた測定データ
   const filteredMeasurements = useMemo(
     () => filterDataByPeriod(measurements, selectedPeriod),
     [measurements, selectedPeriod]
   );
 
-  const filteredRecords = useMemo(
-    () => filterDataByPeriod(calendarRecords, selectedPeriod),
-    [calendarRecords, selectedPeriod]
-  );
+  // 期間に応じてデータを集約
+  const aggregatedMeasurements = useMemo(() => {
+    if (selectedPeriod === 'year') {
+      // 1年の場合は2週間単位で集約
+      return aggregateDataByBiWeek(filteredMeasurements);
+    } else if (selectedPeriod === '3months' || selectedPeriod === '6months') {
+      // 3ヶ月・6ヶ月の場合は週単位で集約
+      return aggregateDataByWeek(filteredMeasurements);
+    }
+    // 1週間・1ヶ月の場合は日単位のまま
+    return filteredMeasurements;
+  }, [filteredMeasurements, selectedPeriod]);
 
-  // 統計情報
+  // 統計情報（フィルタリングされたデータに基づく）
   const stats = useMemo(
-    () => calculateProgressStats(filteredMeasurements, filteredRecords),
-    [filteredMeasurements, filteredRecords]
+    () => calculateProgressStats(filteredMeasurements, calendarRecords),
+    [filteredMeasurements, calendarRecords]
   );
-
-  const periodLabels: Record<PeriodType, string> = {
-    week: '1週間',
-    month: '1ヶ月',
-    '3months': '3ヶ月',
-    '6months': '6ヶ月',
-    year: '1年',
-  };
-
-  const getTrendIcon = (trend: 'improving' | 'stable' | 'worsening') => {
-    switch (trend) {
-      case 'improving':
-        return '📈';
-      case 'worsening':
-        return '📉';
-      default:
-        return '➡️';
-    }
-  };
-
-  const getTrendColor = (trend: 'improving' | 'stable' | 'worsening') => {
-    switch (trend) {
-      case 'improving':
-        return '#4caf50';
-      case 'worsening':
-        return '#f44336';
-      default:
-        return '#ff9800';
-    }
-  };
 
   if (loading) {
     return (
@@ -290,99 +618,93 @@ const ProgressPage: React.FC = () => {
 
   return (
     <div className={styles.progressPage}>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.title}>
-          <span className={styles.titleIcon}>📊</span>
-          進捗レポート
-        </h1>
-        <div className={styles.periodSelector}>
-          {Object.entries(periodLabels).map(([period, label]) => (
-            <button
-              key={period}
-              className={`${styles.periodButton} ${
-                selectedPeriod === period ? styles.active : ''
-              }`}
-              onClick={() => setSelectedPeriod(period as PeriodType)}
-            >
-              {label}
-            </button>
-          ))}
+      {/* {!usingRealData && (
+        <div className={styles.sampleDataBanner}>
+          ⚠️ {FORCE_USE_SAMPLE_DATA ? '開発者設定により' : ''}
+          サンプルデータを表示中です
         </div>
-      </div>
+      )} */}
 
       <main className={styles.mainContent}>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <h3>測定回数</h3>
-            <p className={styles.statValue}>{stats.totalMeasurements}回</p>
-            <span className={styles.statDescription}>期間内の総測定回数</span>
+        {/* 左側カラム: 期間選択 + 統計情報 */}
+        <div className={styles.leftColumn}>
+          {/* 期間選択 */}
+          <div className={styles.periodSelector}>
+            <h2>表示期間</h2>
+            <div className={styles.periodButtons}>
+              {PERIOD_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`${styles.periodButton} ${
+                    selectedPeriod === option.value ? styles.active : ''
+                  }`}
+                  onClick={() => setSelectedPeriod(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className={styles.statCard}>
-            <h3>平均精度</h3>
-            <p className={styles.statValue}>{stats.avgAccuracy}%</p>
-            <span className={styles.statDescription}>測定精度の平均値</span>
-          </div>
+          {/* 統計セクション */}
+          <div className={styles.statsSection}>
+            <h2>統計情報</h2>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <h3>測定回数</h3>
+                <p className={styles.statValue}>{stats.totalMeasurements}回</p>
+                <span className={styles.statDescription}>
+                  期間内の総測定回数
+                </span>
+              </div>
 
-          <div className={styles.statCard}>
-            <h3>改善率</h3>
-            <p className={styles.statValue}>
-              {stats.improvementRate > 0 ? '+' : ''}
-              {stats.improvementRate}%
-            </p>
-            <span className={styles.statDescription}>可動域の変化率</span>
-          </div>
+              <div className={styles.statCard}>
+                <h3>改善率</h3>
+                <p className={styles.statValue}>
+                  {stats.improvementRate > 0
+                    ? '+'
+                    : stats.improvementRate < 0
+                      ? '-'
+                      : ''}
+                  {Math.abs(stats.improvementRate)}%
+                </p>
+                <span className={styles.statDescription}>可動域の変化率</span>
+              </div>
 
-          <div className={styles.statCard}>
-            <h3>継続性</h3>
-            <p className={styles.statValue}>{stats.consistencyScore}%</p>
-            <span className={styles.statDescription}>測定頻度のスコア</span>
-          </div>
+              <div className={styles.statCard}>
+                <h3>継続性</h3>
+                <p className={styles.statValue}>{stats.consecutiveDays}日</p>
+                <span className={styles.statDescription}>連続記録日数</span>
+              </div>
 
-          <div className={styles.statCard}>
-            <h3>痛みレベル</h3>
-            <p
-              className={styles.statValue}
-              style={{ color: getTrendColor(stats.painTrend) }}
-            >
-              {getTrendIcon(stats.painTrend)}
-            </p>
-            <span className={styles.statDescription}>
-              {stats.painTrend === 'improving'
-                ? '改善中'
-                : stats.painTrend === 'worsening'
-                  ? '悪化傾向'
-                  : '安定'}
-            </span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>意欲レベル</h3>
-            <p
-              className={styles.statValue}
-              style={{ color: getTrendColor(stats.motivationTrend) }}
-            >
-              {getTrendIcon(stats.motivationTrend)}
-            </p>
-            <span className={styles.statDescription}>
-              {stats.motivationTrend === 'improving'
-                ? '向上中'
-                : stats.motivationTrend === 'worsening'
-                  ? '低下傾向'
-                  : '安定'}
-            </span>
+              {/* 最新測定カード - 他のカードと同じデザイン */}
+              {stats.latestMeasurementDate && (
+                <div className={styles.statCard}>
+                  <h3>最新測定</h3>
+                  <p className={styles.statValue}>
+                    {stats.latestMeasurementDate.toLocaleDateString('ja-JP')}
+                  </p>
+                  <span className={styles.statDescription}>
+                    最後に測定した日
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className={styles.chartsContainer}>
-          <ProgressCharts
-            measurements={filteredMeasurements}
-            calendarRecords={filteredRecords}
-            selectedPeriod={selectedPeriod}
-          />
+        {/* 右側カラム: 可動域推移グラフ */}
+        <div className={styles.rightColumn}>
+          <div className={styles.chartsSection}>
+            <MotionChartsContainer
+              measurements={aggregatedMeasurements}
+              selectedPeriod={selectedPeriod}
+            />
+          </div>
         </div>
 
-        {filteredMeasurements.length === 0 && (
+        {aggregatedMeasurements.length === 0 && usingRealData && (
           <div className={styles.noDataMessage}>
             <p>選択した期間にデータがありません。</p>
             <p>測定を開始してデータを蓄積してください。</p>

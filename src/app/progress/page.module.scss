@@ -2,19 +2,37 @@
  * 進捗ページのスタイル
  */
 
+/* サンプルデータ使用時のバナー */
+.sampleDataBanner {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 -24px 0 -24px;
+  border-radius: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
+
 .progressPage {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: #e9effe; /* rootページと同じ背景色 */
   display: flex;
   flex-direction: column;
-  padding: 0 24px;
+  // padding: 0 24px;
 }
 
 /* ページヘッダー（共通ヘッダーとは別） */
 .pageHeader {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 80px 0 24px 0; /* 上部に余白を追加 */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -23,7 +41,7 @@
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 16px;
-    padding: 16px 0;
+    padding: 60px 0 16px 0; /* モバイルでも上部に余白 */
   }
 }
 
@@ -31,9 +49,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.8rem;
+  font-size: 2.5rem; /* より大きく */
   font-weight: 700;
-  color: #1a365d;
+  color: #0542fc; /* ブルーカラー */
   margin: 0;
 }
 
@@ -107,46 +125,76 @@
 /* メインコンテンツ */
 .mainContent {
   flex: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+  width: 100%; /* 画面いっぱいに */
+  max-width: none; /* max-widthを削除 */
+  margin: 0;
+  padding: 0 16px 24px 16px; /* 左右16pxの余白 */
   display: flex;
-  flex-direction: column;
-  gap: 32px;
+  flex-direction: row; /* 横並びレイアウト */
+  gap: 16px; /* 左右のギャップを16pxに */
 
   @media (max-width: 768px) {
-    padding: 16px;
-    gap: 24px;
+    padding: 0 16px 16px 16px;
+    flex-direction: column; /* モバイルでは縦並び */
+    gap: 16px;
+  }
+}
+
+/* 左側コラム（期間選択 + 統計情報） */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: calc(50% - 8px); /* 画面の半分から8px（ギャップの半分）を引く */
+  flex-shrink: 0; /* サイズ固定 */
+  margin-top: 86px;
+  height: stretch;
+
+  @media (max-width: 768px) {
+    width: 100%; /* モバイルでは全幅 */
+  }
+}
+
+/* 右側コラム（可動域推移グラフ） */
+.rightColumn {
+  width: calc(50% - 8px); /* 画面の半分から8px（ギャップの半分）を引く */
+  flex-shrink: 0; /* サイズ固定 */
+  min-width: 0; /* flex shrinkingを有効にする */
+  margin-top: 16px;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    width: 100%; /* モバイルでは全幅 */
   }
 }
 
 /* 期間選択 */
 .periodSelector {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #f0f0f0;
 
   h2 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0;
   }
 }
 
 .periodButtons {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    gap: 8px;
+    gap: 6px;
   }
 }
 
 .periodButton {
-  padding: 12px 20px;
+  padding: 10px 16px;
   background: #f7fafc;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
@@ -154,7 +202,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 80px;
+  min-width: 70px;
+  font-size: 0.9rem;
 
   &:hover {
     background: #edf2f7;
@@ -167,13 +216,14 @@
     border-color: #3182ce;
     color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
   }
 
   @media (max-width: 480px) {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    min-width: 70px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 60px;
+    flex: 1;
+    text-align: center;
   }
 }
 
@@ -182,45 +232,55 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* セクション内のギャップ */
+  height: stretch;
 
   h2 {
     font-size: 1.4rem;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 24px 0;
+    margin: 0;
   }
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column; /* 縦並びに変更 */
+  gap: 16px; /* 縦のギャップ */
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    flex-direction: row; /* モバイルでは横並び */
+    flex-wrap: wrap;
     gap: 16px;
   }
 
   @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+    flex-direction: column; /* 小画面では縦並び */
   }
 }
 
 .statCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f7fafc, #edf2f7);
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 16px; /* 少し小さく */
+  padding: 20px 16px; /* パディング調整 */
+  /* box-shadow を削除 */
+  text-align: center;
   transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: #cbd5e0;
+    transform: translateY(-3px); /* 動きを小さく */
+    /* box-shadow を削除 */
+  }
+
+  h3 {
+    font-size: 1rem; /* 少し小さく */
+    color: #808080;
+    margin: 0 0 8px 0; /* マージン調整 */
+    font-weight: 500;
   }
 }
 
@@ -246,10 +306,56 @@
 }
 
 .statValue {
-  font-size: 1.4rem;
+  font-size: 2rem; /* 少し小さく */
   font-weight: 700;
-  color: #2d3748;
+  color: #0542fc;
+  margin: 0;
   line-height: 1.2;
+}
+
+.statDescription {
+  font-size: 0.9rem;
+  color: #808080;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* 最新測定カード */
+.latestMeasurement {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+
+  h3 {
+    font-size: 1rem;
+    color: #495057;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+  }
+}
+
+.latestMeasurementContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.latestMeasurementItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+
+  .label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .value {
+    color: #0542fc;
+    font-weight: 600;
+  }
 }
 
 /* チャートセクション */
@@ -257,14 +363,23 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  height: fit-content; /* 内容に応じた高さ */
 
   h2 {
     font-size: 1.4rem;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 24px 0;
+    margin: 0 0 20px 0;
   }
+}
+
+.chartsContainer {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  /* box-shadow を削除 */
+  border: 1px solid #f0f0f0;
 }
 
 .progressCharts {
@@ -276,7 +391,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  /* box-shadow を削除 */
 
   h2 {
     font-size: 1.4rem;
@@ -307,7 +422,7 @@
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(154, 230, 180, 0.3);
+    /* box-shadow を削除 */
   }
 }
 
@@ -343,19 +458,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #e9effe; /* rootページと同じ背景色 */
 }
 
 .loadingSpinner {
   text-align: center;
-  color: #ffffff;
+  color: #2d3748; /* ダークテキスト色に変更 */
 }
 
 .spinner {
   width: 56px;
   height: 56px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
-  border-top: 5px solid #ffffff;
+  border: 5px solid rgba(45, 55, 72, 0.2); /* 明るい背景用のボーダー色 */
+  border-top: 5px solid #0542fc; /* ブルーのアクセント色 */
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 24px;
@@ -465,89 +580,5 @@
   .periodButton {
     flex: 1;
     text-align: center;
-  }
-}
-
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  .progressPage {
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-  }
-
-  .header {
-    background: #2d3748;
-    border-bottom: 1px solid #4a5568;
-  }
-
-  .title {
-    color: #f7fafc;
-  }
-
-  .navLink {
-    color: #cbd5e0;
-
-    &:hover {
-      background: #4a5568;
-      color: #f7fafc;
-    }
-  }
-
-  .periodSelector,
-  .statsSection,
-  .chartsSection,
-  .insightsSection {
-    background: #2d3748;
-    color: #f7fafc;
-  }
-
-  .periodSelector h2,
-  .statsSection h2,
-  .chartsSection h2,
-  .insightsSection h2 {
-    color: #f7fafc;
-  }
-
-  .statCard {
-    background: linear-gradient(135deg, #4a5568, #2d3748);
-    border-color: #718096;
-  }
-
-  .statLabel {
-    color: #a0aec0;
-  }
-
-  .statValue {
-    color: #f7fafc;
-  }
-
-  .periodButton {
-    background: #4a5568;
-    border-color: #718096;
-    color: #cbd5e0;
-
-    &:hover {
-      background: #718096;
-      border-color: #a0aec0;
-      color: #f7fafc;
-    }
-
-    &.active {
-      background: #4299e1;
-      border-color: #3182ce;
-      color: #ffffff;
-    }
-  }
-
-  .insightCard {
-    background: linear-gradient(135deg, #1a202c, #2d3748);
-    border-color: #4a5568;
-  }
-
-  .insightContent h3 {
-    color: #e2e8f0;
-  }
-
-  .insightContent p {
-    color: #cbd5e0;
   }
 }
