@@ -196,6 +196,17 @@ const calculateConsecutiveDays = (
 };
 
 /**
+ * 期間選択オプション
+ */
+const PERIOD_OPTIONS = [
+  { value: 'week' as const, label: '1週間' },
+  { value: 'month' as const, label: '1ヶ月' },
+  { value: '3months' as const, label: '3ヶ月' },
+  { value: '6months' as const, label: '6ヶ月' },
+  { value: 'year' as const, label: '1年' },
+];
+
+/**
  * 統計情報計算
  */
 interface ProgressStats {
@@ -245,6 +256,9 @@ const ProgressPage: React.FC = () => {
   const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [usingRealData, setUsingRealData] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    'week' | 'month' | '3months' | '6months' | 'year'
+  >('month');
 
   // データ読み込み
   useEffect(() => {
@@ -301,31 +315,63 @@ const ProgressPage: React.FC = () => {
       </div>
 
       <main className={styles.mainContent}>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <h3>測定回数</h3>
-            <p className={styles.statValue}>{stats.totalMeasurements}回</p>
-            <span className={styles.statDescription}>期間内の総測定回数</span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>改善率</h3>
-            <p className={styles.statValue}>
-              {stats.improvementRate > 0 ? '+' : ''}
-              {stats.improvementRate}%
-            </p>
-            <span className={styles.statDescription}>可動域の変化率</span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>継続性</h3>
-            <p className={styles.statValue}>{stats.consecutiveDays}日</p>
-            <span className={styles.statDescription}>連続記録日数</span>
+        {/* 期間選択 */}
+        <div className={styles.periodSelector}>
+          <h2>表示期間</h2>
+          <div className={styles.periodButtons}>
+            {PERIOD_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`${styles.periodButton} ${
+                  selectedPeriod === option.value ? styles.active : ''
+                }`}
+                onClick={() => setSelectedPeriod(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className={styles.chartsContainer}>
-          <MotionChartsContainer measurements={measurements} />
+        {/* コンテンツエリア */}
+        <div className={styles.contentArea}>
+          {/* 統計セクション */}
+          <div className={styles.statsSection}>
+            <h2>統計情報</h2>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <h3>測定回数</h3>
+                <p className={styles.statValue}>{stats.totalMeasurements}回</p>
+                <span className={styles.statDescription}>
+                  期間内の総測定回数
+                </span>
+              </div>
+
+              <div className={styles.statCard}>
+                <h3>改善率</h3>
+                <p className={styles.statValue}>
+                  {stats.improvementRate > 0 ? '+' : ''}
+                  {stats.improvementRate}%
+                </p>
+                <span className={styles.statDescription}>可動域の変化率</span>
+              </div>
+
+              <div className={styles.statCard}>
+                <h3>継続性</h3>
+                <p className={styles.statValue}>{stats.consecutiveDays}日</p>
+                <span className={styles.statDescription}>連続記録日数</span>
+              </div>
+            </div>
+          </div>
+
+          {/* チャートセクション */}
+          <div className={styles.chartsSection}>
+            <MotionChartsContainer
+              measurements={measurements}
+              selectedPeriod={selectedPeriod}
+            />
+          </div>
         </div>
 
         {measurements.length === 0 && usingRealData && (

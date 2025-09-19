@@ -16,18 +16,8 @@ import styles from './MotionChartsContainer.module.scss';
 interface MotionChartsContainerProps {
   measurements: MotionMeasurement[];
   className?: string;
+  selectedPeriod?: 'week' | 'month' | '3months' | '6months' | 'year';
 }
-
-/**
- * 期間選択オプション
- */
-const PERIOD_OPTIONS = [
-  { value: 'week' as const, label: '1週間' },
-  { value: 'month' as const, label: '1ヶ月' },
-  { value: '3months' as const, label: '3ヶ月' },
-  { value: '6months' as const, label: '6ヶ月' },
-  { value: 'year' as const, label: '1年' },
-];
 
 /**
  * 可動域タイプ一覧
@@ -93,10 +83,8 @@ const filterMeasurementsByPeriod = (
 export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
   measurements,
   className,
+  selectedPeriod = 'month',
 }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<
-    'week' | 'month' | '3months' | '6months' | 'year'
-  >('month');
   const [activeTab, setActiveTab] = useState<MotionType>('flexion');
 
   // 期間でフィルタリングされた測定データ
@@ -104,28 +92,6 @@ export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
     () => filterMeasurementsByPeriod(measurements, selectedPeriod),
     [measurements, selectedPeriod]
   );
-
-  // 統計情報の計算
-  const overallStats = React.useMemo(() => {
-    if (filteredMeasurements.length === 0) {
-      return {
-        totalMeasurements: 0,
-        latestDate: null,
-      };
-    }
-
-    const totalMeasurements = filteredMeasurements.length;
-    const latestDate = filteredMeasurements.sort(
-      (a, b) =>
-        new Date(b.measurementDate).getTime() -
-        new Date(a.measurementDate).getTime()
-    )[0]?.measurementDate;
-
-    return {
-      totalMeasurements,
-      latestDate,
-    };
-  }, [filteredMeasurements]);
 
   return (
     <div className={`${styles.container} ${className || ''}`}>
@@ -136,48 +102,6 @@ export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
           <p className={styles.container__description}>
             手首の可動域測定データの推移を確認できます
           </p>
-        </div>
-
-        {/* 統計情報 */}
-        <div className={styles.container__stats}>
-          <div className={styles.statCard}>
-            <span className={styles.statCard__value}>
-              {overallStats.totalMeasurements}
-            </span>
-            <span className={styles.statCard__label}>測定回数</span>
-          </div>
-          {overallStats.latestDate && (
-            <div className={styles.statCard}>
-              <span className={styles.statCard__value}>
-                {new Date(overallStats.latestDate).toLocaleDateString('ja-JP')}
-              </span>
-              <span className={styles.statCard__label}>最新測定</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* コントロール */}
-      <div className={styles.container__controls}>
-        {/* 期間選択 */}
-        <div className={styles.control}>
-          <label className={styles.control__label}>表示期間</label>
-          <div className={styles.control__options}>
-            {PERIOD_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`${styles.control__option} ${
-                  selectedPeriod === option.value
-                    ? styles['control__option--active']
-                    : ''
-                }`}
-                onClick={() => setSelectedPeriod(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

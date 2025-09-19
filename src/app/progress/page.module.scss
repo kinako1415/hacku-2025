@@ -127,13 +127,25 @@
   flex: 1;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 0 24px 24px 24px; /* 上のパディングを削除 */
   display: flex;
-  flex-direction: column;
-  gap: 32px;
+  flex-direction: column; /* まず縦方向に */
+  gap: 16px; /* ギャップを調整 */
 
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 0 16px 16px 16px;
+    gap: 16px;
+  }
+}
+
+/* コンテンツエリア（期間選択の下） */
+.contentArea {
+  display: flex;
+  flex-direction: row; /* 横並びに変更 */
+  gap: 24px; /* 横のギャップ */
+
+  @media (max-width: 768px) {
+    flex-direction: column; /* モバイルでは縦並び */
     gap: 24px;
   }
 }
@@ -141,15 +153,15 @@
 /* 期間選択 */
 .periodSelector {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px; /* 少し小さく */
+  padding: 16px 20px; /* パディング削減 */
   /* box-shadow を削除 */
 
   h2 {
-    font-size: 1.4rem;
+    font-size: 1.2rem; /* サイズ削減 */
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 20px 0;
+    margin: 0 0 16px 0; /* マージン削減 */
   }
 }
 
@@ -201,48 +213,58 @@
   border-radius: 16px;
   padding: 24px;
   /* box-shadow を削除 */
+  width: 300px; /* 固定幅に設定 */
+  flex-shrink: 0; /* サイズ固定 */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* セクション内のギャップ */
 
   h2 {
     font-size: 1.4rem;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 24px 0;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%; /* モバイルでは全幅 */
   }
 }
 
 .statsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column; /* 縦並びに変更 */
+  gap: 16px; /* 縦のギャップ */
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    flex-direction: row; /* モバイルでは横並び */
+    flex-wrap: wrap;
     gap: 16px;
   }
 
   @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+    flex-direction: column; /* 小画面では縦並び */
   }
 }
 
 .statCard {
   background: #ffffff;
-  border-radius: 20px;
-  padding: 32px 24px;
+  border-radius: 16px; /* 少し小さく */
+  padding: 20px 16px; /* パディング調整 */
   /* box-shadow を削除 */
   text-align: center;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
 
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px); /* 動きを小さく */
     /* box-shadow を削除 */
   }
 
   h3 {
-    font-size: 1.1rem;
+    font-size: 1rem; /* 少し小さく */
     color: #808080;
-    margin: 0 0 12px 0;
+    margin: 0 0 8px 0; /* マージン調整 */
     font-weight: 500;
   }
 }
@@ -269,7 +291,7 @@
 }
 
 .statValue {
-  font-size: 2.5rem;
+  font-size: 2rem; /* 少し小さく */
   font-weight: 700;
   color: #0542fc;
   margin: 0;
@@ -283,18 +305,57 @@
   line-height: 1.4;
 }
 
+/* 最新測定カード */
+.latestMeasurement {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+
+  h3 {
+    font-size: 1rem;
+    color: #495057;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+  }
+}
+
+.latestMeasurementContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.latestMeasurementItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+
+  .label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .value {
+    color: #0542fc;
+    font-weight: 600;
+  }
+}
+
 /* チャートセクション */
 .chartsSection {
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
   /* box-shadow を削除 */
+  flex: 1; /* 残りのスペースを占有 */
 
   h2 {
     font-size: 1.4rem;
     font-weight: 600;
     color: #2d3748;
-    margin: 0 0 24px 0;
+    margin: 0 0 20px 0; /* マージン削減 */
   }
 }
 
