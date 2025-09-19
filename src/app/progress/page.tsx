@@ -323,35 +323,28 @@ const ProgressPage: React.FC = () => {
         </div>
       )}
 
-      <div className={styles.pageHeader}>
-        <h1 className={styles.title}>
-          <span className={styles.titleIcon}>📊</span>
-          進捗レポート
-        </h1>
-      </div>
-
       <main className={styles.mainContent}>
-        {/* 期間選択 */}
-        <div className={styles.periodSelector}>
-          <h2>表示期間</h2>
-          <div className={styles.periodButtons}>
-            {PERIOD_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`${styles.periodButton} ${
-                  selectedPeriod === option.value ? styles.active : ''
-                }`}
-                onClick={() => setSelectedPeriod(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
+        {/* 左側カラム: 期間選択 + 統計情報 */}
+        <div className={styles.leftColumn}>
+          {/* 期間選択 */}
+          <div className={styles.periodSelector}>
+            <h2>表示期間</h2>
+            <div className={styles.periodButtons}>
+              {PERIOD_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`${styles.periodButton} ${
+                    selectedPeriod === option.value ? styles.active : ''
+                  }`}
+                  onClick={() => setSelectedPeriod(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* コンテンツエリア */}
-        <div className={styles.contentArea}>
           {/* 統計セクション */}
           <div className={styles.statsSection}>
             <h2>統計情報</h2>
@@ -393,8 +386,10 @@ const ProgressPage: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
 
-          {/* チャートセクション */}
+        {/* 右側カラム: 可動域推移グラフ */}
+        <div className={styles.rightColumn}>
           <div className={styles.chartsSection}>
             <MotionChartsContainer
               measurements={measurements}
