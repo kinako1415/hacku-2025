@@ -18,11 +18,6 @@ import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
- * 期間選択タイプ
- */
-type PeriodType = 'week' | 'month' | '3months' | '6months' | 'year';
-
-/**
  * 実際のデータベースから測定データを取得
  */
 const fetchMeasurements = async (
@@ -64,41 +59,42 @@ const fetchCalendarRecords = async (
 };
 
 /**
- * 期間に基づいてデータをフィルタリング
+ * 連続記録日数を計算
  */
-const filterDataByPeriod = <
-  T extends { measurementDate?: Date; recordDate?: Date; createdAt?: Date },
->(
-  data: T[],
-  period: PeriodType
-): T[] => {
-  const now = new Date();
-  let startDate: Date;
+const calculateConsecutiveDays = (
+  measurements: MotionMeasurement[]
+): number => {
+  if (measurements.length === 0) return 0;
 
-  switch (period) {
-    case 'week':
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // 測定日を日付文字列でソート（新しい順）
+  const sortedDates = measurements
+    .map((m) => new Date(m.measurementDate).toDateString())
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  // 重複を除去
+  const uniqueDates = Array.from(new Set(sortedDates));
+
+  let consecutiveDays = 0;
+  const today = new Date().toDateString();
+  let currentDate = new Date(today);
+
+  // 今日から遡って連続日数をカウント
+  for (const dateString of uniqueDates) {
+    const measurementDate = new Date(dateString);
+    const diffDays = Math.floor(
+      (currentDate.getTime() - measurementDate.getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (diffDays === consecutiveDays) {
+      consecutiveDays++;
+      currentDate = new Date(measurementDate.getTime() - 24 * 60 * 60 * 1000);
+    } else {
       break;
-    case 'month':
-      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      break;
-    case '3months':
-      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      break;
-    case '6months':
-      startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-      break;
-    case 'year':
-      startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-      break;
-    default:
-      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
   }
 
-  return data.filter((item) => {
-    const itemDate = item.measurementDate || item.recordDate || item.createdAt;
-    return itemDate && itemDate >= startDate;
-  });
+  return consecutiveDays;
 };
 
 /**
@@ -106,11 +102,8 @@ const filterDataByPeriod = <
  */
 interface ProgressStats {
   totalMeasurements: number;
-  avgAccuracy: number;
   improvementRate: number;
-  consistencyScore: number;
-  painTrend: 'improving' | 'stable' | 'worsening';
-  motivationTrend: 'improving' | 'stable' | 'worsening';
+  consecutiveDays: number;
 }
 
 const calculateProgressStats = (
@@ -120,18 +113,10 @@ const calculateProgressStats = (
   if (measurements.length === 0) {
     return {
       totalMeasurements: 0,
-      avgAccuracy: 0,
       improvementRate: 0,
-      consistencyScore: 0,
-      painTrend: 'stable',
-      motivationTrend: 'stable',
+      consecutiveDays: 0,
     };
   }
-
-  // 測定精度の平均
-  const avgAccuracy =
-    measurements.reduce((sum, m) => sum + (m.accuracyScore || 0), 0) /
-    measurements.length;
 
   // 改善率の計算（最初と最後の比較）
   const firstMeasurement = measurements[measurements.length - 1];
@@ -144,60 +129,13 @@ const calculateProgressStats = (
         100
       : 0;
 
-  // 一貫性スコア（測定頻度）
-  const dayRange = 30; // 30日間
-  const consistencyScore = Math.min(
-    100,
-    (measurements.length / dayRange) * 100
-  );
-
-  // 痛みと意欲のトレンド分析
-  const recentRecords = records.slice(0, 7); // 最近7日間
-  const olderRecords = records.slice(7, 14); // その前の7日間
-
-  const avgRecentPain =
-    recentRecords.length > 0
-      ? recentRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
-        recentRecords.length
-      : 3;
-  const avgOlderPain =
-    olderRecords.length > 0
-      ? olderRecords.reduce((sum, r) => sum + (r.painLevel || 3), 0) /
-        olderRecords.length
-      : 3;
-
-  const avgRecentMotivation =
-    recentRecords.length > 0
-      ? recentRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
-        recentRecords.length
-      : 3;
-  const avgOlderMotivation =
-    olderRecords.length > 0
-      ? olderRecords.reduce((sum, r) => sum + (r.motivationLevel || 3), 0) /
-        olderRecords.length
-      : 3;
-
-  const painTrend =
-    avgRecentPain < avgOlderPain - 0.3
-      ? 'improving'
-      : avgRecentPain > avgOlderPain + 0.3
-        ? 'worsening'
-        : 'stable';
-
-  const motivationTrend =
-    avgRecentMotivation > avgOlderMotivation + 0.3
-      ? 'improving'
-      : avgRecentMotivation < avgOlderMotivation - 0.3
-        ? 'worsening'
-        : 'stable';
+  // 連続記録日数の計算
+  const consecutiveDays = calculateConsecutiveDays(measurements);
 
   return {
     totalMeasurements: measurements.length,
-    avgAccuracy: Math.round(avgAccuracy * 100),
     improvementRate: Math.round(improvementRate),
-    consistencyScore: Math.round(consistencyScore),
-    painTrend,
-    motivationTrend,
+    consecutiveDays,
   };
 };
 
@@ -205,7 +143,6 @@ const calculateProgressStats = (
  * 進捗ページメインコンポーネント
  */
 const ProgressPage: React.FC = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('month');
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
   const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -232,52 +169,11 @@ const ProgressPage: React.FC = () => {
     loadData();
   }, []);
 
-  // 期間フィルタリング済みデータ
-  const filteredMeasurements = useMemo(
-    () => filterDataByPeriod(measurements, selectedPeriod),
-    [measurements, selectedPeriod]
-  );
-
-  const filteredRecords = useMemo(
-    () => filterDataByPeriod(calendarRecords, selectedPeriod),
-    [calendarRecords, selectedPeriod]
-  );
-
   // 統計情報
   const stats = useMemo(
-    () => calculateProgressStats(filteredMeasurements, filteredRecords),
-    [filteredMeasurements, filteredRecords]
+    () => calculateProgressStats(measurements, calendarRecords),
+    [measurements, calendarRecords]
   );
-
-  const periodLabels: Record<PeriodType, string> = {
-    week: '1週間',
-    month: '1ヶ月',
-    '3months': '3ヶ月',
-    '6months': '6ヶ月',
-    year: '1年',
-  };
-
-  const getTrendIcon = (trend: 'improving' | 'stable' | 'worsening') => {
-    switch (trend) {
-      case 'improving':
-        return '📈';
-      case 'worsening':
-        return '📉';
-      default:
-        return '➡️';
-    }
-  };
-
-  const getTrendColor = (trend: 'improving' | 'stable' | 'worsening') => {
-    switch (trend) {
-      case 'improving':
-        return '#4caf50';
-      case 'worsening':
-        return '#f44336';
-      default:
-        return '#ff9800';
-    }
-  };
 
   if (loading) {
     return (
@@ -295,19 +191,6 @@ const ProgressPage: React.FC = () => {
           <span className={styles.titleIcon}>📊</span>
           進捗レポート
         </h1>
-        <div className={styles.periodSelector}>
-          {Object.entries(periodLabels).map(([period, label]) => (
-            <button
-              key={period}
-              className={`${styles.periodButton} ${
-                selectedPeriod === period ? styles.active : ''
-              }`}
-              onClick={() => setSelectedPeriod(period as PeriodType)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <main className={styles.mainContent}>
@@ -316,12 +199,6 @@ const ProgressPage: React.FC = () => {
             <h3>測定回数</h3>
             <p className={styles.statValue}>{stats.totalMeasurements}回</p>
             <span className={styles.statDescription}>期間内の総測定回数</span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>平均精度</h3>
-            <p className={styles.statValue}>{stats.avgAccuracy}%</p>
-            <span className={styles.statDescription}>測定精度の平均値</span>
           </div>
 
           <div className={styles.statCard}>
@@ -335,50 +212,16 @@ const ProgressPage: React.FC = () => {
 
           <div className={styles.statCard}>
             <h3>継続性</h3>
-            <p className={styles.statValue}>{stats.consistencyScore}%</p>
-            <span className={styles.statDescription}>測定頻度のスコア</span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>痛みレベル</h3>
-            <p
-              className={styles.statValue}
-              style={{ color: getTrendColor(stats.painTrend) }}
-            >
-              {getTrendIcon(stats.painTrend)}
-            </p>
-            <span className={styles.statDescription}>
-              {stats.painTrend === 'improving'
-                ? '改善中'
-                : stats.painTrend === 'worsening'
-                  ? '悪化傾向'
-                  : '安定'}
-            </span>
-          </div>
-
-          <div className={styles.statCard}>
-            <h3>意欲レベル</h3>
-            <p
-              className={styles.statValue}
-              style={{ color: getTrendColor(stats.motivationTrend) }}
-            >
-              {getTrendIcon(stats.motivationTrend)}
-            </p>
-            <span className={styles.statDescription}>
-              {stats.motivationTrend === 'improving'
-                ? '向上中'
-                : stats.motivationTrend === 'worsening'
-                  ? '低下傾向'
-                  : '安定'}
-            </span>
+            <p className={styles.statValue}>{stats.consecutiveDays}日</p>
+            <span className={styles.statDescription}>連続記録日数</span>
           </div>
         </div>
 
         <div className={styles.chartsContainer}>
-          <MotionChartsContainer measurements={filteredMeasurements} />
+          <MotionChartsContainer measurements={measurements} />
         </div>
 
-        {filteredMeasurements.length === 0 && (
+        {measurements.length === 0 && (
           <div className={styles.noDataMessage}>
             <p>選択した期間にデータがありません。</p>
             <p>測定を開始してデータを蓄積してください。</p>
