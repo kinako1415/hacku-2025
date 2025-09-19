@@ -264,9 +264,11 @@ export const MotionChart: React.FC<MotionChartProps> = ({
             }}
           >
             <CartesianGrid
-              strokeDasharray="3 3"
+              strokeDasharray="2 4"
               stroke="#E5E7EB"
-              opacity={0.7}
+              opacity={0.6}
+              horizontal={true}
+              vertical={false}
             />
             <XAxis
               dataKey="date"
@@ -275,8 +277,16 @@ export const MotionChart: React.FC<MotionChartProps> = ({
                 return item ? item.formattedDate : value;
               }}
               stroke="#6B7280"
-              fontSize={12}
-              tickMargin={8}
+              fontSize={11}
+              tickMargin={10}
+              tick={{
+                fontSize: 11,
+                fill: '#6B7280',
+                fontWeight: '400',
+              }}
+              axisLine={{ stroke: '#D1D5DB', strokeWidth: 1 }}
+              tickLine={{ stroke: '#D1D5DB', strokeWidth: 1 }}
+              interval="preserveStartEnd"
             />
             <YAxis
               domain={[
@@ -288,13 +298,28 @@ export const MotionChart: React.FC<MotionChartProps> = ({
               ]}
               stroke="#6B7280"
               fontSize={12}
-              tickMargin={8}
+              tickMargin={10}
+              tickFormatter={(value) => `${Math.round(value)}°`}
               label={{
-                value: `角度 (${config.unit})`,
+                value: `角度 (度)`,
                 angle: -90,
                 position: 'insideLeft',
-                style: { textAnchor: 'middle' },
+                style: {
+                  textAnchor: 'middle',
+                  fontSize: '13px',
+                  fill: '#374151',
+                  fontWeight: '500',
+                },
               }}
+              tick={{
+                fontSize: 12,
+                fill: '#4B5563',
+                fontWeight: '500',
+              }}
+              axisLine={{ stroke: '#D1D5DB', strokeWidth: 1 }}
+              tickLine={{ stroke: '#D1D5DB', strokeWidth: 1 }}
+              interval="preserveStartEnd"
+              tickCount={6}
             />
             <Tooltip content={<CustomTooltip />} />
             <Line
