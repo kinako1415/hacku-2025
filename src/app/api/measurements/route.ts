@@ -151,8 +151,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 測定データ作成
     const newMeasurement = createMeasurement(createMeasurementData);
 
+    // タイムゾーンに依存しないようにYYYY-MM-DD形式の文字列で比較
+    const targetDate = new Date(newMeasurement.measurementDate);
+    const targetDateString = `${targetDate.getFullYear()}-${String(
+      targetDate.getMonth() + 1
+    ).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+
+    const existing = await db.measurements
+      .where('userId')
+      .equals(newMeasurement.userId)
+      .filter((m) => {
+        const recordDate = new Date(m.measurementDate);
+        const recordDateString = `${recordDate.getFullYear()}-${String(
+          recordDate.getMonth() + 1
+        ).padStart(2, '0')}-${String(recordDate.getDate()).padStart(2, '0')}`;
+        return recordDateString === targetDateString;
+      })
+      .first();
+
+    // 既存データがあれば、そのIDを新しいデータに引き継ぐ
+    if (existing?.id) {
+      newMeasurement.id = existing.id;
+    }
+
     // データベースに保存
-    await db.measurements.add(newMeasurement);
+    await db.measurements.put(newMeasurement);
 
     return NextResponse.json(
       {

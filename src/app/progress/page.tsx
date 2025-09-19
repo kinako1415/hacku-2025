@@ -9,7 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
-import { db } from '@/lib/database/measurement-db';
+import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
 /**
@@ -107,69 +107,21 @@ const fetchMeasurements = async (
       return { measurements: sampleData, isRealData: false };
     }
 
-    // 1. 完了済みの全セッションを取得
-    const sessions = await db.getSessions();
-    const completedSessions = sessions.filter(
-      (s) => s.isCompleted && s.endTime
-    );
+    // RehabDatabaseのdb.measurementsからデータを取得
+    const realMeasurements = await db.measurements
+      .where('userId')
+      .equals(userId)
+      .reverse() // 最新のデータが先頭に来るようにソート
+      .toArray();
 
-    if (completedSessions.length === 0) {
+    if (realMeasurements.length === 0) {
       console.log('実際のデータがないため、サンプルデータを使用します。');
       return { measurements: generateSampleData(), isRealData: false };
     }
 
-    // 2. 各セッションの結果をMotionMeasurement形式に変換
-    const motionMeasurements: MotionMeasurement[] = [];
-    for (const session of completedSessions) {
-      const results = await db.getSessionResults(session.sessionId);
-
-      // 各ステップの最大角度を計算
-      const maxAngles: { [key: string]: number } = {};
-      results.forEach((result) => {
-        if (
-          !maxAngles[result.stepId] ||
-          result.angle > (maxAngles[result.stepId] ?? 0)
-        ) {
-          maxAngles[result.stepId] = result.angle;
-        }
-      });
-
-      motionMeasurements.push({
-        id: String(session.id!),
-        userId: 'default-user', // userIdは現状固定
-        measurementDate: new Date(session.endTime!),
-        wristFlexion: maxAngles['palmar-flexion'] || 0,
-        wristExtension: maxAngles['dorsal-flexion'] || 0,
-        wristUlnarDeviation: maxAngles['ulnar-deviation'] || 0,
-        wristRadialDeviation: maxAngles['radial-deviation'] || 0,
-        // 以下は measurement-db にないデータなので0やデフォルト値を入れる
-        thumbFlexion: 0,
-        thumbExtension: 0,
-        thumbAdduction: 0,
-        thumbAbduction: 0,
-        accuracyScore: 1.0, // 仮の値
-        handUsed: session.hand,
-        comparisonResult: {
-          // デフォルト値
-          wristFlexion: { status: 'normal', within_range: true },
-          wristExtension: { status: 'normal', within_range: true },
-          wristUlnarDeviation: { status: 'normal', within_range: true },
-          wristRadialDeviation: { status: 'normal', within_range: true },
-          thumbFlexion: { status: 'normal', within_range: true },
-          thumbExtension: { status: 'normal', within_range: true },
-          thumbAdduction: { status: 'normal', within_range: true },
-          thumbAbduction: { status: 'normal', within_range: true },
-          overallStatus: 'normal' as const,
-        },
-        createdAt: new Date(session.startTime),
-      });
-    }
-
-    console.log('DBから変換した実際のデータを使用:', motionMeasurements);
+    console.log('RehabDatabaseから取得した実際のデータを使用:', realMeasurements);
     return {
-      measurements: motionMeasurements.sort(
-        (a, b) => b.measurementDate.getTime() - a.measurementDate.getTime()
-      ),
+      measurements: realMeasurements,
       isRealData: true,
     };
   } catch (error) {

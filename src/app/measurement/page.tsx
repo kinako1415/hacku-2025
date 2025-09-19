@@ -18,6 +18,8 @@ import {
   validateLandmarks,
   Point3D,
 } from '@/lib/utils/angle-calculator';
+import { useMeasurementService } from '@/hooks/useMeasurementService';
+import { createMeasurement } from '@/lib/data-manager/models/motion-measurement';
 
 /**
  * MediaPipe 型定義
@@ -54,18 +56,21 @@ interface MeasurementResult {
   angle: number;
   targetAngle: number;
   isCompleted: boolean;
+  landmarks?: Array<{ x: number; y: number; z: number }>;
 }
 
 /**
  * 測定セッション
  */
-interface MeasurementSession {
-  id: string;
+export interface MeasurementSession {
+  id?: number;
+  sessionId: string;
   startTime: number;
   endTime?: number;
-  hand: HandSelection;
-  results: MeasurementResult[];
+  hand: 'left' | 'right';
   isCompleted: boolean;
+  totalSteps: number;
+  completedSteps: number;
 }
 
 /**
@@ -541,12 +546,12 @@ const MeasurementResultSection: React.FC<{
   onRetry: () => void;
 }> = ({ results, onSave, onRetry }) => {
   // 各ステップの最大角度を計算
-  const maxAngles = measurementSteps.map(step => {
-    const stepResults = results.filter(r => r.stepId === step.id);
+  const maxAngles = measurementSteps.map((step) => {
+    const stepResults = results.filter((r) => r.stepId === step.id);
     if (stepResults.length === 0) {
       return { name: step.name, angle: 0 };
     }
-    const maxAngle = Math.max(...stepResults.map(r => r.angle));
+    const maxAngle = Math.max(...stepResults.map((r) => r.angle));
     return { name: step.name, angle: Math.round(maxAngle) };
   });
 
@@ -554,7 +559,7 @@ const MeasurementResultSection: React.FC<{
     <div className={styles.resultSection}>
       <h1 className={styles.resultTitle}>測定結果</h1>
       <div className={styles.resultSummary}>
-        {maxAngles.map(result => (
+        {maxAngles.map((result) => (
           <div key={result.name} className={styles.resultItem}>
             <span className={styles.resultName}>{result.name}</span>
             <span className={styles.resultAngle}>{result.angle}°</span>
@@ -578,8 +583,11 @@ const MeasurementResultSection: React.FC<{
  */
 const MeasurementPage: React.FC = () => {
   const router = useRouter();
+  const { saveMotionMeasurement } = useMeasurementService();
 
-  const [measurementResults, setMeasurementResults] = useState<DBMeasurementResult[]>([]);
+  const [measurementResults, setMeasurementResults] = useState<
+    DBMeasurementResult[]
+  >([]);
 
   // 測定セットアップ状態管理
   const [setup, setSetup] = useState<MeasurementSetup>({
@@ -868,8 +876,6 @@ const MeasurementPage: React.FC = () => {
         phase: 'measuring',
         isCapturing: true,
       }));
-
-      console.log('Measurement session started:', sessionId);
     } catch (error) {
       console.error('セッション開始エラー:', error);
     }
@@ -894,12 +900,6 @@ const MeasurementPage: React.FC = () => {
     // ビデオの読み込みを待つ
     const onVideoLoaded = async () => {
       console.log('ビデオ読み込み完了');
-      console.log(
-        'ビデオ解像度:',
-        videoRef.current?.videoWidth,
-        'x',
-        videoRef.current?.videoHeight
-      );
 
       await startMeasurementSession();
       startDetection();
@@ -923,14 +923,6 @@ const MeasurementPage: React.FC = () => {
 
     let frameCount = 0;
     const detectFrame = async () => {
-      console.log('detectFrame実行中:', {
-        videoExists: !!videoRef.current,
-        handsExists: !!handsRef.current,
-        currentStep: setupRef.current.currentStep,
-        videoReadyState: videoRef.current?.readyState,
-        videoSrc: !!videoRef.current?.srcObject,
-      });
-
       if (
         videoRef.current &&
         handsRef.current &&
@@ -940,7 +932,6 @@ const MeasurementPage: React.FC = () => {
           frameCount++;
           if (frameCount % 30 === 0) {
             // 30フレームごとにログ出力
-            console.log('検出フレーム送信中...', frameCount);
           }
 
           // MediaPipeに画像を送信
@@ -982,10 +973,12 @@ const MeasurementPage: React.FC = () => {
         // セッションを完了としてマーク
         await db.completeSession(setupRef.current.sessionId);
         // 最終結果を取得
-        const finalResults = await db.getSessionResults(setupRef.current.sessionId);
+        const finalResults = await db.getSessionResults(
+          setupRef.current.sessionId
+        );
         setMeasurementResults(finalResults);
       } catch (error) {
-        console.error("結果の取得またはセッション完了エラー:", error);
+        console.error('結果の取得またはセッション完了エラー:', error);
       }
     }
 
@@ -1077,11 +1070,6 @@ const MeasurementPage: React.FC = () => {
     };
   }, []);
 
-  // デバッグ用：setup状態の監視
-  useEffect(() => {
-    console.log('Setup状態変更:', setup);
-  }, [setup]);
-
   /**
    * 手の選択ハンドラー
    */
@@ -1115,11 +1103,6 @@ const MeasurementPage: React.FC = () => {
         isReady: true,
         error: null,
       });
-
-      console.log('カメラ初期化完了', {
-        tracks: stream.getVideoTracks().length,
-        settings: stream.getVideoTracks()[0]?.getSettings(),
-      });
     } catch (error) {
       console.error('カメラ初期化エラー:', error);
       setCameraState({
@@ -1141,9 +1124,6 @@ const MeasurementPage: React.FC = () => {
    * 測定開始
    */
   const handleStartMeasurement = () => {
-    console.log('handleStartMeasurement呼び出し:', {
-      selectedHand: setup.selectedHand,
-    });
     if (setup.selectedHand) {
       console.log('測定画面に遷移します');
       setSetup((prev) => ({

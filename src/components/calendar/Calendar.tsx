@@ -59,10 +59,6 @@ export const Calendar: FC<CalendarProps> = ({
   const getDateCellClasses = (date: dayjs.Dayjs) => {
     const classes = [style.day];
 
-    if (date.isSame(now, 'day')) {
-      classes.push(style.today);
-    }
-
     if (date.month() !== selectedMonth.month()) {
       classes.push(style.outside);
     }
@@ -93,7 +89,9 @@ export const Calendar: FC<CalendarProps> = ({
         onClick={() => handleSelectDate(date)}
         className={getDateCellClasses(date)}
       >
-        {date.date()}
+        <span className={date.isSame(now, 'day') ? style.today : undefined}>
+          {date.date()}
+        </span>
       </button>
     </td>
   );

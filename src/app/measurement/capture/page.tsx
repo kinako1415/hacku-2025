@@ -382,8 +382,31 @@ const MeasurementCapturePage: React.FC = () => {
         accuracyScore: measurementState.accuracy,
       });
 
-      await db.measurements.add(measurementData);
-      console.log('測定完了:', measurementData);
+      // タイムゾーンに依存しないようにYYYY-MM-DD形式の文字列で比較
+      const targetDate = new Date(measurementData.measurementDate);
+      const targetDateString = `${targetDate.getFullYear()}-${String(
+        targetDate.getMonth() + 1
+      ).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+
+      const existing = await db.measurements
+        .where('userId')
+        .equals(measurementData.userId)
+        .filter((m) => {
+          const recordDate = new Date(m.measurementDate);
+          const recordDateString = `${recordDate.getFullYear()}-${String(
+            recordDate.getMonth() + 1
+          ).padStart(2, '0')}-${String(recordDate.getDate()).padStart(2, '0')}`;
+          return recordDateString === targetDateString;
+        })
+        .first();
+
+      // 既存データがあれば、そのIDを新しいデータに引き継ぐ
+      if (existing?.id) {
+        measurementData.id = existing.id;
+      }
+
+      // putメソッドで保存（存在すれば更新、なければ新規作成）
+      await db.measurements.put(measurementData);
 
       // 進捗ページに移動
       router.push('/progress');
