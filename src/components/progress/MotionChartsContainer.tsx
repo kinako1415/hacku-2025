@@ -106,15 +106,11 @@ export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
     if (filteredMeasurements.length === 0) {
       return {
         totalMeasurements: 0,
-        averageAccuracy: 0,
         latestDate: null,
       };
     }
 
     const totalMeasurements = filteredMeasurements.length;
-    const averageAccuracy =
-      filteredMeasurements.reduce((sum, m) => sum + m.accuracyScore, 0) /
-      totalMeasurements;
     const latestDate = filteredMeasurements.sort(
       (a, b) =>
         new Date(b.measurementDate).getTime() -
@@ -123,7 +119,6 @@ export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
 
     return {
       totalMeasurements,
-      averageAccuracy,
       latestDate,
     };
   }, [filteredMeasurements]);
@@ -146,12 +141,6 @@ export const MotionChartsContainer: React.FC<MotionChartsContainerProps> = ({
               {overallStats.totalMeasurements}
             </span>
             <span className={styles.statCard__label}>測定回数</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statCard__value}>
-              {(overallStats.averageAccuracy * 100).toFixed(1)}%
-            </span>
-            <span className={styles.statCard__label}>平均精度</span>
           </div>
           {overallStats.latestDate && (
             <div className={styles.statCard}>
