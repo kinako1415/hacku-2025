@@ -21,15 +21,15 @@
   }
 
   &__title {
-    font-size: 1.75rem;
+    font-size: 2rem;
     font-weight: 700;
-    color: #1f2937;
+    color: #0542fc; /* ブルーカラー */
     margin: 0;
   }
 
   &__description {
     font-size: 1rem;
-    color: #6b7280;
+    color: #808080;
     margin: 0;
   }
 
@@ -66,25 +66,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 1rem 1.5rem;
+  gap: 0.5rem;
+  padding: 1.5rem;
   background: white;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  min-width: 120px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  min-width: 140px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+  }
 
   &__value {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    color: #1f2937;
+    color: #0542fc;
   }
 
   &__label {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 500;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
+    color: #808080;
+    text-align: center;
   }
 }
 
@@ -180,36 +186,42 @@
 .tab {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem 1.5rem;
+  gap: 0.5rem;
+  padding: 1.5rem 2rem;
   border: none;
-  background: transparent;
-  color: #6b7280;
+  background: #f8f9fa;
+  color: #808080;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-bottom: 3px solid transparent;
-  min-width: 160px;
-  text-align: left;
+  transition: all 0.3s ease;
+  border-radius: 16px 16px 0 0;
+  min-width: 180px;
+  text-align: center;
+  border-bottom: 4px solid transparent;
 
   &:hover {
-    background: white;
-    color: #374151;
+    background: #ffffff;
+    color: #494949;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   &--active {
-    background: white;
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
+    background: #ffffff;
+    color: #0542fc;
+    border-bottom-color: #0542fc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(5, 66, 252, 0.2);
   }
 
   &__label {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
   }
 
   &__description {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     opacity: 0.8;
+    line-height: 1.3;
   }
 }
 

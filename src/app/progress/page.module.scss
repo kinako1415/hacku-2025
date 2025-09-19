@@ -4,7 +4,7 @@
 
 .progressPage {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: #ffffff; /* 明るい白背景 */
   display: flex;
   flex-direction: column;
   padding: 0 24px;
@@ -31,9 +31,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.8rem;
+  font-size: 2.5rem; /* より大きく */
   font-weight: 700;
-  color: #1a365d;
+  color: #0542fc; /* ブルーカラー */
   margin: 0;
 }
 
@@ -208,19 +208,24 @@
 }
 
 .statCard {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f7fafc, #edf2f7);
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
   transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: #cbd5e0;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    color: #808080;
+    margin: 0 0 12px 0;
+    font-weight: 500;
   }
 }
 
@@ -246,10 +251,18 @@
 }
 
 .statValue {
-  font-size: 1.4rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #2d3748;
+  color: #0542fc;
+  margin: 0;
   line-height: 1.2;
+}
+
+.statDescription {
+  font-size: 0.9rem;
+  color: #808080;
+  margin-top: 8px;
+  line-height: 1.4;
 }
 
 /* チャートセクション */
@@ -265,6 +278,14 @@
     color: #2d3748;
     margin: 0 0 24px 0;
   }
+}
+
+.chartsContainer {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
 }
 
 .progressCharts {
