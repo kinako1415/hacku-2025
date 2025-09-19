@@ -37,15 +37,15 @@ const MOTION_TYPES: { type: MotionType; label: string; description: string }[] =
     {
       type: 'flexion',
       label: '掌屈',
-      description: '手首を手のひら側に曲げる角度',
+      description: '手首を手のひら側に曲げる可動域',
     },
     {
       type: 'extension',
       label: '背屈',
-      description: '手首を手の甲側に曲げる角度',
+      description: '手首を手の甲側に曲げる可動域',
     },
-    { type: 'radial', label: '橈屈', description: '手首を親指側に曲げる角度' },
-    { type: 'ulnar', label: '尺屈', description: '手首を小指側に曲げる角度' },
+    { type: 'radial', label: '橈屈', description: '手首を親指側に曲げる可動域' },
+    { type: 'ulnar', label: '尺屈', description: '手首を小指側に曲げる可動域' },
   ];
 
 /**

@@ -51,7 +51,7 @@ const MOTION_CONFIG = {
     label: '掌屈',
     color: '#3B82F6',
     unit: '°',
-    description: '手首を手のひら側に曲げる角度',
+    description: '手首を手のひら側に曲げる可動域',
     normalRange: { min: 0, max: 90 },
     getValueFromMeasurement: (m: MotionMeasurement) => m.wristFlexion,
   },
@@ -59,7 +59,7 @@ const MOTION_CONFIG = {
     label: '背屈',
     color: '#10B981',
     unit: '°',
-    description: '手首を手の甲側に曲げる角度',
+    description: '手首を手の甲側に曲げる可動域',
     normalRange: { min: 0, max: 70 },
     getValueFromMeasurement: (m: MotionMeasurement) => m.wristExtension,
   },
@@ -67,7 +67,7 @@ const MOTION_CONFIG = {
     label: '橈屈',
     color: '#F59E0B',
     unit: '°',
-    description: '手首を親指側に曲げる角度',
+    description: '手首を親指側に曲げる可動域',
     normalRange: { min: 0, max: 25 },
     getValueFromMeasurement: (m: MotionMeasurement) => m.wristRadialDeviation,
   },
@@ -75,7 +75,7 @@ const MOTION_CONFIG = {
     label: '尺屈',
     color: '#EF4444',
     unit: '°',
-    description: '手首を小指側に曲げる角度',
+    description: '手首を小指側に曲げる可動域',
     normalRange: { min: 0, max: 55 },
     getValueFromMeasurement: (m: MotionMeasurement) => m.wristUlnarDeviation,
   },
@@ -322,7 +322,7 @@ export const MotionChart: React.FC<MotionChartProps> = ({
       {/* 正常範囲の表示 */}
       <div className={styles.motionChart__normalRange}>
         <p className={styles.normalRange__text}>
-          正常範囲: {config.normalRange.min}° - {config.normalRange.max}°
+          正常可動域: {config.normalRange.max}°
         </p>
         <div className={styles.normalRange__indicator}>
           <div
