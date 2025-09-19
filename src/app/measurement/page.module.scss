@@ -449,6 +449,174 @@
   font-weight: 500;
 }
 
+/* 測定実行画面 */
+.measurementExecution {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px;
+  height: 100%;
+  gap: 24px;
+  position: relative;
+}
+
+/* 測定部位タグ */
+.measurementTags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.measurementTag {
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: #0542fc;
+    color: white;
+  }
+
+  &.completed {
+    background: #10b981;
+    color: white;
+  }
+}
+
+/* 現在のステップ表示 */
+.currentStep {
+  margin-bottom: 16px;
+}
+
+.stepLabel {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* 角度表示 */
+.angleDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px 0;
+}
+
+.angleValue {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #0542fc;
+  line-height: 1;
+}
+
+/* 指示テキスト */
+.instructionText {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.mainInstruction {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subInstruction {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+}
+
+.cameraInstruction {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ステータス表示 */
+.statusContainer {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.loadingStatus {
+  background: #fef3c7;
+  color: #d97706;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.detectedStatus {
+  background: #d1fae5;
+  color: #065f46;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.waitingStatus {
+  background: #fef2f2;
+  color: #dc2626;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* 次のフェーズボタン */
+.nextPhase {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.nextPhaseButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+}
+
+/* 戻るボタン */
+.backButton {
+  position: absolute;
+  top: 32px;
+  left: 40px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+}
+
 /* 下部セクション */
 .bottomSection {
   display: flex;
@@ -566,5 +734,78 @@
 
   .frameInstruction {
     font-size: 0.875rem;
+  }
+}
+
+/* 測定実行時のビデオコンテナ */
+.videoContainer {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.video {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* コントロールボタン */
+.controls {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.stopButton {
+  padding: 12px 24px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #dc2626;
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.nextPhaseButton {
+  padding: 12px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
   }
 }

@@ -13,7 +13,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@mediapipe/hands": "^0.4.1646424915",
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/hands": "^0.4.1675469240",
     "@mediapipe/pose": "^0.5.1646424915",
     "dayjs": "^1.11.18",
     "dexie": "^3.2.4",

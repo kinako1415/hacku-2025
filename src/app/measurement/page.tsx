@@ -5,9 +5,68 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
+import {
+  db,
+  MeasurementSession as DBMeasurementSession,
+  MeasurementResult as DBMeasurementResult,
+} from '@/lib/database/measurement-db';
+import {
+  calculateWristAngle,
+  validateLandmarks,
+  Point3D,
+} from '@/lib/utils/angle-calculator';
+
+/**
+ * MediaPipe 型定義
+ */
+interface Hands {
+  setOptions(options: any): void;
+  onResults(callback: (results: any) => void): void;
+  send(data: { image: HTMLVideoElement }): Promise<void>;
+  close(): void;
+}
+
+interface MediaPipeHands {
+  Hands: new (config: any) => Hands;
+}
+
+/**
+ * 手のランドマーク座標
+ */
+interface HandLandmark {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/**
+ * 測定結果データ
+ */
+interface MeasurementResult {
+  id: string;
+  timestamp: number;
+  hand: HandSelection;
+  stepId: string;
+  stepName: string;
+  angle: number;
+  targetAngle: number;
+  isCompleted: boolean;
+}
+
+/**
+ * 測定セッション
+ */
+interface MeasurementSession {
+  id: string;
+  startTime: number;
+  endTime?: number;
+  hand: HandSelection;
+  results: MeasurementResult[];
+  isCompleted: boolean;
+}
 
 /**
  * カメラセットアップ状態
@@ -24,9 +83,25 @@ interface CameraState {
 type HandSelection = 'left' | 'right';
 
 /**
+ * 測定フェーズ
+ */
+type MeasurementPhase = 'preparation' | 'measuring' | 'complete';
+
+/**
+ * 測定ステップ
+ */
+interface MeasurementStep {
+  id: string;
+  name: string;
+  instruction: string;
+  description: string;
+  targetAngle: number;
+}
+
+/**
  * 画面表示ステップ
  */
-type DisplayStep = 'instructions' | 'selection';
+type DisplayStep = 'instructions' | 'selection' | 'measurement';
 
 /**
  * 測定セットアップ状態
@@ -34,7 +109,47 @@ type DisplayStep = 'instructions' | 'selection';
 interface MeasurementSetup {
   selectedHand: HandSelection | null;
   currentStep: DisplayStep;
+  currentMeasurementStep: number;
+  currentAngle: number;
+  phase: MeasurementPhase;
+  sessionId: string | null;
+  mediaPipeReady: boolean;
+  isCapturing: boolean;
 }
+
+/**
+ * 測定ステップ定義
+ */
+const measurementSteps: MeasurementStep[] = [
+  {
+    id: 'palmar-flexion',
+    name: '掌屈',
+    instruction: '手のひら側に手首を曲げてください',
+    description: '手首を手のひら側に最大まで曲げてください（0-90°）',
+    targetAngle: 90,
+  },
+  {
+    id: 'dorsal-flexion',
+    name: '背屈',
+    instruction: '手の甲側に手首を曲げてください',
+    description: '手首を手の甲側に最大まで曲げてください（0-70°）',
+    targetAngle: 70,
+  },
+  {
+    id: 'ulnar-deviation',
+    name: '尺屈',
+    instruction: '小指側に手首を曲げてください',
+    description: '手首を小指側に最大まで曲げてください（0-30°）',
+    targetAngle: 30,
+  },
+  {
+    id: 'radial-deviation',
+    name: '橈屈',
+    instruction: '親指側に手首を曲げてください',
+    description: '手首を親指側に最大まで曲げてください（0-20°）',
+    targetAngle: 20,
+  },
+];
 
 /**
  * 説明セクションコンポーネント
@@ -157,6 +272,114 @@ const HandSelectionSection: React.FC<{
 };
 
 /**
+ * 測定実行画面コンポーネント
+ */
+const MeasurementExecution: React.FC<{
+  setup: MeasurementSetup;
+  onBack: () => void;
+  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  onNextStep: () => void;
+  onStopMeasurement: () => void;
+}> = ({
+  setup,
+  onBack,
+  videoRef,
+  canvasRef,
+  onNextStep,
+  onStopMeasurement,
+}) => {
+  const currentStep = measurementSteps[setup.currentMeasurementStep];
+
+  if (!currentStep) {
+    return <div>測定ステップが見つかりません</div>;
+  }
+
+  return (
+    <div className={styles.measurementExecution}>
+      {/* 測定部位タグ */}
+      <div className={styles.measurementTags}>
+        {measurementSteps.map((step, index) => (
+          <span
+            key={step.id}
+            className={`${styles.measurementTag} ${
+              index === setup.currentMeasurementStep ? styles.active : ''
+            } ${index < setup.currentMeasurementStep ? styles.completed : ''}`}
+          >
+            {step.name}
+          </span>
+        ))}
+      </div>
+
+      {/* 現在のステップ表示 */}
+      <div className={styles.currentStep}>
+        <h2 className={styles.stepLabel}>
+          step{setup.currentMeasurementStep + 1}. {currentStep.name}
+        </h2>
+      </div>
+
+      {/* ビデオとキャンバス */}
+      <div className={styles.videoContainer}>
+        <video
+          ref={videoRef}
+          className={styles.video}
+          autoPlay
+          playsInline
+          muted
+          style={{ transform: 'scaleX(-1)' }} // ミラー表示
+        />
+        <canvas
+          ref={canvasRef}
+          className={styles.canvas}
+          style={{ transform: 'scaleX(-1)' }} // ミラー表示に合わせる
+        />
+      </div>
+
+      {/* 角度表示 */}
+      <div className={styles.angleDisplay}>
+        <span className={styles.angleValue}>{setup.currentAngle}°</span>
+      </div>
+
+      {/* 指示テキスト */}
+      <div className={styles.instructionText}>
+        <p className={styles.mainInstruction}>{currentStep.instruction}</p>
+        <p className={styles.subInstruction}>{currentStep.description}</p>
+        <div className={styles.statusContainer}>
+          {!setup.mediaPipeReady ? (
+            <p className={styles.loadingStatus}>MediaPipe初期化中...</p>
+          ) : setup.currentAngle > 0 ? (
+            <p className={styles.detectedStatus}>✓ 手を検出中 - 測定中</p>
+          ) : (
+            <p className={styles.waitingStatus}>手をカメラに向けてください</p>
+          )}
+        </div>
+      </div>
+
+      {/* コントロールボタン */}
+      <div className={styles.controls}>
+        <button className={styles.stopButton} onClick={onStopMeasurement}>
+          測定終了
+        </button>
+        <button
+          className={styles.nextPhaseButton}
+          onClick={onNextStep}
+          disabled={!setup.isCapturing || setup.currentAngle === 0}
+        >
+          {setup.currentMeasurementStep < measurementSteps.length - 1
+            ? '次のフェーズ'
+            : '完了'}
+        </button>
+      </div>
+
+      {/* 戻るボタン */}
+      <button className={styles.backButton} onClick={onBack}>
+        ← 戻る
+      </button>
+    </div>
+  );
+};
+
+/**
  * 測定情報コンポーネント
  */
 const MeasurementInfoSection: React.FC<{
@@ -212,7 +435,8 @@ const MeasurementInfoSection: React.FC<{
 const CameraPreview: React.FC<{
   cameraState: CameraState;
   isInactive?: boolean;
-}> = ({ cameraState, isInactive = false }) => {
+  videoRef?: React.RefObject<HTMLVideoElement>;
+}> = ({ cameraState, isInactive = false, videoRef }) => {
   if (cameraState.error) {
     return (
       <div className={styles.cameraError}>
@@ -241,11 +465,14 @@ const CameraPreview: React.FC<{
               autoPlay
               playsInline
               muted
-              ref={(video) => {
-                if (video && cameraState.stream) {
-                  video.srcObject = cameraState.stream;
-                }
-              }}
+              ref={
+                videoRef ||
+                ((video) => {
+                  if (video && cameraState.stream) {
+                    video.srcObject = cameraState.stream;
+                  }
+                })
+              }
             />
           ) : (
             <div className={styles.cameraPlaceholder}>
@@ -268,6 +495,12 @@ const MeasurementPage: React.FC = () => {
   const [setup, setSetup] = useState<MeasurementSetup>({
     selectedHand: null,
     currentStep: 'instructions',
+    currentMeasurementStep: 0,
+    currentAngle: 0,
+    phase: 'preparation',
+    sessionId: null,
+    mediaPipeReady: false,
+    isCapturing: false,
   });
 
   // カメラ状態管理
@@ -276,6 +509,468 @@ const MeasurementPage: React.FC = () => {
     isReady: false,
     error: null,
   });
+
+  // MediaPipe関連のref
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const handsRef = useRef<Hands | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameRef = useRef<number>();
+
+  // 最後の角度更新時刻
+  const lastAngleUpdateRef = useRef<number>(0);
+
+  /**
+   * MediaPipe Handsの初期化
+   */
+  const initializeMediaPipe = useCallback(async () => {
+    try {
+      console.log('MediaPipe初期化開始...');
+
+      // MediaPipeライブラリの動的読み込み
+      const { Hands } = await import('@mediapipe/hands');
+
+      if (!videoRef.current) {
+        console.error('Video element not found');
+        return;
+      }
+
+      const hands = new Hands({
+        locateFile: (file) =>
+          `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      });
+
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.3, // さらに低い閾値に変更
+        minTrackingConfidence: 0.2, // さらに低い閾値に変更
+      });
+
+      hands.onResults((results) => {
+        console.log(
+          'MediaPipe結果:',
+          results.multiHandLandmarks?.length || 0,
+          '個の手を検出'
+        );
+        // 測定画面で常に結果を処理するように変更
+        if (setup.currentStep === 'measurement') {
+          processHandResults(results);
+        }
+      });
+
+      handsRef.current = hands;
+
+      setSetup((prev) => ({ ...prev, mediaPipeReady: true }));
+      console.log('MediaPipe Hands初期化完了');
+    } catch (error) {
+      console.error('MediaPipe初期化エラー:', error);
+      setSetup((prev) => ({ ...prev, mediaPipeReady: false }));
+    }
+  }, [setup.currentStep, setup.isCapturing]);
+
+  /**
+   * ランドマークをキャンバスに描画
+   */
+  const drawLandmarks = useCallback((results: any) => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+
+    if (!canvas || !video) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // キャンバスのサイズをビデオと合わせる
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+
+    // キャンバスをクリア
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      const landmarks = results.multiHandLandmarks[0];
+
+      // ランドマークを描画
+      ctx.fillStyle = '#FF0000'; // 赤色のドット
+      ctx.strokeStyle = '#00FF00'; // 緑色の線
+      ctx.lineWidth = 2;
+
+      // 各ランドマークを描画
+      landmarks.forEach((landmark: any, index: number) => {
+        const x = landmark.x * canvas.width;
+        const y = landmark.y * canvas.height;
+
+        // ランドマークの点を描画
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // ランドマークの番号を描画
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '12px Arial';
+        ctx.fillText(index.toString(), x + 8, y - 8);
+        ctx.fillStyle = '#FF0000';
+      });
+
+      // 手の骨格線を描画
+      drawHandConnections(ctx, landmarks, canvas.width, canvas.height);
+    }
+  }, []);
+
+  /**
+   * 手の骨格線を描画
+   */
+  const drawHandConnections = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      landmarks: any[],
+      width: number,
+      height: number
+    ) => {
+      // MediaPipe Handsの接続定義
+      const connections: [number, number][] = [
+        // 親指
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+        // 人差し指
+        [0, 5],
+        [5, 6],
+        [6, 7],
+        [7, 8],
+        // 中指
+        [0, 9],
+        [9, 10],
+        [10, 11],
+        [11, 12],
+        // 薬指
+        [0, 13],
+        [13, 14],
+        [14, 15],
+        [15, 16],
+        // 小指
+        [0, 17],
+        [17, 18],
+        [18, 19],
+        [19, 20],
+        // 指の付け根を繋ぐ
+        [5, 9],
+        [9, 13],
+        [13, 17],
+      ];
+
+      ctx.strokeStyle = '#00FF00';
+      ctx.lineWidth = 2;
+
+      connections.forEach(([start, end]) => {
+        if (landmarks[start] && landmarks[end]) {
+          const startX = landmarks[start].x * width;
+          const startY = landmarks[start].y * height;
+          const endX = landmarks[end].x * width;
+          const endY = landmarks[end].y * height;
+
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+        }
+      });
+    },
+    []
+  );
+
+  /**
+   * 手の検出結果を処理
+   */
+  const processHandResults = useCallback(
+    (results: any) => {
+      console.log('processHandResults called:', {
+        hasLandmarks: !!results.multiHandLandmarks,
+        landmarksCount: results.multiHandLandmarks?.length || 0,
+        isCapturing: setup.isCapturing,
+        currentStep: setup.currentStep,
+      });
+
+      // ランドマークの描画（手が検出されているかどうかに関わらず実行）
+      drawLandmarks(results);
+
+      if (
+        !results.multiHandLandmarks ||
+        results.multiHandLandmarks.length === 0
+      ) {
+        console.log('手が検出されませんでした');
+        // 手が検出されない場合は角度を0にリセット
+        setSetup((prev) => ({ ...prev, currentAngle: 0 }));
+        return;
+      }
+
+      const landmarks: Point3D[] = results.multiHandLandmarks[0];
+      console.log('取得したランドマーク数:', landmarks.length);
+
+      if (!validateLandmarks(landmarks)) {
+        console.warn('無効なランドマークデータ');
+        setSetup((prev) => ({ ...prev, currentAngle: 0 }));
+        return;
+      }
+
+      // 現在のステップに応じた角度を計算
+      const currentStep = measurementSteps[setup.currentMeasurementStep];
+      if (!currentStep) {
+        console.warn('現在の測定ステップが見つかりません');
+        return;
+      }
+
+      console.log('角度計算開始:', currentStep.name);
+      const angle = calculateWristAngle(landmarks, currentStep.id);
+      console.log('計算された角度:', angle);
+
+      // 手が検出された場合は必ず角度を更新
+      const now = performance.now();
+      if (now - lastAngleUpdateRef.current > 100) {
+        setSetup((prev) => ({
+          ...prev,
+          currentAngle: Math.round(angle),
+          isCapturing: true, // 手が検出されたら測定中にする
+        }));
+        lastAngleUpdateRef.current = now;
+
+        // 測定結果をデータベースに保存（測定中の場合のみ）
+        if (setup.isCapturing) {
+          saveMeasurementToDatabase(angle, landmarks);
+        }
+      }
+    },
+    [
+      setup.currentMeasurementStep,
+      setup.isCapturing,
+      setup.currentStep,
+      drawLandmarks,
+    ]
+  );
+
+  /**
+   * 測定結果をデータベースに保存
+   */
+  const saveMeasurementToDatabase = useCallback(
+    async (angle: number, landmarks: Point3D[]) => {
+      if (!setup.sessionId || !setup.selectedHand) return;
+
+      const currentStep = measurementSteps[setup.currentMeasurementStep];
+      if (!currentStep) return;
+
+      try {
+        await db.saveMeasurementResult({
+          sessionId: setup.sessionId,
+          hand: setup.selectedHand,
+          stepId: currentStep.id,
+          stepName: currentStep.name,
+          angle,
+          targetAngle: currentStep.targetAngle,
+          isCompleted: false,
+          landmarks,
+        });
+      } catch (error) {
+        console.error('測定結果の保存エラー:', error);
+      }
+    },
+    [setup.sessionId, setup.selectedHand, setup.currentMeasurementStep]
+  );
+
+  /**
+   * 測定セッションを開始
+   */
+  const startMeasurementSession = useCallback(async () => {
+    if (!setup.selectedHand) return;
+
+    try {
+      const sessionId = await db.startSession(setup.selectedHand);
+      setSetup((prev) => ({
+        ...prev,
+        sessionId,
+        phase: 'measuring',
+        isCapturing: true,
+      }));
+
+      console.log('Measurement session started:', sessionId);
+    } catch (error) {
+      console.error('セッション開始エラー:', error);
+    }
+  }, [setup.selectedHand]);
+
+  /**
+   * MediaPipeでの検出を開始
+   */
+  const startMeasurementWithMediaPipe = useCallback(async () => {
+    console.log('MediaPipe測定開始');
+
+    if (!handsRef.current || !videoRef.current || !cameraState.stream) {
+      console.error(
+        'MediaPipe、ビデオ、またはカメラストリームが準備できていません'
+      );
+      return;
+    }
+
+    // ビデオエレメントにストリームを設定
+    videoRef.current.srcObject = cameraState.stream;
+
+    // ビデオの読み込みを待つ
+    const onVideoLoaded = async () => {
+      console.log('ビデオ読み込み完了');
+      console.log(
+        'ビデオ解像度:',
+        videoRef.current?.videoWidth,
+        'x',
+        videoRef.current?.videoHeight
+      );
+
+      await startMeasurementSession();
+      startDetection();
+    };
+
+    videoRef.current.addEventListener('loadeddata', onVideoLoaded, {
+      once: true,
+    });
+  }, [startMeasurementSession, cameraState.stream]);
+
+  /**
+   * MediaPipeでの検出を開始
+   */
+  const startDetection = useCallback(async () => {
+    console.log('MediaPipe検出開始');
+
+    if (!handsRef.current || !videoRef.current) {
+      console.error('MediaPipeまたはビデオが準備できていません');
+      return;
+    }
+
+    let frameCount = 0;
+    const detectFrame = async () => {
+      if (
+        videoRef.current &&
+        handsRef.current &&
+        setup.currentStep === 'measurement'
+      ) {
+        try {
+          frameCount++;
+          if (frameCount % 30 === 0) {
+            // 30フレームごとにログ出力
+            console.log('検出フレーム送信中...', frameCount);
+          }
+
+          // MediaPipeに画像を送信
+          await handsRef.current.send({ image: videoRef.current });
+        } catch (error) {
+          console.error('MediaPipe送信エラー:', error);
+        }
+      }
+
+      // 測定画面にいる間は常に検出を続ける
+      if (setup.currentStep === 'measurement') {
+        animationFrameRef.current = requestAnimationFrame(detectFrame);
+      }
+    };
+
+    // 最初のフレームを送信
+    detectFrame();
+  }, [setup.currentStep]);
+
+  /**
+   * 測定を停止
+   */
+  const stopMeasurement = useCallback(() => {
+    // カメラストリームを停止
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+    }
+
+    // アニメーションフレームをキャンセル
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    setSetup((prev) => ({
+      ...prev,
+      isCapturing: false,
+      phase: 'complete',
+    }));
+  }, []);
+
+  /**
+   * 次の測定ステップに進む
+   */
+  const nextMeasurementStep = useCallback(() => {
+    if (setup.currentMeasurementStep < measurementSteps.length - 1) {
+      setSetup((prev) => ({
+        ...prev,
+        currentMeasurementStep: prev.currentMeasurementStep + 1,
+        currentAngle: 0,
+      }));
+    } else {
+      stopMeasurement();
+    }
+  }, [setup.currentMeasurementStep, stopMeasurement]);
+
+  // MediaPipe初期化のuseEffect
+  useEffect(() => {
+    if (setup.currentStep === 'measurement' && !setup.mediaPipeReady) {
+      initializeMediaPipe();
+    }
+  }, [setup.currentStep, setup.mediaPipeReady, initializeMediaPipe]);
+
+  // MediaPipe測定開始のuseEffect
+  useEffect(() => {
+    if (
+      setup.currentStep === 'measurement' &&
+      setup.mediaPipeReady &&
+      cameraState.isReady &&
+      !animationFrameRef.current // 既に検出が開始されていない場合のみ
+    ) {
+      console.log('MediaPipe測定開始の条件を満たしました');
+      startMeasurementWithMediaPipe();
+    }
+  }, [
+    setup.currentStep,
+    setup.mediaPipeReady,
+    cameraState.isReady,
+    startMeasurementWithMediaPipe,
+  ]);
+
+  // ビデオ読み込み完了時にキャンバスサイズを調整
+  useEffect(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    if (!video || !canvas) return;
+
+    const handleVideoLoaded = () => {
+      console.log('ビデオ読み込み完了、キャンバスサイズを調整');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+    };
+
+    video.addEventListener('loadedmetadata', handleVideoLoaded);
+    video.addEventListener('loadeddata', handleVideoLoaded);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleVideoLoaded);
+      video.removeEventListener('loadeddata', handleVideoLoaded);
+    };
+  }, [setup.currentStep]);
+
+  // クリーンアップのuseEffect
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   /**
    * 手の選択ハンドラー
@@ -296,10 +991,11 @@ const MeasurementPage: React.FC = () => {
    */
   const initializeCamera = async () => {
     try {
+      console.log('カメラ初期化開始...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           facingMode: 'user',
         },
       });
@@ -308,6 +1004,11 @@ const MeasurementPage: React.FC = () => {
         stream,
         isReady: true,
         error: null,
+      });
+
+      console.log('カメラ初期化完了', {
+        tracks: stream.getVideoTracks().length,
+        settings: stream.getVideoTracks()[0]?.getSettings(),
       });
     } catch (error) {
       console.error('カメラ初期化エラー:', error);
@@ -331,8 +1032,19 @@ const MeasurementPage: React.FC = () => {
    */
   const handleStartMeasurement = () => {
     if (setup.selectedHand) {
-      router.push(`/measurement/capture?hand=${setup.selectedHand}`);
+      setSetup((prev) => ({
+        ...prev,
+        currentStep: 'measurement',
+        currentAngle: 0, // MediaPipeからリアルタイム取得
+      }));
     }
+  };
+
+  /**
+   * 測定画面から戻る
+   */
+  const handleBackFromMeasurement = () => {
+    setSetup((prev) => ({ ...prev, currentStep: 'selection' }));
   };
 
   /**
@@ -358,6 +1070,15 @@ const MeasurementPage: React.FC = () => {
         <div className={styles.leftContent}>
           {setup.currentStep === 'instructions' ? (
             <InstructionsSection onNext={handleNextStep} />
+          ) : setup.currentStep === 'measurement' ? (
+            <MeasurementExecution
+              setup={setup}
+              onBack={handleBackFromMeasurement}
+              videoRef={videoRef}
+              canvasRef={canvasRef}
+              onNextStep={nextMeasurementStep}
+              onStopMeasurement={stopMeasurement}
+            />
           ) : (
             <>
               <HandSelectionSection
@@ -388,6 +1109,7 @@ const MeasurementPage: React.FC = () => {
             isInactive={
               setup.currentStep === 'instructions' || !setup.selectedHand
             }
+            {...(setup.currentStep === 'measurement' ? { videoRef } : {})}
           />
         </div>
       </div>
