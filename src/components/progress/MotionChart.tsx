@@ -348,24 +348,28 @@ export const MotionChart: React.FC<MotionChartProps> = ({
       <div className={styles.motionChart__normalRange}>
         <div className={styles.normalRange__info}>
           <span className={styles.normalRange__label}>正常可動域</span>
-          <span className={styles.normalRange__value}>{config.normalRange.max}°</span>
+          <span className={styles.normalRange__value}>
+            {config.normalRange.max}°
+          </span>
         </div>
         <div className={styles.normalRange__status}>
           <span className={styles.normalRange__current}>
             現在: {statistics.latest.toFixed(1)}°
           </span>
-          <span className={`${styles.normalRange__badge} ${
-            statistics.latest >= config.normalRange.max * 0.8 
-              ? styles['normalRange__badge--good']
+          <span
+            className={`${styles.normalRange__badge} ${
+              statistics.latest >= config.normalRange.max * 0.8
+                ? styles['normalRange__badge--good']
+                : statistics.latest >= config.normalRange.max * 0.6
+                  ? styles['normalRange__badge--fair']
+                  : styles['normalRange__badge--poor']
+            }`}
+          >
+            {statistics.latest >= config.normalRange.max * 0.8
+              ? '良好'
               : statistics.latest >= config.normalRange.max * 0.6
-              ? styles['normalRange__badge--fair'] 
-              : styles['normalRange__badge--poor']
-          }`}>
-            {statistics.latest >= config.normalRange.max * 0.8 
-              ? '良好' 
-              : statistics.latest >= config.normalRange.max * 0.6
-              ? '改善中'
-              : '要改善'}
+                ? '改善中'
+                : '要改善'}
           </span>
         </div>
       </div>
