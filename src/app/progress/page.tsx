@@ -97,6 +97,7 @@ const generateSampleData = (): MotionMeasurement[] => {
  * 実際のデータベースから測定データを取得（サンプルデータを含む）
  */
 const fetchMeasurements = async (
+  hand: 'left' | 'right',
   userId: string = 'default-user' // userIdは現状未使用ですが、将来的な拡張のため残します
 ): Promise<{ measurements: MotionMeasurement[]; isRealData: boolean }> => {
   try {
@@ -107,11 +108,11 @@ const fetchMeasurements = async (
       return { measurements: sampleData, isRealData: false };
     }
 
-    // MeasurementDatabaseのdb.sessionsからデータを取得
+    // MeasurementDatabaseのdb.sessionsからデータを取得し、handでフィルタリング
     const sessions = await db.sessions
-      .orderBy('startTime')
-      .reverse() // 最新のデータが先頭に来るようにソート
-      .toArray();
+      .where('hand')
+      .equals(hand)
+      .sortBy('startTime');
 
     const allRealMeasurements: MotionMeasurement[] = [];
 
@@ -195,12 +196,14 @@ const fetchMeasurements = async (
     );
 
     if (realMeasurements.length === 0) {
-      console.log('実際のデータがないため、サンプルデータを使用します。');
+      console.warn(
+        `実際のデータがないため、サンプルデータを使用します。(Hand: ${hand})`
+      );
       return { measurements: generateSampleData(), isRealData: false };
     }
 
     console.log(
-      'MeasurementDatabaseから取得した実際のデータを使用:',
+      `MeasurementDatabaseから取得した実際のデータを使用。(Hand: ${hand})`,
       realMeasurements
     );
     return {
@@ -208,7 +211,7 @@ const fetchMeasurements = async (
       isRealData: true,
     };
   } catch (error) {
-    console.error('測定データの取得に失敗:', error);
+    console.error(`測定データの取得に失敗。(Hand: ${hand})`, error);
     // エラーの場合もサンプルデータを返す
     return { measurements: generateSampleData(), isRealData: false };
   }
@@ -282,6 +285,11 @@ const PERIOD_OPTIONS = [
   { value: '3months' as const, label: '3ヶ月' },
   { value: '6months' as const, label: '6ヶ月' },
   { value: 'year' as const, label: '1年' },
+];
+
+const HANDS = [
+  { id: 1, label: '右手' },
+  { id: 2, label: '左手' },
 ];
 
 /**
@@ -636,21 +644,18 @@ const ProgressPage: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<
     'week' | 'month' | '3months' | '6months' | 'year'
   >('month');
+  const [selectedHand, setSelectedHand] = useState<'left' | 'right'>('right'); // デフォルトは右手
 
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // const [measurementResult, recordData] = await Promise.all([
-        //   fetchMeasurements(),
-        //   fetchCalendarRecords(),
-        // ]);
-        const measurementResult = await fetchMeasurements();
+        console.log(`Fetching measurements for hand: ${selectedHand}`);
+        const measurementResult = await fetchMeasurements(selectedHand);
 
         setMeasurements(measurementResult.measurements);
         setUsingRealData(measurementResult.isRealData);
-        // setCalendarRecords(recordData);
       } catch (error) {
         console.error('データの読み込みに失敗:', error);
       } finally {
@@ -659,7 +664,7 @@ const ProgressPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [selectedHand]); // selectedHandが変更されたらデータを再読み込み
 
   // 期間でフィルタリングされた測定データ
   const filteredMeasurements = useMemo(
@@ -719,6 +724,27 @@ const ProgressPage: React.FC = () => {
                     selectedPeriod === option.value ? styles.active : ''
                   }`}
                   onClick={() => setSelectedPeriod(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 期間選択 */}
+          <div className={styles.periodSelector}>
+            <h2>手の選択</h2>
+            <div className={styles.periodButtons}>
+              {HANDS.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`${styles.periodButton} ${
+                    selectedHand === option.label ? styles.active : ''
+                  }`}
+                  onClick={() =>
+                    setSelectedHand(option.label === '右手' ? 'right' : 'left')
+                  }
                 >
                   {option.label}
                 </button>

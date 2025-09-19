@@ -227,6 +227,65 @@
   }
 }
 
+/* 手の選択 */
+.handSelector {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #f0f0f0;
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 16px 0;
+  }
+}
+
+.handButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.handButton {
+  padding: 10px 16px;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  font-size: 0.9rem;
+
+  &:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+    color: #2d3748;
+  }
+
+  &.active {
+    background: #4299e1;
+    border-color: #3182ce;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 60px;
+    flex: 1;
+    text-align: center;
+  }
+}
+
 /* 統計セクション */
 .statsSection {
   background: #ffffff;
@@ -247,12 +306,12 @@
 }
 
 .statsGrid {
-  display: flex;
-  flex-direction: column; /* 縦並びに変更 */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* モバイルでは2列 */
   gap: 16px; /* 縦のギャップ */
 
   @media (max-width: 768px) {
-    flex-direction: row; /* モバイルでは横並び */
+    grid-template-columns: repeat(2, 1fr); /* モバイルでは2列 */
     flex-wrap: wrap;
     gap: 16px;
   }
