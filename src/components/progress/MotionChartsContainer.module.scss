@@ -1,0 +1,361 @@
+/**
+ * MotionChartsContainer コンポーネントのスタイル
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 100%;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__headerMain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  &__description {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+  }
+
+  &__content {
+    position: relative;
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 2rem;
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  min-width: 120px;
+
+  &__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  &__options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #9ca3af;
+      background: #f9fafb;
+    }
+
+    &--active {
+      border-color: #3b82f6;
+      background: #3b82f6;
+      color: white;
+
+      &:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+      }
+    }
+  }
+
+  &__optionIcon {
+    font-size: 0.75rem;
+  }
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 2rem;
+
+  &__item {
+    min-height: 500px;
+  }
+}
+
+.tabsContainer {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+
+  &__header {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    overflow-x: auto;
+  }
+
+  &__content {
+    padding: 0;
+  }
+
+  &__chart {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  min-width: 160px;
+  text-align: left;
+
+  &:hover {
+    background: white;
+    color: #374151;
+  }
+
+  &--active {
+    background: white;
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  &__description {
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  max-width: 400px;
+
+  &__icon {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 1200px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    gap: 1.5rem;
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__stats {
+      gap: 0.75rem;
+    }
+
+    &__controls {
+      padding: 1rem;
+      gap: 1rem;
+    }
+  }
+
+  .statCard {
+    padding: 0.75rem 1rem;
+    min-width: 100px;
+
+    &__value {
+      font-size: 1.25rem;
+    }
+  }
+
+  .control {
+    &__options {
+      gap: 0.375rem;
+    }
+
+    &__option {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+    }
+  }
+
+  .chartsGrid {
+    gap: 1.5rem;
+
+    &__item {
+      min-height: 400px;
+    }
+  }
+
+  .tabsContainer__header {
+    flex-direction: column;
+
+    .tab {
+      min-width: auto;
+      padding: 0.75rem 1rem;
+      border-bottom: none;
+      border-right: 3px solid transparent;
+
+      &--active {
+        border-bottom: none;
+        border-right-color: #3b82f6;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    &__title {
+      font-size: 1.25rem;
+    }
+
+    &__stats {
+      justify-content: center;
+    }
+
+    &__controls {
+      padding: 0.75rem;
+    }
+  }
+
+  .statCard {
+    flex: 1;
+    min-width: 80px;
+
+    &__value {
+      font-size: 1.125rem;
+    }
+
+    &__label {
+      font-size: 0.6875rem;
+    }
+  }
+
+  .control__option {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .empty {
+    &__icon {
+      font-size: 2.5rem;
+    }
+
+    &__title {
+      font-size: 1.125rem;
+    }
+
+    &__description {
+      font-size: 0.8125rem;
+    }
+  }
+}

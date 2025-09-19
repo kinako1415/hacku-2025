@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ProgressCharts } from '@/components/progress/ProgressCharts';
+import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type {
   CalendarRecord,
@@ -375,11 +375,7 @@ const ProgressPage: React.FC = () => {
         </div>
 
         <div className={styles.chartsContainer}>
-          <ProgressCharts
-            measurements={filteredMeasurements}
-            calendarRecords={filteredRecords}
-            selectedPeriod={selectedPeriod}
-          />
+          <MotionChartsContainer measurements={filteredMeasurements} />
         </div>
 
         {filteredMeasurements.length === 0 && (
