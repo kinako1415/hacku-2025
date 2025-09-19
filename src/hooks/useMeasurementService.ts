@@ -42,10 +42,33 @@ export function useMeasurementService(): UseMeasurementServiceReturn {
           await db.open();
         }
 
-        // データを保存
-        const id = await db.measurements.add(measurement);
+        // タイムゾーンに依存しないようにYYYY-MM-DD形式の文字列で比較
+        const targetDate = new Date(measurement.measurementDate);
+        const targetDateString = `${targetDate.getFullYear()}-${String(
+          targetDate.getMonth() + 1
+        ).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
 
-        return typeof id === 'string' ? id : measurement.id;
+        const existing = await db.measurements
+          .where('userId')
+          .equals(measurement.userId)
+          .filter((m) => {
+            const recordDate = new Date(m.measurementDate);
+            const recordDateString = `${recordDate.getFullYear()}-${String(
+              recordDate.getMonth() + 1
+            ).padStart(2, '0')}-${String(recordDate.getDate()).padStart(2, '0')}`;
+            return recordDateString === targetDateString;
+          })
+          .first();
+
+        // 既存データがあれば、そのIDを新しいデータに引き継ぐ
+        if (existing?.id) {
+          measurement.id = existing.id;
+        }
+
+        // putメソッドで保存（存在すれば更新、なければ新規作成）
+        const id = await db.measurements.put(measurement);
+
+        return String(id);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : '測定データの保存に失敗しました';

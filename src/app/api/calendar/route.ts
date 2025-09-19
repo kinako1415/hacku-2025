@@ -141,42 +141,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 同日記録の重複チェック
-    const existingRecord = await db.records
-      .where('[userId+recordDate]')
-      .equals([
-        createRecordData.userId,
-        formatRecordDate(createRecordData.recordDate),
-      ])
-      .first();
-
-    if (existingRecord) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '同じ日付の記録が既に存在します',
-          existingRecord: {
-            id: existingRecord.id,
-            recordDate: formatRecordDate(existingRecord.recordDate),
-          },
-        },
-        { status: 409 }
-      );
-    }
-
     // カレンダー記録作成
     const newRecord = createCalendarRecord(createRecordData);
 
-    // データベースに保存
-    await db.records.add(newRecord);
+    // タイムゾーンに依存しないようにYYYY-MM-DD形式の文字列で比較
+    const targetDate = new Date(newRecord.recordDate);
+    const targetDateString = `${targetDate.getFullYear()}-${String(
+      targetDate.getMonth() + 1
+    ).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+
+    const existingRecord = await db.records
+      .where('userId')
+      .equals(newRecord.userId)
+      .filter((r) => {
+        const recordDate = new Date(r.recordDate);
+        const recordDateString = `${recordDate.getFullYear()}-${String(
+          recordDate.getMonth() + 1
+        ).padStart(2, '0')}-${String(recordDate.getDate()).padStart(2, '0')}`;
+        return recordDateString === targetDateString;
+      })
+      .first();
+
+    // 既存データがあれば、そのIDを新しいデータに引き継ぐ
+    if (existingRecord?.id) {
+      newRecord.id = existingRecord.id;
+    }
+
+    // データベースに保存 (putで上書き/新規作成)
+    await db.records.put(newRecord);
 
     return NextResponse.json(
       {
         success: true,
         data: newRecord,
-        message: 'カレンダー記録が正常に作成されました',
+        message:
+          existingRecord
+            ? 'カレンダー記録が正常に更新されました'
+            : 'カレンダー記録が正常に作成されました',
       },
-      { status: 201 }
+      { status: existingRecord ? 200 : 201 }
     );
   } catch (error) {
     console.error('Calendar POST API エラー:', error);

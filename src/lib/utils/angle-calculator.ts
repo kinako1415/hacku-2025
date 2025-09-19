@@ -102,12 +102,14 @@ export function calculateFlexionExtension(landmarks: Point3D[]): number {
   };
 
   // Y軸（垂直）との角度を計算して曲がり角度を求める
-  const length = Math.sqrt(wristToMiddle.x ** 2 + wristToMiddle.y ** 2 + wristToMiddle.z ** 2);
+  const length = Math.sqrt(
+    wristToMiddle.x ** 2 + wristToMiddle.y ** 2 + wristToMiddle.z ** 2
+  );
   if (length === 0) return 0;
 
   // Y方向の成分から角度を計算
   const angle = Math.asin(Math.abs(wristToMiddle.y) / length) * (180 / Math.PI);
-  
+
   // 0-90度の範囲に制限
   return Math.min(Math.max(angle, 0), 90);
 }
@@ -139,18 +141,24 @@ export function calculateRadialUlnarDeviation(landmarks: Point3D[]): number {
   };
 
   // X軸（水平）方向の曲がり角度を計算
-  const thumbLength = Math.sqrt(wristToThumb.x ** 2 + wristToThumb.y ** 2 + wristToThumb.z ** 2);
-  const pinkyLength = Math.sqrt(wristToPinky.x ** 2 + wristToPinky.y ** 2 + wristToPinky.z ** 2);
+  const thumbLength = Math.sqrt(
+    wristToThumb.x ** 2 + wristToThumb.y ** 2 + wristToThumb.z ** 2
+  );
+  const pinkyLength = Math.sqrt(
+    wristToPinky.x ** 2 + wristToPinky.y ** 2 + wristToPinky.z ** 2
+  );
 
   if (thumbLength === 0 || pinkyLength === 0) return 0;
 
   // X方向の角度を計算
-  const thumbAngle = Math.asin(Math.abs(wristToThumb.x) / thumbLength) * (180 / Math.PI);
-  const pinkyAngle = Math.asin(Math.abs(wristToPinky.x) / pinkyLength) * (180 / Math.PI);
+  const thumbAngle =
+    Math.asin(Math.abs(wristToThumb.x) / thumbLength) * (180 / Math.PI);
+  const pinkyAngle =
+    Math.asin(Math.abs(wristToPinky.x) / pinkyLength) * (180 / Math.PI);
 
   // より大きい角度を使用
   const deviationAngle = Math.max(thumbAngle, pinkyAngle);
-  
+
   // 0-45度の範囲に制限
   return Math.min(Math.max(deviationAngle, 0), 45);
 }
@@ -178,12 +186,6 @@ export function calculateWristAngle(
  * ランドマークデータの有効性をチェック
  */
 export function validateLandmarks(landmarks: Point3D[]): boolean {
-  console.log('validateLandmarks called:', {
-    hasLandmarks: !!landmarks,
-    length: landmarks?.length || 0,
-    sample: landmarks?.[0] || 'none',
-  });
-
   if (!landmarks || landmarks.length < 21) {
     console.warn('ランドマーク数が不足:', landmarks?.length || 0);
     return false;
@@ -216,6 +218,5 @@ export function validateLandmarks(landmarks: Point3D[]): boolean {
     return valid;
   });
 
-  console.log('バリデーション結果:', isValid);
   return isValid;
 }

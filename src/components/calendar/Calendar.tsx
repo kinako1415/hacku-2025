@@ -6,14 +6,19 @@ import Image from 'next/image';
 import { useCalendar } from './useCalendar';
 import dayjs from 'dayjs';
 
+import left from '@/assets/left.svg';
+import right from '@/assets/right.svg';
+
 type CalendarProps = {
   selectedDate?: string;
   onDateChange?: (date: string) => void;
+  measuredDates?: Date[];
 };
 
 export const Calendar: FC<CalendarProps> = ({
   selectedDate: externalSelectedDate,
   onDateChange,
+  measuredDates = [],
 }) => {
   const {
     selectedMonth,
@@ -46,17 +51,9 @@ export const Calendar: FC<CalendarProps> = ({
   const weekView = false;
   const now = dayjs();
 
-  // 仮のデータ：測定した日付のリスト
-  const sokuteibi = [
-    new Date('2025-09-08'), // 2025年9月8日に測定済み
-    new Date('2025-09-11'), // 2025年9月8日に測定済み
-    new Date('2025-09-15'), // 2025年9月15日に測定済み
-    new Date('2025-09-16'), // 2025年9月16日に測定済み
-  ];
-
   // 測定済みの日付をチェックする関数
   const isMeasuredDate = (date: dayjs.Dayjs) => {
-    return sokuteibi.some((measuredDate) =>
+    return measuredDates.some((measuredDate) =>
       date.isSame(dayjs(measuredDate), 'day')
     );
   };
@@ -64,10 +61,6 @@ export const Calendar: FC<CalendarProps> = ({
   // 日付セルのクラス名を生成
   const getDateCellClasses = (date: dayjs.Dayjs) => {
     const classes = [style.day];
-
-    if (date.isSame(now, 'day')) {
-      classes.push(style.today);
-    }
 
     if (date.month() !== selectedMonth.month()) {
       classes.push(style.outside);
@@ -99,7 +92,9 @@ export const Calendar: FC<CalendarProps> = ({
         onClick={() => handleSelectDate(date)}
         className={getDateCellClasses(date)}
       >
-        {date.date()}
+        <span className={date.isSame(now, 'day') ? style.today : undefined}>
+          {date.date()}
+        </span>
       </button>
     </td>
   );
@@ -123,14 +118,14 @@ export const Calendar: FC<CalendarProps> = ({
             className={style.navButton}
             onClick={handlePrevMonth}
           >
-            <Image src="/left.svg" alt="前の月" width={20} height={20} />
+            <Image src={left} alt="前の月" width={20} height={20} />
           </button>
           <button
             type="button"
             className={style.navButton}
             onClick={handleNextMonth}
           >
-            <Image src="/right.svg" alt="次の月" width={20} height={20} />
+            <Image src={right} alt="次の月" width={20} height={20} />
           </button>
         </div>
 

@@ -8,12 +8,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
-import type {
-  CalendarRecord,
-  PainLevel,
-  MotivationLevel,
-  PerformanceLevel,
-} from '@/lib/data-manager/models/calendar-record';
+import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 import { db } from '@/lib/data-manager/database';
 import styles from './page.module.scss';
 
@@ -27,7 +22,7 @@ import styles from './page.module.scss';
  * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
  * 本番環境やユーザーテスト時はfalseに設定してください。
  */
-const FORCE_USE_SAMPLE_DATA = true;
+const FORCE_USE_SAMPLE_DATA = false;
 
 /**
  * テスト用サンプルデータを生成
@@ -102,33 +97,33 @@ const generateSampleData = (): MotionMeasurement[] => {
  * 実際のデータベースから測定データを取得（サンプルデータを含む）
  */
 const fetchMeasurements = async (
-  userId: string = 'default-user'
+  userId: string = 'default-user' // userIdは現状未使用ですが、将来的な拡張のため残します
 ): Promise<{ measurements: MotionMeasurement[]; isRealData: boolean }> => {
   try {
-    const measurements = await db.measurements
-      .where('userId')
-      .equals(userId)
-      .reverse()
-      .toArray();
-
-    console.log('進捗ページ: 取得した測定データ:', measurements);
-
-    // 開発者設定に基づいてデータソースを決定
+    // 開発者設定が有効ならサンプルデータを返す
     if (FORCE_USE_SAMPLE_DATA) {
       const sampleData = generateSampleData();
       console.log('開発者設定により、サンプルデータを強制使用:', sampleData);
       return { measurements: sampleData, isRealData: false };
     }
 
-    // 実際のデータがない場合はサンプルデータを使用
-    if (measurements.length === 0) {
-      const sampleData = generateSampleData();
-      console.log('実際のデータがないため、サンプルデータを使用:', sampleData);
-      return { measurements: sampleData, isRealData: false };
+    // RehabDatabaseのdb.measurementsからデータを取得
+    const realMeasurements = await db.measurements
+      .where('userId')
+      .equals(userId)
+      .reverse() // 最新のデータが先頭に来るようにソート
+      .toArray();
+
+    if (realMeasurements.length === 0) {
+      console.log('実際のデータがないため、サンプルデータを使用します。');
+      return { measurements: generateSampleData(), isRealData: false };
     }
 
-    console.log('実際のデータを使用:', measurements);
-    return { measurements, isRealData: true };
+    console.log('RehabDatabaseから取得した実際のデータを使用:', realMeasurements);
+    return {
+      measurements: realMeasurements,
+      isRealData: true,
+    };
   } catch (error) {
     console.error('測定データの取得に失敗:', error);
     // エラーの場合もサンプルデータを返す
@@ -139,22 +134,22 @@ const fetchMeasurements = async (
 /**
  * 実際のデータベースからカレンダー記録を取得
  */
-const fetchCalendarRecords = async (
-  userId: string = 'default-user'
-): Promise<CalendarRecord[]> => {
-  try {
-    const records = await db.records
-      .where('userId')
-      .equals(userId)
-      .reverse()
-      .toArray();
-
-    return records;
-  } catch (error) {
-    console.error('カレンダー記録の取得に失敗:', error);
-    return [];
-  }
-};
+// const fetchCalendarRecords = async (
+//   userId: string = 'default-user'
+// ): Promise<CalendarRecord[]> => {
+//   try {
+//     const records = await db.records
+//       .where('userId')
+//       .equals(userId)
+//       .reverse()
+//       .toArray();
+//
+//     return records;
+//   } catch (error) {
+//     console.error('カレンダー記録の取得に失敗:', error);
+//     return [];
+//   }
+// };
 
 /**
  * 連続記録日数を計算
@@ -552,7 +547,7 @@ const calculateProgressStats = (
  */
 const ProgressPage: React.FC = () => {
   const [measurements, setMeasurements] = useState<MotionMeasurement[]>([]);
-  const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
+  // const [calendarRecords, setCalendarRecords] = useState<CalendarRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [usingRealData, setUsingRealData] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<
@@ -564,14 +559,15 @@ const ProgressPage: React.FC = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [measurementResult, recordData] = await Promise.all([
-          fetchMeasurements(),
-          fetchCalendarRecords(),
-        ]);
+        // const [measurementResult, recordData] = await Promise.all([
+        //   fetchMeasurements(),
+        //   fetchCalendarRecords(),
+        // ]);
+        const measurementResult = await fetchMeasurements();
 
         setMeasurements(measurementResult.measurements);
         setUsingRealData(measurementResult.isRealData);
-        setCalendarRecords(recordData);
+        // setCalendarRecords(recordData);
       } catch (error) {
         console.error('データの読み込みに失敗:', error);
       } finally {
@@ -603,8 +599,8 @@ const ProgressPage: React.FC = () => {
 
   // 統計情報（フィルタリングされたデータに基づく）
   const stats = useMemo(
-    () => calculateProgressStats(filteredMeasurements, calendarRecords),
-    [filteredMeasurements, calendarRecords]
+    () => calculateProgressStats(filteredMeasurements, []),
+    [filteredMeasurements]
   );
 
   if (loading) {
