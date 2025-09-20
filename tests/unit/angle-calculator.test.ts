@@ -158,6 +158,66 @@ const calculateWristExtensionAngle = (landmarks: Point3D[]): number => {
   return calculateAngle3D(tip, wrist, mcp);
 };
 
+// 新しい尺屈・橈屈角度計算（手のひら中心から手首へのベクトルと垂直ベクトルの角度）
+const calculateRadialUlnarDeviationAngle = (landmarks: Point3D[]): number => {
+  if (landmarks.length < 21) {
+    throw new Error('Invalid landmarks: 21 points required');
+  }
+
+  const WRIST = 0;
+  const INDEX_FINGER_MCP = 5;
+  const MIDDLE_FINGER_MCP = 9;
+  const RING_FINGER_MCP = 13;
+  const PINKY_MCP = 17;
+
+  const wrist = landmarks[WRIST];
+  const indexMcp = landmarks[INDEX_FINGER_MCP];
+  const middleMcp = landmarks[MIDDLE_FINGER_MCP];
+  const ringMcp = landmarks[RING_FINGER_MCP];
+  const pinkyMcp = landmarks[PINKY_MCP];
+
+  if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp) {
+    throw new Error('Required landmarks not found');
+  }
+
+  // 手のひらの中心を計算（4つの指の付け根の平均位置）
+  const palmCenter = {
+    x: (indexMcp.x + middleMcp.x + ringMcp.x + pinkyMcp.x) / 4,
+    y: (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4,
+    z: (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4,
+  };
+
+  // 手のひらの中心から手首へのベクトル
+  const palmToWrist = {
+    x: wrist.x - palmCenter.x,
+    y: wrist.y - palmCenter.y,
+    z: wrist.z - palmCenter.z,
+  };
+
+  // 垂直ベクトル（Y軸の負方向、中指を上に向けた方向）
+  const verticalVector = { x: 0, y: -1, z: 0 };
+
+  // ベクトルの長さを計算
+  const palmToWristLength = Math.sqrt(
+    palmToWrist.x ** 2 + palmToWrist.y ** 2 + palmToWrist.z ** 2
+  );
+
+  if (palmToWristLength === 0) return 0;
+
+  // 内積を計算
+  const dotProduct =
+    palmToWrist.x * verticalVector.x +
+    palmToWrist.y * verticalVector.y +
+    palmToWrist.z * verticalVector.z;
+
+  // 角度を計算（ラジアンから度に変換）
+  const cosAngle = dotProduct / palmToWristLength;
+  const angle =
+    Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
+
+  return angle;
+};
+
 // 角度の正規化（0-180度の範囲に）
 const normalizeAngle = (angle: number): number => {
   if (angle < 0) return 0;
@@ -364,6 +424,69 @@ describe('角度計算精度テスト', () => {
       expect(angle).toBeLessThan(180);
       expect(typeof angle).toBe('number');
       expect(isNaN(angle)).toBe(false);
+    });
+
+    test('新しい尺屈・橈屈角度計算の精度テスト', () => {
+      const angle = calculateRadialUlnarDeviationAngle(mockLandmarks);
+
+      expect(angle).toBeGreaterThanOrEqual(0);
+      expect(angle).toBeLessThanOrEqual(180);
+      expect(typeof angle).toBe('number');
+      expect(isNaN(angle)).toBe(false);
+    });
+
+    test('中指が上を向いた理想的な状態でのテスト', () => {
+      // 手のひらを正面に向け、中指を上に向けた理想的な位置
+      const idealLandmarks: Point3D[] = mockLandmarks.map((landmark, index) => {
+        if (index === 0) {
+          // WRIST
+          return { x: 0.5, y: 0.8, z: 0.0 }; // 手首が手のひら中心より下
+        }
+        return landmark;
+      });
+
+      const angle = calculateRadialUlnarDeviationAngle(idealLandmarks);
+
+      // 理想的な位置では角度が小さい（0度に近い）はず
+      expect(angle).toBeLessThan(30);
+    });
+
+    test('尺屈（小指側）に曲げた状態でのテスト', () => {
+      // 手首を小指側に曲げた状態のランドマーク
+      const ulnarDeviationLandmarks: Point3D[] = mockLandmarks.map(
+        (landmark, index) => {
+          if (index === 0) {
+            // WRIST
+            return { x: 0.6, y: 0.8, z: 0.0 }; // 手首を小指側にシフト
+          }
+          return landmark;
+        }
+      );
+
+      const angle = calculateRadialUlnarDeviationAngle(ulnarDeviationLandmarks);
+
+      // 尺屈の場合、角度がある程度大きくなるはず
+      expect(angle).toBeGreaterThan(20);
+    });
+
+    test('橈屈（親指側）に曲げた状態でのテスト', () => {
+      // 手首を親指側に曲げた状態のランドマーク
+      const radialDeviationLandmarks: Point3D[] = mockLandmarks.map(
+        (landmark, index) => {
+          if (index === 0) {
+            // WRIST
+            return { x: 0.4, y: 0.8, z: 0.0 }; // 手首を親指側にシフト
+          }
+          return landmark;
+        }
+      );
+
+      const angle = calculateRadialUlnarDeviationAngle(
+        radialDeviationLandmarks
+      );
+
+      // 橈屈の場合、角度がある程度大きくなるはず
+      expect(angle).toBeGreaterThan(20);
     });
 
     test('不正なランドマークデータでエラーが発生する', () => {

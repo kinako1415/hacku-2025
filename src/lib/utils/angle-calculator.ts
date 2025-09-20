@@ -116,51 +116,66 @@ export function calculateFlexionExtension(landmarks: Point3D[]): number {
 
 /**
  * 尺屈・橈屈の角度を計算
- * 手首の横方向の曲がり具合を測定
+ * 「手のひらをカメラに向け、中指を上に向けた状態」を0°として、
+ * 手のひらの中心から手首までのベクトルと垂直ベクトルとの角度で測定
  */
 export function calculateRadialUlnarDeviation(landmarks: Point3D[]): number {
   if (landmarks.length < 21) return 0;
 
   const wrist = landmarks[HAND_LANDMARKS.WRIST];
-  const thumbCmc = landmarks[HAND_LANDMARKS.THUMB_CMC];
-  const pinkyCmc = landmarks[HAND_LANDMARKS.PINKY_MCP];
+  const indexFingerMcp = landmarks[HAND_LANDMARKS.INDEX_FINGER_MCP];
+  const middleFingerMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
+  const ringFingerMcp = landmarks[HAND_LANDMARKS.RING_FINGER_MCP];
+  const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
 
-  if (!wrist || !thumbCmc || !pinkyCmc) return 0;
+  if (
+    !wrist ||
+    !indexFingerMcp ||
+    !middleFingerMcp ||
+    !ringFingerMcp ||
+    !pinkyMcp
+  )
+    return 0;
 
-  // 手首から親指と小指への方向ベクトル
-  const wristToThumb = {
-    x: thumbCmc.x - wrist.x,
-    y: thumbCmc.y - wrist.y,
-    z: thumbCmc.z - wrist.z,
+  // 手のひらの中心を計算（4つの指の付け根の平均位置）
+  const palmCenter = {
+    x:
+      (indexFingerMcp.x + middleFingerMcp.x + ringFingerMcp.x + pinkyMcp.x) / 4,
+    y:
+      (indexFingerMcp.y + middleFingerMcp.y + ringFingerMcp.y + pinkyMcp.y) / 4,
+    z:
+      (indexFingerMcp.z + middleFingerMcp.z + ringFingerMcp.z + pinkyMcp.z) / 4,
   };
 
-  const wristToPinky = {
-    x: pinkyCmc.x - wrist.x,
-    y: pinkyCmc.y - wrist.y,
-    z: pinkyCmc.z - wrist.z,
+  // 手のひらの中心から手首へのベクトル
+  const palmToWrist = {
+    x: wrist.x - palmCenter.x,
+    y: wrist.y - palmCenter.y,
+    z: wrist.z - palmCenter.z,
   };
 
-  // X軸（水平）方向の曲がり角度を計算
-  const thumbLength = Math.sqrt(
-    wristToThumb.x ** 2 + wristToThumb.y ** 2 + wristToThumb.z ** 2
+  // 垂直ベクトル（Y軸の負方向、中指を上に向けた方向）
+  const verticalVector = { x: 0, y: -1, z: 0 };
+
+  // ベクトルの長さを計算
+  const palmToWristLength = Math.sqrt(
+    palmToWrist.x ** 2 + palmToWrist.y ** 2 + palmToWrist.z ** 2
   );
-  const pinkyLength = Math.sqrt(
-    wristToPinky.x ** 2 + wristToPinky.y ** 2 + wristToPinky.z ** 2
-  );
 
-  if (thumbLength === 0 || pinkyLength === 0) return 0;
+  if (palmToWristLength === 0) return 0;
 
-  // X方向の角度を計算
-  const thumbAngle =
-    Math.asin(Math.abs(wristToThumb.x) / thumbLength) * (180 / Math.PI);
-  const pinkyAngle =
-    Math.asin(Math.abs(wristToPinky.x) / pinkyLength) * (180 / Math.PI);
+  // 内積を計算
+  const dotProduct =
+    palmToWrist.x * verticalVector.x +
+    palmToWrist.y * verticalVector.y +
+    palmToWrist.z * verticalVector.z;
 
-  // より大きい角度を使用
-  const deviationAngle = Math.max(thumbAngle, pinkyAngle);
+  // 角度を計算（ラジアンから度に変換）
+  const cosAngle = dotProduct / palmToWristLength;
+  const angle =
+    Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI) * -1 + 180;
 
-  // 0-45度の範囲に制限
-  return Math.min(Math.max(deviationAngle, 0), 45);
+  return angle;
 }
 
 /**
