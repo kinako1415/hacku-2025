@@ -1154,7 +1154,7 @@ const MeasurementPage: React.FC = () => {
     }
 
     // カウントダウン
-    setSetup((prev) => ({ ...prev, countdown: 5, isCapturing: true }));
+    setSetup((prev) => ({ ...prev, countdown: 3, isCapturing: true }));
 
     countdownIntervalRef.current = setInterval(() => {
       setSetup((prev) => {
