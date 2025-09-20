@@ -207,6 +207,13 @@ export const MotionChart: React.FC<MotionChartProps> = ({
         <p className={styles.motionChart__description}>{config.description}</p>
       </div>
 
+      <div className={styles.normalRange__info}>
+        <span className={styles.normalRange__label}>正常可動域</span>
+        <span className={styles.normalRange__value}>
+          {config.normalRange.max}°
+        </span>
+      </div>
+
       {/* 統計情報 */}
       <div className={styles.motionChart__stats}>
         <div className={styles.stat}>
@@ -345,13 +352,14 @@ export const MotionChart: React.FC<MotionChartProps> = ({
       </div>
 
       {/* 正常範囲の表示 */}
-      <div className={styles.motionChart__normalRange}>
+      {/* <div className={styles.motionChart__normalRange}>
         <div className={styles.normalRange__info}>
           <span className={styles.normalRange__label}>正常可動域</span>
           <span className={styles.normalRange__value}>
             {config.normalRange.max}°
           </span>
         </div>
+
         <div className={styles.normalRange__status}>
           <span className={styles.normalRange__current}>
             現在: {statistics.latest.toFixed(1)}°
@@ -372,7 +380,7 @@ export const MotionChart: React.FC<MotionChartProps> = ({
                 : '要改善'}
           </span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

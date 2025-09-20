@@ -761,6 +761,14 @@ const ProgressPage: React.FC = () => {
     [filteredMeasurements]
   );
 
+  useEffect(() => {
+    // スクロール禁止
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // 改善率をatomに保存
   useEffect(() => {
     if (selectedHand === 'right') {
