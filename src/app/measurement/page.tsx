@@ -402,9 +402,6 @@ const MeasurementExecution: React.FC<{
       </div>
 
       {/* 戻るボタン */}
-      <button className={styles.backButton} onClick={onBack}>
-        ← 戻る
-      </button>
     </div>
   );
 };
