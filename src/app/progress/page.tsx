@@ -28,7 +28,7 @@ import { tr } from 'zod/locales';
  * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
  * 本番環境やユーザーテスト時はfalseに設定してください。
  */
-const FORCE_USE_SAMPLE_DATA = true;
+const FORCE_USE_SAMPLE_DATA = false;
 
 /**
  * テスト用サンプルデータを生成
@@ -355,8 +355,8 @@ const PERIOD_OPTIONS = [
 ];
 
 const HANDS = [
-  { id: 1, label: '右手' },
-  { id: 2, label: '左手' },
+  { value: 'right' as const, label: '右手' },
+  { value: 'left' as const, label: '左手' },
 ];
 
 /**
@@ -821,14 +821,12 @@ const ProgressPage: React.FC = () => {
             <div className={styles.periodButtons}>
               {HANDS.map((option) => (
                 <button
-                  key={option.id}
+                  key={option.value}
                   type="button"
                   className={`${styles.periodButton} ${
-                    selectedHand === option.label ? styles.active : ''
+                    selectedHand === option.value ? styles.active : ''
                   }`}
-                  onClick={() =>
-                    setSelectedHand(option.label === '右手' ? 'right' : 'left')
-                  }
+                  onClick={() => setSelectedHand(option.value)}
                 >
                   {option.label}
                 </button>

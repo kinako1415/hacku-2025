@@ -205,15 +205,9 @@
   min-width: 70px;
   font-size: 0.9rem;
 
-  &:hover {
-    background: #edf2f7;
-    border-color: #cbd5e0;
-    color: #2d3748;
-  }
-
   &.active {
-    background: #4299e1;
-    border-color: #3182ce;
+    background: #0542fc;
+    border: none;
     color: #ffffff;
     transform: translateY(-1px);
   }
@@ -225,6 +219,13 @@
     flex: 1;
     text-align: center;
   }
+}
+
+.periodButton.active {
+  background: #0542fc;
+  border: none;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* 手の選択 */
