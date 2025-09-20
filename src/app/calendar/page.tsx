@@ -6,11 +6,19 @@ import Card from '@/components/layout/card';
 import { Calendar } from '@/components/calendar/Calendar';
 import { db as measurementDb } from '@/lib/database/measurement-db';
 import dayjs from 'dayjs';
+import { useAtom } from 'jotai';
+import {
+  rightHandImprovementRateAtom,
+  leftHandImprovementRateAtom,
+} from '@/atom/improvement';
 /**
  * カレンダーページコンポーネント
  */
 export default function CalendarPage(): React.JSX.Element {
   const [measuredDates, setMeasuredDates] = useState<Date[]>([]);
+
+  const [rightHandImprovementRate] = useAtom(rightHandImprovementRateAtom);
+  const [leftHandImprovementRate] = useAtom(leftHandImprovementRateAtom);
 
   useEffect(() => {
     const fetchMeasuredDates = async () => {
@@ -73,7 +81,7 @@ export default function CalendarPage(): React.JSX.Element {
         <Card
           title="左手首の"
           description="改善率"
-          role="１０％"
+          role={`${leftHandImprovementRate.toFixed(2)}%`}
           width={400}
           height={211}
           isImprovements={true}
