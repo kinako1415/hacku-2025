@@ -36,6 +36,14 @@ export default function CalendarPage(): React.JSX.Element {
     fetchMeasuredDates();
   }, []);
 
+  useEffect(() => {
+    // スクロール禁止
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   const newestDate = measuredDates
     .slice() // 元の配列を変更しないためコピー
     .sort((a, b) => b.getTime() - a.getTime())[0];
@@ -79,9 +87,9 @@ export default function CalendarPage(): React.JSX.Element {
 
         {/* 改善率カード */}
         <Card
-          title="左手首の"
           description="改善率"
-          role={`${leftHandImprovementRate.toFixed(2)}%`}
+          role={`${rightHandImprovementRate.toFixed(2)}%`}
+          left={`${leftHandImprovementRate.toFixed(2)}%`}
           width={400}
           height={211}
           isImprovements={true}

@@ -7,9 +7,9 @@
   justify-content: center;
   margin: 0 auto;
   padding: 0;
-  min-height: 100vh;
+  height: 100vh;
   box-sizing: border-box;
-  margin-top: 2%;
+  overscroll-behavior-y: none;
 }
 
 /* 左サイドバー */

@@ -11,7 +11,7 @@ import rightIcon from '@/assets/right.svg';
 import leftIcon from '@/assets/left.svg';
 
 type CardProps = {
-  title: string;
+  title?: string;
   description: string;
   role?: string | number;
   onClick?: () => void;
@@ -19,6 +19,7 @@ type CardProps = {
   width?: number;
   height?: number;
   isImprovements?: boolean;
+  left?: string;
 };
 
 const Card: React.FC<CardProps> = ({
@@ -30,9 +31,12 @@ const Card: React.FC<CardProps> = ({
   width = 350,
   height = 180,
   isImprovements = false,
+  left,
 }) => {
   const cardClass = isBlue ? styles.card : `${styles.card} ${styles.white}`;
   const pathname = usePathname();
+
+  const [changeHand, setChangeHand] = useState<'左手' | '右手'>('右手');
 
   const improvements = isImprovements ? styles.improvements : '';
 
@@ -43,12 +47,20 @@ const Card: React.FC<CardProps> = ({
       className={cardClass}
       style={{ width: `${width}px`, height: `${height}px` }}
     >
-      <div className={`${styles.cardTitle} ${improvements}`}>{title}</div>
+      <div className={`${styles.cardTitle} ${improvements}`}>
+        {isImprovements ? changeHand : title}
+      </div>
       <div className={`${styles.cardDescription} ${improvements}`}>
         {description}
       </div>
       <div className={styles.cardFooter}>
-        {role && <div className={styles.cardRole}>{role}</div>}
+        {isImprovements ? (
+          <div className={styles.cardRole}>
+            {changeHand === '右手' ? role : left}
+          </div>
+        ) : (
+          <div className={styles.cardRole}>{role}</div>
+        )}
         {isImprovements && (
           <div className={styles.icon}>
             <Image
@@ -56,6 +68,9 @@ const Card: React.FC<CardProps> = ({
               alt="改善率のイメージ画像"
               width={25}
               height={25}
+              onClick={() =>
+                setChangeHand(changeHand === '左手' ? '右手' : '左手')
+              }
             />
 
             <Image
@@ -63,6 +78,9 @@ const Card: React.FC<CardProps> = ({
               alt="改善率のイメージ画像"
               width={25}
               height={25}
+              onClick={() =>
+                setChangeHand(changeHand === '左手' ? '右手' : '左手')
+              }
             />
           </div>
         )}

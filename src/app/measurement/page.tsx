@@ -441,9 +441,6 @@ const MeasurementInfoSection: React.FC<{
 
       {/* ボタンセクション */}
       <div className={styles.bottomSection}>
-        <button className={styles.testButton} onClick={onCameraTest}>
-          カメラをテストする
-        </button>
         <button
           className={styles.startButton}
           onClick={onStartMeasurement}

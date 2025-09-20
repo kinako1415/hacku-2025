@@ -18,6 +18,16 @@ export default function Header() {
         {/* 右: メニュー */}
         <nav className={styles.simpleNav}>
           <Link
+            href="/measurement"
+            className={
+              pathname === '/measurement'
+                ? styles.simpleActionButton
+                : styles.simpleNavLink
+            }
+          >
+            測定
+          </Link>
+          <Link
             href="/progress"
             className={
               pathname === '/progress'
@@ -36,16 +46,6 @@ export default function Header() {
             }
           >
             記録管理
-          </Link>
-          <Link
-            href="/measurement"
-            className={
-              pathname === '/measurement'
-                ? styles.simpleActionButton
-                : styles.simpleNavLink
-            }
-          >
-            測定
           </Link>
         </nav>
       </div>
