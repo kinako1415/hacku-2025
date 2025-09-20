@@ -135,28 +135,32 @@ const measurementSteps: MeasurementStep[] = [
     id: 'palmar-flexion',
     name: '掌屈',
     instruction: '手のひら側に手首を曲げてください',
-    description: '手首を手のひら側に最大まで曲げてください（0-90°）',
+    description:
+      '手のひらを下に向け、小指側をカメラに映してから測定を開始してください。（正常関節可動域 : 90°）',
     targetAngle: 90,
   },
   {
     id: 'dorsal-flexion',
     name: '背屈',
     instruction: '手の甲側に手首を曲げてください',
-    description: '手首を手の甲側に最大まで曲げてください（0-70°）',
+    description:
+      '手のひらを下に向け、小指側をカメラに映してから測定を開始してください。（正常関節可動域 : 70°）',
     targetAngle: 70,
   },
   {
     id: 'ulnar-deviation',
     name: '尺屈',
     instruction: '小指側に手首を曲げてください',
-    description: '手首を小指側に最大まで曲げてください',
+    description:
+      '指が空を指すように手のひらをカメラに向けてから測定を開始してください。（正常関節可動域 : 55°）',
     targetAngle: 55,
   },
   {
     id: 'radial-deviation',
     name: '橈屈',
     instruction: '親指側に手首を曲げてください',
-    description: '手首を親指側に最大まで曲げてください',
+    description:
+      '指が空を指すように手のひらをカメラに向けてから測定を開始してください。（正常関節可動域 : 25°）',
     targetAngle: 25,
   },
 ];
@@ -250,11 +254,11 @@ const HandSelectionSection: React.FC<{
 
       <div className={styles.handCards}>
         <div
-          className={`${styles.handCard} ${selectedHand === 'right' ? styles.selected : ''}`}
-          onClick={() => onHandSelect('right')}
+          className={`${styles.handCard} ${selectedHand === 'left' ? styles.selected : ''}`}
+          onClick={() => onHandSelect('left')}
         >
-          <h3 className={styles.handTitle}>右手首</h3>
-          <p className={styles.handDescription}>右手首の可動域を測定します</p>
+          <h3 className={styles.handTitle}>左手首</h3>
+          <p className={styles.handDescription}>左手首の可動域を測定します</p>
           <div className={styles.movementTags}>
             <span className={styles.tag}>掌屈</span>
             <span className={styles.tag}>背屈</span>
@@ -262,13 +266,12 @@ const HandSelectionSection: React.FC<{
             <span className={styles.tag}>橈屈</span>
           </div>
         </div>
-
         <div
-          className={`${styles.handCard} ${selectedHand === 'left' ? styles.selected : ''}`}
-          onClick={() => onHandSelect('left')}
+          className={`${styles.handCard} ${selectedHand === 'right' ? styles.selected : ''}`}
+          onClick={() => onHandSelect('right')}
         >
-          <h3 className={styles.handTitle}>左手首</h3>
-          <p className={styles.handDescription}>左手首の可動域を測定します</p>
+          <h3 className={styles.handTitle}>右手首</h3>
+          <p className={styles.handDescription}>右手首の可動域を測定します</p>
           <div className={styles.movementTags}>
             <span className={styles.tag}>掌屈</span>
             <span className={styles.tag}>背屈</span>
@@ -381,8 +384,8 @@ const MeasurementExecution: React.FC<{
             disabled={setup.countdown !== null}
           >
             {setup.countdown !== null
-              ? `撮影中... ${setup.countdown}`
-              : '撮影する'}
+              ? `測定中... ${setup.countdown}`
+              : '測定を開始'}
           </button>
         ) : (
           <>

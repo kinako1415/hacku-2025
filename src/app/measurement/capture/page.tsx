@@ -92,7 +92,7 @@ const MeasurementCapturePage: React.FC = () => {
       description: '手のひら側に手首を曲げてください',
       targetAngle: 'flexion',
       normalRange: { min: 0, max: 90 },
-      instruction: '手首を手のひら側に最大まで曲げてください（0-90°）',
+      instruction: '手首を手のひら側に最大まで曲げてください（正常関節可動域 : 90°）',
     },
     {
       id: 'extension',
@@ -100,7 +100,7 @@ const MeasurementCapturePage: React.FC = () => {
       description: '手の甲側に手首を曲げてください',
       targetAngle: 'extension',
       normalRange: { min: 0, max: 70 },
-      instruction: '手首を手の甲側に最大まで曲げてください（0-70°）',
+      instruction: '手首を手の甲側に最大まで曲げてください（正常関節可動域 : 70°）',
     },
     {
       id: 'ulnarDeviation',
@@ -108,7 +108,7 @@ const MeasurementCapturePage: React.FC = () => {
       description: '小指側に手首を曲げてください',
       targetAngle: 'ulnarDeviation',
       normalRange: { min: 0, max: 55 },
-      instruction: '手首を小指側に最大まで曲げてください（0-55°）',
+      instruction: '手首を小指側に最大まで曲げてください（正常関節可動域 : 55°）',
     },
     {
       id: 'radialDeviation',
@@ -116,7 +116,7 @@ const MeasurementCapturePage: React.FC = () => {
       description: '親指側に手首を曲げてください',
       targetAngle: 'radialDeviation',
       normalRange: { min: 0, max: 25 },
-      instruction: '手首を親指側に最大まで曲げてください（0-25°）',
+      instruction: '手首を親指側に最大まで曲げてください（正常関節可動域 : 25°）',
     },
   ];
 
