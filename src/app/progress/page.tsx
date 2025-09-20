@@ -6,11 +6,17 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useAtom } from 'jotai';
+import {
+  rightHandImprovementRateAtom,
+  leftHandImprovementRateAtom,
+} from '@/atom/improvement';
 import { db, MeasurementSession } from '@/lib/database/measurement-db';
 import { MotionChartsContainer } from '@/components/progress/MotionChartsContainer';
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 import styles from './page.module.scss';
+import { tr } from 'zod/locales';
 
 /**
  * 開発者用設定: サンプルデータを強制使用するかどうか
@@ -22,59 +28,72 @@ import styles from './page.module.scss';
  * 開発・テスト時はtrueに設定して、グラフの動作確認を行ってください。
  * 本番環境やユーザーテスト時はfalseに設定してください。
  */
-const FORCE_USE_SAMPLE_DATA = false;
+const FORCE_USE_SAMPLE_DATA = true;
 
 /**
  * テスト用サンプルデータを生成
  */
-const generateSampleData = (): MotionMeasurement[] => {
-  const sampleData: MotionMeasurement[] = [];
-  const today = new Date();
+// サンプルデータを一度だけ生成してキャッシュ（左右2種類）
+let cachedSampleData: {
+  right: MotionMeasurement[];
+  left: MotionMeasurement[];
+} | null = null;
+// 疑似乱数生成器（シード固定）
+function seededRandom(seed: number) {
+  let x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
-  // 過去365日間のサンプルデータを生成（1年分）
+const generateSampleData = (
+  hand: 'right' | 'left' = 'right'
+): MotionMeasurement[] => {
+  if (cachedSampleData) return cachedSampleData[hand];
+  const today = new Date();
+  const rightData: MotionMeasurement[] = [];
+  const leftData: MotionMeasurement[] = [];
+
   for (let i = 364; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 
-    // ランダムな進歩を含むリアルなデータを生成
-    const baseProgress = (364 - i) / 364; // 0から1への進歩
-    const randomVariation = (Math.random() - 0.5) * 0.2; // ±10%のばらつき
-
-    sampleData.push({
-      id: `sample-${i}`,
+    // 右手サンプル
+    const baseProgressR = (364 - i) / 364;
+    const randomVariationR = (seededRandom(i + 1000) - 0.5) * 0.2;
+    rightData.push({
+      id: `sample-right-${i}`,
       userId: 'sample-user',
       measurementDate: date,
       wristFlexion: Math.max(
         20,
-        Math.min(90, 30 + baseProgress * 45 + randomVariation * 20)
-      ), // 30°から75°へ進歩
+        Math.min(90, 30 + baseProgressR * 45 + randomVariationR * 20)
+      ),
       wristExtension: Math.max(
         15,
-        Math.min(70, 25 + baseProgress * 35 + randomVariation * 15)
-      ), // 25°から60°へ進歩
+        Math.min(70, 25 + baseProgressR * 35 + randomVariationR * 15)
+      ),
       wristUlnarDeviation: Math.max(
         10,
-        Math.min(55, 20 + baseProgress * 25 + randomVariation * 10)
-      ), // 20°から45°へ進歩
+        Math.min(55, 20 + baseProgressR * 25 + randomVariationR * 10)
+      ),
       wristRadialDeviation: Math.max(
         5,
-        Math.min(25, 10 + baseProgress * 12 + randomVariation * 5)
-      ), // 10°から22°へ進歩
+        Math.min(25, 10 + baseProgressR * 12 + randomVariationR * 5)
+      ),
       thumbFlexion: Math.max(
         20,
-        Math.min(90, 40 + baseProgress * 30 + randomVariation * 15)
+        Math.min(90, 40 + baseProgressR * 30 + randomVariationR * 15)
       ),
       thumbExtension: 0,
       thumbAdduction: 0,
       thumbAbduction: Math.max(
         10,
-        Math.min(60, 20 + baseProgress * 25 + randomVariation * 10)
+        Math.min(60, 20 + baseProgressR * 25 + randomVariationR * 10)
       ),
       accuracyScore: Math.max(
         0.6,
-        Math.min(1.0, 0.7 + baseProgress * 0.2 + randomVariation * 0.1)
+        Math.min(1.0, 0.7 + baseProgressR * 0.2 + randomVariationR * 0.1)
       ),
-      handUsed: 'right' as const,
+      handUsed: 'right',
       comparisonResult: {
         wristFlexion: { status: 'normal', within_range: true },
         wristExtension: { status: 'normal', within_range: true },
@@ -84,13 +103,66 @@ const generateSampleData = (): MotionMeasurement[] => {
         thumbExtension: { status: 'normal', within_range: true },
         thumbAdduction: { status: 'normal', within_range: true },
         thumbAbduction: { status: 'normal', within_range: true },
-        overallStatus: 'normal' as const,
+        overallStatus: 'normal',
+      },
+      createdAt: date,
+    });
+
+    // 左手サンプル（右手よりやや低い値で変化）
+    const baseProgressL = (364 - i) / 364;
+    const randomVariationL = (seededRandom(i + 2000) - 0.5) * 0.2;
+    leftData.push({
+      id: `sample-left-${i}`,
+      userId: 'sample-user',
+      measurementDate: date,
+      wristFlexion: Math.max(
+        15,
+        Math.min(80, 25 + baseProgressL * 40 + randomVariationL * 15)
+      ),
+      wristExtension: Math.max(
+        10,
+        Math.min(60, 20 + baseProgressL * 30 + randomVariationL * 10)
+      ),
+      wristUlnarDeviation: Math.max(
+        8,
+        Math.min(45, 15 + baseProgressL * 20 + randomVariationL * 8)
+      ),
+      wristRadialDeviation: Math.max(
+        3,
+        Math.min(20, 8 + baseProgressL * 10 + randomVariationL * 3)
+      ),
+      thumbFlexion: Math.max(
+        15,
+        Math.min(80, 35 + baseProgressL * 25 + randomVariationL * 10)
+      ),
+      thumbExtension: 0,
+      thumbAdduction: 0,
+      thumbAbduction: Math.max(
+        8,
+        Math.min(50, 15 + baseProgressL * 20 + randomVariationL * 8)
+      ),
+      accuracyScore: Math.max(
+        0.6,
+        Math.min(1.0, 0.7 + baseProgressL * 0.2 + randomVariationL * 0.1)
+      ),
+      handUsed: 'left',
+      comparisonResult: {
+        wristFlexion: { status: 'normal', within_range: true },
+        wristExtension: { status: 'normal', within_range: true },
+        wristUlnarDeviation: { status: 'normal', within_range: true },
+        wristRadialDeviation: { status: 'normal', within_range: true },
+        thumbFlexion: { status: 'normal', within_range: true },
+        thumbExtension: { status: 'normal', within_range: true },
+        thumbAdduction: { status: 'normal', within_range: true },
+        thumbAbduction: { status: 'normal', within_range: true },
+        overallStatus: 'normal',
       },
       createdAt: date,
     });
   }
 
-  return sampleData;
+  cachedSampleData = { right: rightData, left: leftData };
+  return cachedSampleData[hand];
 };
 
 /**
@@ -103,7 +175,7 @@ const fetchMeasurements = async (
   try {
     // 開発者設定が有効ならサンプルデータを返す
     if (FORCE_USE_SAMPLE_DATA) {
-      const sampleData = generateSampleData();
+      const sampleData = generateSampleData(hand);
       console.log('開発者設定により、サンプルデータを強制使用:', sampleData);
       return { measurements: sampleData, isRealData: false };
     }
@@ -159,11 +231,6 @@ const fetchMeasurements = async (
         motionMeasurement.wristExtension = latestAngles['背屈'] || 0;
         motionMeasurement.wristUlnarDeviation = latestAngles['尺屈'] || 0;
         motionMeasurement.wristRadialDeviation = latestAngles['橈屈'] || 0;
-        // 他のthumb関連の角度も同様にマッピングが必要であれば追加
-        // motionMeasurement.thumbFlexion = latestAngles['thumbFlexion'] || 0;
-        // motionMeasurement.thumbExtension = latestAngles['thumbExtension'] || 0;
-        // motionMeasurement.thumbAdduction = latestAngles['thumbAdduction'] || 0;
-        // motionMeasurement.thumbAbduction = latestAngles['thumbAbduction'] || 0;
 
         allRealMeasurements.push(motionMeasurement);
       }
@@ -199,7 +266,7 @@ const fetchMeasurements = async (
       console.warn(
         `実際のデータがないため、サンプルデータを使用します。(Hand: ${hand})`
       );
-      return { measurements: generateSampleData(), isRealData: false };
+      return { measurements: generateSampleData(hand), isRealData: false };
     }
 
     console.log(
@@ -213,7 +280,7 @@ const fetchMeasurements = async (
   } catch (error) {
     console.error(`測定データの取得に失敗。(Hand: ${hand})`, error);
     // エラーの場合もサンプルデータを返す
-    return { measurements: generateSampleData(), isRealData: false };
+    return { measurements: generateSampleData(hand), isRealData: false };
   }
 };
 
@@ -288,8 +355,8 @@ const PERIOD_OPTIONS = [
 ];
 
 const HANDS = [
-  { id: 1, label: '右手' },
-  { id: 2, label: '左手' },
+  { value: 'right' as const, label: '右手' },
+  { value: 'left' as const, label: '左手' },
 ];
 
 /**
@@ -646,6 +713,9 @@ const ProgressPage: React.FC = () => {
   >('month');
   const [selectedHand, setSelectedHand] = useState<'left' | 'right'>('right'); // デフォルトは右手
 
+  const [, setRightHandImprovementRate] = useAtom(rightHandImprovementRateAtom);
+  const [, setLeftHandImprovementRate] = useAtom(leftHandImprovementRateAtom);
+
   // データ読み込み
   useEffect(() => {
     const loadData = async () => {
@@ -690,6 +760,20 @@ const ProgressPage: React.FC = () => {
     () => calculateProgressStats(filteredMeasurements, []),
     [filteredMeasurements]
   );
+
+  // 改善率をatomに保存
+  useEffect(() => {
+    if (selectedHand === 'right') {
+      setRightHandImprovementRate(stats.improvementRate);
+    } else {
+      setLeftHandImprovementRate(stats.improvementRate);
+    }
+  }, [
+    stats.improvementRate,
+    selectedHand,
+    setRightHandImprovementRate,
+    setLeftHandImprovementRate,
+  ]);
 
   if (loading) {
     return (
@@ -737,14 +821,12 @@ const ProgressPage: React.FC = () => {
             <div className={styles.periodButtons}>
               {HANDS.map((option) => (
                 <button
-                  key={option.id}
+                  key={option.value}
                   type="button"
                   className={`${styles.periodButton} ${
-                    selectedHand === option.label ? styles.active : ''
+                    selectedHand === option.value ? styles.active : ''
                   }`}
-                  onClick={() =>
-                    setSelectedHand(option.label === '右手' ? 'right' : 'left')
-                  }
+                  onClick={() => setSelectedHand(option.value)}
                 >
                   {option.label}
                 </button>
