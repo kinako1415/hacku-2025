@@ -16,10 +16,20 @@
   font-weight: bold;
 }
 
+.cardTitle.improvements {
+  font-size: 32px !important;
+}
+
 .cardDescription {
   font-size: 16px;
   color: #b3c6ff;
   white-space: pre-line;
+}
+
+.cardDescription.improvements {
+  font-size: 56px !important;
+  font-weight: bold;
+  color: #494949 !important;
 }
 
 .cardRole {
@@ -50,4 +60,15 @@
 
 .white .cardRole {
   color: #1bd88f;
+}
+
+.icon {
+  display: flex;
+  gap: 10px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

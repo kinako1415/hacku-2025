@@ -1,14 +1,24 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import styles from './card.module.scss';
+import { usePathname } from 'next/navigation';
+import { db as measurementDb } from '@/lib/database/measurement-db';
+
+import Image from 'next/image';
+
+import rightIcon from '@/assets/right.svg';
+import leftIcon from '@/assets/left.svg';
 
 type CardProps = {
   title: string;
   description: string;
-  role?: string;
+  role?: string | number;
   onClick?: () => void;
   isBlue?: boolean;
   width?: number;
   height?: number;
+  isImprovements?: boolean;
 };
 
 const Card: React.FC<CardProps> = ({
@@ -19,39 +29,69 @@ const Card: React.FC<CardProps> = ({
   isBlue = false,
   width = 350,
   height = 180,
+  isImprovements = false,
 }) => {
   const cardClass = isBlue ? styles.card : `${styles.card} ${styles.white}`;
+  const pathname = usePathname();
+
+  const improvements = isImprovements ? styles.improvements : '';
+
+  const isCalendarPage = pathname === '/calendar';
+
   return (
     <div
       className={cardClass}
       style={{ width: `${width}px`, height: `${height}px` }}
     >
-      <div className={styles.cardTitle}>{title}</div>
-      <div className={styles.cardDescription}>{description}</div>
-      {role && <div className={styles.cardRole}>{role}</div>}
+      <div className={`${styles.cardTitle} ${improvements}`}>{title}</div>
+      <div className={`${styles.cardDescription} ${improvements}`}>
+        {description}
+      </div>
+      <div className={styles.cardFooter}>
+        {role && <div className={styles.cardRole}>{role}</div>}
+        {isImprovements && (
+          <div className={styles.icon}>
+            <Image
+              src={leftIcon}
+              alt="改善率のイメージ画像"
+              width={25}
+              height={25}
+            />
+
+            <Image
+              src={rightIcon}
+              alt="改善率のイメージ画像"
+              width={25}
+              height={25}
+            />
+          </div>
+        )}
+      </div>
       <div className={styles.cardArrow}>
-        <svg
-          width="56"
-          height="56"
-          viewBox="0 0 56 56"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M18 38L38 18"
-            stroke={isBlue ? '#fff' : '#0542FC'}
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M18 18H38V38"
-            stroke={isBlue ? '#fff' : '#0542FC'}
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {!isCalendarPage ? (
+          <svg
+            width="56"
+            height="56"
+            viewBox="0 0 56 56"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 38L38 18"
+              stroke={isBlue ? '#fff' : '#0542FC'}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M18 18H38V38"
+              stroke={isBlue ? '#fff' : '#0542FC'}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : null}
       </div>
     </div>
   );

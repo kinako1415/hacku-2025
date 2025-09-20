@@ -4,11 +4,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.scss';
 import Card from '@/components/layout/card';
 import { Calendar } from '@/components/calendar/Calendar';
-import { db } from '@/lib/database/measurement-db'; // DBをインポート
-
+import { db as measurementDb } from '@/lib/database/measurement-db';
 import dayjs from 'dayjs';
-import { is } from 'zod/locales';
-
 /**
  * カレンダーページコンポーネント
  */
@@ -18,7 +15,7 @@ export default function CalendarPage(): React.JSX.Element {
   useEffect(() => {
     const fetchMeasuredDates = async () => {
       try {
-        const sessions = await db.getSessions();
+        const sessions = await measurementDb.getSessions();
         const dates = sessions
           .filter((session) => session.isCompleted && session.endTime)
           .map((session) => new Date(session.endTime!));
@@ -39,7 +36,16 @@ export default function CalendarPage(): React.JSX.Element {
     ? dayjs(newestDate).isSame(dayjs(), 'day')
     : false;
 
-  console.log(isTodayMeasured);
+  const uniqueDays = new Set(
+    measuredDates.map((date) => dayjs(date).format('YYYY-MM-DD'))
+  );
+
+  // 月ごとの件数を集計
+  const monthCount: { [month: string]: number } = {};
+  uniqueDays.forEach((dayStr) => {
+    const month = dayStr.slice(5, 7); // 'YYYY-MM-DD'からMMだけ抜き出し
+    monthCount[month] = (monthCount[month] || 0) + 1;
+  });
 
   return (
     <div className={styles.calendarPage}>
@@ -58,18 +64,19 @@ export default function CalendarPage(): React.JSX.Element {
         <Card
           title="今月の記録"
           description="今月の測定回数を表示します"
-          role="３回"
+          role={monthCount[dayjs().format('MM')] || 0}
           width={400}
           height={211}
         />
 
         {/* 改善率カード */}
         <Card
-          title="改善率"
-          description="過去の記録と比較して、どの程度改善が見られているかをパーセンテージで示します。"
+          title="左手首の"
+          description="改善率"
           role="１０％"
           width={400}
           height={211}
+          isImprovements={true}
         />
       </div>
 
