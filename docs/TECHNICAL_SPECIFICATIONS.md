@@ -48,44 +48,69 @@
 │   User Camera   │───▶│   MediaPipe     │───▶│  Angle Calculator│
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                                         │
-┌─────────────────┐    ┌─────────────────┐             │
-│   React UI      │◀───│  Jotai States   │◀────────────┘
-└─────────────────┘    └─────────────────┘
-         │                       │
-         │               ┌─────────────────┐
-         └──────────────▶│   IndexedDB     │
+                                                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React UI      │◀───│  Jotai States   │◀───│ Measurement Data│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │               ┌─────────────────┐             │
+         └──────────────▶│   IndexedDB     │◀────────────┘
                          └─────────────────┘
+```
+
+### データフロー図
+
+```
+Camera Stream ──▶ MediaPipe ──▶ Hand Landmarks ──▶ Angle Calculation
+                                       │
+                                       ▼
+PWA Cache ◀── Jotai State ◀── Measurement Result
+    │              │
+    ▼              ▼
+IndexedDB ──▶ Progress Charts ──▶ Calendar View
+```
+
+┌─────────────────┐ ┌─────────────────┐ │
+│ React UI │◀───│ Jotai States │◀────────────┘
+└─────────────────┘ └─────────────────┘
+│ │
+│ ┌─────────────────┐
+└──────────────▶│ IndexedDB │
+└─────────────────┘
+
 ```
 
 ### フォルダ構造
 
 ```
+
 src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API Routes
-│   ├── calendar/          # カレンダー機能
-│   ├── measurement/       # 測定機能
-│   ├── progress/          # 進捗確認機能
-│   └── setup/             # セットアップ
-├── components/            # Reactコンポーネント
-│   ├── calendar/
-│   ├── camera/
-│   ├── common/
-│   ├── layout/
-│   ├── measurement/
-│   └── progress/
-├── hooks/                 # カスタムHooks
-├── lib/                   # ライブラリ・ユーティリティ
-│   ├── data-manager/      # データ管理
-│   ├── database/          # データベース（IndexedDB）
-│   ├── integrations/      # 外部統合
-│   ├── mediapipe/         # MediaPipe統合
-│   ├── motion-capture/    # 動作測定
-│   ├── pwa/               # PWA機能
-│   └── utils/             # ユーティリティ
-├── stores/                # 状態管理（Jotai）
-└── styles/                # グローバルスタイル
-```
+├── app/ # Next.js App Router
+│ ├── api/ # API Routes
+│ ├── calendar/ # カレンダー機能
+│ ├── measurement/ # 測定機能
+│ ├── progress/ # 進捗確認機能
+│ └── setup/ # セットアップ
+├── components/ # Reactコンポーネント
+│ ├── calendar/
+│ ├── camera/
+│ ├── common/
+│ ├── layout/
+│ ├── measurement/
+│ └── progress/
+├── hooks/ # カスタムHooks
+├── lib/ # ライブラリ・ユーティリティ
+│ ├── data-manager/ # データ管理
+│ ├── database/ # データベース（IndexedDB）
+│ ├── integrations/ # 外部統合
+│ ├── mediapipe/ # MediaPipe統合
+│ ├── motion-capture/ # 動作測定
+│ ├── pwa/ # PWA機能
+│ └── utils/ # ユーティリティ
+├── stores/ # 状態管理（Jotai）
+└── styles/ # グローバルスタイル
+
+````
 
 ## MediaPipe統合詳細
 
@@ -103,7 +128,7 @@ const MEDIAPIPE_CONFIG = {
     selfieMode: true,
   },
 };
-```
+````
 
 ### ランドマーク構造
 

@@ -123,81 +123,80 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## API エンドポイント
 
-### 測定セッション管理
+### 測定データ管理
 
-#### POST /api/v1/measurements/sessions
+#### GET /api/measurements
 
-新しい測定セッションを開始します。
+測定データの一覧を取得します。
 
-**リクエストボディ**
+**クエリパラメータ**
 
-```json
-{
-  "userId": "user_uuid_v4",
-  "hand": "right",
-  "deviceInfo": {
-    "camera": "FaceTime HD Camera",
-    "browser": "Chrome 120.0.0.0",
-    "os": "macOS 14.1.0"
-  },
-  "metadata": {
-    "therapistNote": "初回測定",
-    "location": "自宅"
-  }
-}
-```
+| パラメータ  | 型     | 必須 | 説明                       | デフォルト |
+| ----------- | ------ | ---- | -------------------------- | ---------- |
+| `userId`    | string | No   | ユーザーID                 | -          |
+| `startDate` | string | No   | 開始日 (ISO 8601)          | 1ヶ月前    |
+| `endDate`   | string | No   | 終了日 (ISO 8601)          | 現在       |
+| `hand`      | string | No   | 手の種類 (`left`, `right`) | -          |
+| `limit`     | number | No   | 取得件数制限               | 50         |
+| `offset`    | number | No   | オフセット                 | 0          |
 
 **レスポンス例**
 
 ```json
 {
   "success": true,
-  "data": {
-    "sessionId": "session_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
-    "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
-    "hand": "right",
-    "startTime": "2025-01-15T10:30:00.000Z",
-    "status": "active",
-    "steps": [
-      {
-        "stepId": "palmar-flexion",
-        "stepName": "掌屈",
-        "targetAngle": 90,
-        "status": "pending",
-        "order": 1
-      },
-      {
-        "stepId": "dorsal-flexion",
-        "stepName": "背屈",
-        "targetAngle": 70,
-        "status": "pending",
-        "order": 2
-      },
-      {
-        "stepId": "ulnar-deviation",
-        "stepName": "尺屈",
-        "targetAngle": 45,
-        "status": "pending",
-        "order": 3
-      },
-      {
-        "stepId": "radial-deviation",
-        "stepName": "橈屈",
-        "targetAngle": 45,
-        "status": "pending",
-        "order": 4
-      }
-    ]
-  },
-  "meta": {
-    "timestamp": "2025-01-15T10:30:00.000Z",
-    "version": "1.0.0",
-    "requestId": "req_measurement_session_create"
+  "data": [
+    {
+      "id": "measurement_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+      "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+      "measurementDate": "2025-01-15T10:30:00.000Z",
+      "hand": "right",
+      "angleValue": 78.5,
+      "accuracy": 0.95,
+      "stepId": "palmar-flexion"
+    }
+  ],
+  "pagination": {
+    "total": 25,
+    "limit": 50,
+    "offset": 0,
+    "hasNext": false
   }
 }
 ```
 
-#### GET /api/v1/measurements/sessions/:sessionId
+#### POST /api/measurements
+
+新しい測定データを作成します。
+
+**リクエストボディ**
+
+```json
+{
+  "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+  "hand": "right",
+  "stepId": "palmar-flexion",
+  "angleValue": 78.5,
+  "handLandmarks": [
+    {
+      "id": 0,
+      "x": 0.5234,
+      "y": 0.6123,
+      "z": 0.0145,
+      "visibility": 0.98
+    }
+  ],
+  "accuracy": 0.95
+}
+```
+
+#### GET /api/measurements/:id
+
+特定の測定データを取得します。
+
+**パスパラメータ**
+
+- `id`: 測定データの一意識別子#### GET /api/v1/measurements/sessions/:sessionId
 
 特定のセッション情報を取得します。
 
@@ -328,51 +327,39 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "duration": 15.5,
 ### 進捗管理
 
-#### GET /api/v1/progress/:userId
+#### GET /api/progress/:id
 
 ユーザーの進捗データを取得します。
 
 **パスパラメータ**
-- `userId`: ユーザーの一意識別子
+- `id`: ユーザーの一意識別子
 
 **クエリパラメータ**
 - `period`: 期間 (`week`, `month`, `year`) デフォルト: `month`
 - `hand`: 手の種類 (`left`, `right`, `both`) デフォルト: `both`
 
-**レスポンス例**
+### カレンダー機能
+
+#### GET /api/calendar
+
+カレンダー表示用のデータを取得します。
+
+**クエリパラメータ**
+- `userId`: ユーザーの一意識別子
+- `year`: 年 (YYYY形式)
+- `month`: 月 (1-12)
+
+#### POST /api/calendar
+
+カレンダーのメモを保存します。
+
+**リクエストボディ**
 
 ```json
 {
-  "success": true,
-  "data": {
-    "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
-    "period": "month",
-    "totalSessions": 15,
-    "averageAchievement": 78.5,
-    "improvementRate": 12.3,
-    "trends": {
-      "palmarFlexion": {
-        "current": 82.5,
-        "baseline": 68.2,
-        "improvement": 14.3,
-        "trend": "improving"
-      },
-      "dorsalFlexion": {
-        "current": 75.8,
-        "baseline": 71.5,
-        "improvement": 4.3,
-        "trend": "stable"
-      }
-    },
-    "weeklyProgress": [
-      {
-        "week": "2025-W02",
-        "sessions": 3,
-        "averageAngle": 75.2,
-        "achievement": 76.8
-      }
-    ]
-  }
+  "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+  "date": "2025-01-15",
+  "memo": "右手の調子が良い。痛みなし。"
 }
 ````
 

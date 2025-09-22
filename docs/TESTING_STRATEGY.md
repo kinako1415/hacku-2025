@@ -53,15 +53,26 @@ import {
 describe('角度計算', () => {
   test('正常な掌屈角度を計算できる', () => {
     const mockLandmarks = [
-      { x: 0.5, y: 0.5, z: 0.0 }, // 手首
-      { x: 0.4, y: 0.4, z: 0.0 }, // 親指付け根
-      // ... 他のランドマーク
+      { x: 0.5, y: 0.5, z: 0.0 }, // 手首 (WRIST)
+      { x: 0.4, y: 0.4, z: 0.0 }, // 親指付け根 (THUMB_CMC)
+      { x: 0.6, y: 0.4, z: 0.0 }, // 人差し指付け根 (INDEX_FINGER_MCP)
+      { x: 0.5, y: 0.3, z: 0.0 }, // 中指付け根 (MIDDLE_FINGER_MCP)
+      // ... MediaPipe Hands の21個のランドマーク完全セット
     ];
 
     const angle = calculateWristAngle(mockLandmarks, 'palmar-flexion');
 
     expect(angle).toBeGreaterThanOrEqual(0);
     expect(angle).toBeLessThanOrEqual(90);
+    expect(typeof angle).toBe('number');
+  });
+
+  test('背屈角度の計算精度', () => {
+    const mockLandmarks = generateMockHandLandmarks();
+    const angle = calculateWristAngle(mockLandmarks, 'dorsal-flexion');
+
+    expect(angle).toBeGreaterThanOrEqual(0);
+    expect(angle).toBeLessThanOrEqual(70);
   });
 
   test('無効なランドマークデータを拒否する', () => {
@@ -115,8 +126,21 @@ describe('データ検証', () => {
     expect(sanitizeAngleValue(-5)).toBe(0); // 下限適用
     expect(sanitizeAngleValue(100)).toBe(90); // 上限適用
   });
+
+  test('手の種類の検証', () => {
+    const invalidHandData = {
+      angle: 45,
+      hand: 'invalid' as any,
+      stepId: 'palmar-flexion',
+      timestamp: Date.now(),
+    };
+
+    expect(validateMeasurementData(invalidHandData)).toBe(false);
+  });
 });
 ```
+
+````
 
 ### React コンポーネントテスト
 
@@ -146,7 +170,7 @@ describe('MeasurementControls', () => {
     expect(mockOnStart).toHaveBeenCalledTimes(1);
   });
 });
-```
+````
 
 ## 統合テスト (Integration Tests)
 

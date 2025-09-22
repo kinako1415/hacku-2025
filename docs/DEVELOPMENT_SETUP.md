@@ -88,13 +88,13 @@ npm run dev
 {
   "recommendations": [
     "esbenp.prettier-vscode",
-    "bradlc.vscode-tailwindcss",
     "ms-vscode.vscode-typescript-next",
     "orta.vscode-jest",
     "ms-playwright.playwright",
     "formulahendry.auto-rename-tag",
     "christian-kohler.path-intellisense",
-    "syler.sass-indented"
+    "syler.sass-indented",
+    "bradlc.vscode-tailwindcss"
   ]
 }
 ```
