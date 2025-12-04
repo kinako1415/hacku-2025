@@ -42,7 +42,6 @@
 手首・母指の可動域をカメラと AI 骨格推定で自動測定し、毎日の記録をカレンダー形式で管理するリハビリテーション支援 Web アプリケーション。Next.js、TypeScript、MediaPipe Hands を使用して、±5° 精度での可動域測定と進捗追跡を実現。
 
 ## 技術コンテキスト
-
 **言語/バージョン**: TypeScript, Node.js 18+, React 18+  
 **主要依存関係**: Next.js (App Router), MediaPipe Hands/Pose (JS), jotai, module.scss  
 **ストレージ**: IndexedDB, Web Storage (LocalStorage/SessionStorage)  
