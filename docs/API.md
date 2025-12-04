@@ -1,48 +1,144 @@
-# API ドキュメント
+# API 仕様書
 
 ## 概要
 
-AI駆動手首・母指可動域リハビリテーションアプリのAPI仕様書です。
+AI駆動手首・母指可動域リハビリテーションアプリのREST API仕様書です。
+本APIは、測定データの永続化、進捗管理、カレンダー機能をサポートし、
+将来的な医療機器認証に対応した設計になっています。
 
-## ベースURL
+## API 設計思想
+
+- **RESTful設計**: HTTP メソッドとステータスコードを適切に使用
+- **スキーマ駆動**: OpenAPI 3.0 準拠の明確な仕様定義
+- **医療データ対応**: FHIR R4 準拠のデータモデルを部分採用
+- **プライバシー重視**: 個人情報の最小化とローカルファースト設計
+- **PWA 対応**: オフライン機能とキャッシュ戦略
+
+## ベースURL・環境設定
+
+### 環境別エンドポイント
+
+| 環境        | ベースURL                                  | 用途           |
+| ----------- | ------------------------------------------ | -------------- |
+| Local       | `http://localhost:3000/api`                | ローカル開発   |
+| Development | `https://dev-rehab-app.vercel.app/api`     | 開発版テスト   |
+| Staging     | `https://staging-rehab-app.vercel.app/api` | QA・受入テスト |
+| Production  | `https://rehab-app.com/api`                | 本番運用       |
+
+### APIバージョニング
 
 ```
-https://your-domain.com/api
+https://rehab-app.com/api/v1/measurements
 ```
 
-## 認証
+- **v1**: 初期版（現在）
+- **v2**: 医療機器認証対応版（予定）
 
-現在のバージョンでは認証は実装されていませんが、将来的にはJWTトークンベースの認証を予定しています。
+## 認証・セキュリティ
 
-## エラーレスポンス
+### 現在の実装
 
-すべてのAPIエンドポイントは、エラー時に以下の形式でレスポンスを返します：
+```typescript
+// ローカルファースト設計
+// 認証不要（クライアントサイドで完結）
+const userId = generateLocalUserId(); // UUID v4
+```
+
+### 将来の認証設計
+
+```typescript
+// JWTトークンベース認証（医療機器認証版）
+interface AuthToken {
+  sub: string;           // ユーザーID
+  iat: number;          // 発行時刻
+  exp: number;          // 有効期限
+  scope: string[];      // 権限スコープ
+  medical_id?: string;  // 医療機関ID
+}
+
+// APIヘッダー例
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### データ暗号化
+
+- **転送時**: HTTPS/TLS 1.3
+- **保存時**: IndexedDB内のAES-256暗号化
+- **バックアップ**: ユーザー制御の暗号化エクスポート
+
+## 共通レスポンス形式
+
+### 成功レスポンス
 
 ```json
 {
-  "error": "エラーメッセージ",
-  "code": "ERROR_CODE",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "path": "/api/endpoint"
+  "success": true,
+  "data": any,
+  "meta": {
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "version": "1.0.0",
+    "requestId": "req_1234567890"
+  },
+  "pagination": {
+    "total": 100,
+    "limit": 20,
+    "offset": 0,
+    "hasNext": true
+  }
 }
 ```
 
-## エンドポイント
+### エラーレスポンス
 
-### 測定データ（Measurements）
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "入力データが無効です",
+    "details": "angleValue must be between 0 and 90",
+    "field": "angleValue"
+  },
+  "meta": {
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "version": "1.0.0",
+    "requestId": "req_1234567890",
+    "path": "/api/v1/measurements"
+  }
+}
+```
+
+### HTTPステータスコード
+
+| コード | 意味           | 使用例                 |
+| ------ | -------------- | ---------------------- |
+| 200    | 成功           | データ取得・更新成功   |
+| 201    | 作成成功       | 新規測定データ作成     |
+| 400    | 不正リクエスト | バリデーションエラー   |
+| 401    | 認証エラー     | トークン無効・期限切れ |
+| 403    | 権限エラー     | アクセス権限なし       |
+| 404    | 未発見         | リソースが存在しない   |
+| 422    | 処理不可能     | ビジネスロジックエラー |
+| 500    | サーバーエラー | 内部処理エラー         |
+
+## API エンドポイント
+
+### 測定データ管理
 
 #### GET /api/measurements
 
 測定データの一覧を取得します。
 
-**パラメータ**
+**クエリパラメータ**
 
-- `userId` (string, optional): ユーザーID
-- `startDate` (string, optional): 開始日 (ISO 8601形式)
-- `endDate` (string, optional): 終了日 (ISO 8601形式)
-- `measurementType` (string, optional): 測定タイプ
-- `limit` (number, optional): 取得件数制限 (デフォルト: 50)
-- `offset` (number, optional): オフセット (デフォルト: 0)
+| パラメータ  | 型     | 必須 | 説明                       | デフォルト |
+| ----------- | ------ | ---- | -------------------------- | ---------- |
+| `userId`    | string | No   | ユーザーID                 | -          |
+| `startDate` | string | No   | 開始日 (ISO 8601)          | 1ヶ月前    |
+| `endDate`   | string | No   | 終了日 (ISO 8601)          | 現在       |
+| `hand`      | string | No   | 手の種類 (`left`, `right`) | -          |
+| `limit`     | number | No   | 取得件数制限               | 50         |
+| `offset`    | number | No   | オフセット                 | 0          |
 
 **レスポンス例**
 
@@ -51,9 +147,369 @@ https://your-domain.com/api
   "success": true,
   "data": [
     {
-      "id": "measurement-123",
-      "userId": "user-456",
+      "id": "measurement_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+      "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
       "measurementDate": "2025-01-15T10:30:00.000Z",
+      "hand": "right",
+      "angleValue": 78.5,
+      "accuracy": 0.95,
+      "stepId": "palmar-flexion"
+    }
+  ],
+  "pagination": {
+    "total": 25,
+    "limit": 50,
+    "offset": 0,
+    "hasNext": false
+  }
+}
+```
+
+#### POST /api/measurements
+
+新しい測定データを作成します。
+
+**リクエストボディ**
+
+```json
+{
+  "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+  "hand": "right",
+  "stepId": "palmar-flexion",
+  "angleValue": 78.5,
+  "handLandmarks": [
+    {
+      "id": 0,
+      "x": 0.5234,
+      "y": 0.6123,
+      "z": 0.0145,
+      "visibility": 0.98
+    }
+  ],
+  "accuracy": 0.95
+}
+```
+
+#### GET /api/measurements/:id
+
+特定の測定データを取得します。
+
+**パスパラメータ**
+
+- `id`: 測定データの一意識別子#### GET /api/v1/measurements/sessions/:sessionId
+
+特定のセッション情報を取得します。
+
+**パスパラメータ**
+
+- `sessionId`: セッションの一意識別子
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "sessionId": "session_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+    "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+    "hand": "right",
+    "startTime": "2025-01-15T10:30:00.000Z",
+    "endTime": "2025-01-15T10:45:00.000Z",
+    "status": "completed",
+    "totalSteps": 4,
+    "completedSteps": 4,
+    "results": [
+      {
+        "stepId": "palmar-flexion",
+        "stepName": "掌屈",
+        "measurementValue": 78,
+        "targetAngle": 90,
+        "achievement": 86.7,
+        "accuracy": 0.95,
+        "timestamp": "2025-01-15T10:32:15.000Z"
+      }
+    ]
+  }
+}
+```
+
+### 測定結果保存
+
+#### POST /api/v1/measurements/results
+
+測定結果を保存します。
+
+**リクエストボディ**
+
+```json
+{
+  "sessionId": "session_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+  "stepId": "palmar-flexion",
+  "measurementData": {
+    "angleValue": 78.5,
+    "targetAngle": 90,
+    "handLandmarks": [
+      {
+        "id": 0,
+        "x": 0.5234,
+        "y": 0.6123,
+        "z": 0.0145,
+        "visibility": 0.98
+      }
+    ],
+    "mediapipeMetadata": {
+      "modelVersion": "0.4.1675469240",
+      "detectionConfidence": 0.89,
+      "trackingConfidence": 0.92
+    }
+  },
+  "qualityMetrics": {
+    "handVisibility": 0.95,
+    "landmarkStability": 0.88,
+    "cameraNoise": 0.12
+  }
+}
+```
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "resultId": "result_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+    "sessionId": "session_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+    "stepId": "palmar-flexion",
+    "angleValue": 78.5,
+    "targetAngle": 90,
+    "achievement": 87.2,
+    "accuracy": 0.95,
+    "timestamp": "2025-01-15T10:32:15.000Z",
+    "isValid": true
+  }
+}
+```
+
+### 測定データ検索
+
+#### GET /api/v1/measurements
+
+測定データの一覧を取得します。
+
+**クエリパラメータ**
+
+| パラメータ  | 型     | 必須 | 説明                               | デフォルト  |
+| ----------- | ------ | ---- | ---------------------------------- | ----------- |
+| `userId`    | string | No   | ユーザーID                         | -           |
+| `startDate` | string | No   | 開始日 (ISO 8601)                  | 1ヶ月前     |
+| `endDate`   | string | No   | 終了日 (ISO 8601)                  | 現在        |
+| `hand`      | string | No   | 手の種類 (`left`, `right`)         | -           |
+| `stepId`    | string | No   | 測定ステップID                     | -           |
+| `limit`     | number | No   | 取得件数制限                       | 50          |
+| `offset`    | number | No   | オフセット                         | 0           |
+| `sort`      | string | No   | ソート順 (`date_desc`, `date_asc`) | `date_desc` |
+
+**レスポンス例**
+
+````json
+{
+  "success": true,
+  "data": [
+    {
+      "sessionId": "session_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+      "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+      "measurementDate": "2025-01-15T10:30:00.000Z",
+      "hand": "right",
+      "totalSteps": 4,
+      "completedSteps": 4,
+      "averageAngle": 72.3,
+      "overallAchievement": 84.5,
+      "duration": 15.5,
+### 進捗管理
+
+#### GET /api/progress/:id
+
+ユーザーの進捗データを取得します。
+
+**パスパラメータ**
+- `id`: ユーザーの一意識別子
+
+**クエリパラメータ**
+- `period`: 期間 (`week`, `month`, `year`) デフォルト: `month`
+- `hand`: 手の種類 (`left`, `right`, `both`) デフォルト: `both`
+
+### カレンダー機能
+
+#### GET /api/calendar
+
+カレンダー表示用のデータを取得します。
+
+**クエリパラメータ**
+- `userId`: ユーザーの一意識別子
+- `year`: 年 (YYYY形式)
+- `month`: 月 (1-12)
+
+#### POST /api/calendar
+
+カレンダーのメモを保存します。
+
+**リクエストボディ**
+
+```json
+{
+  "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+  "date": "2025-01-15",
+  "memo": "右手の調子が良い。痛みなし。"
+}
+````
+
+### カレンダー機能
+
+#### GET /api/v1/calendar/:userId
+
+カレンダー表示用のデータを取得します。
+
+**パスパラメータ**
+
+- `userId`: ユーザーの一意識別子
+
+**クエリパラメータ**
+
+- `year`: 年 (YYYY形式)
+- `month`: 月 (1-12)
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "year": 2025,
+    "month": 1,
+    "days": [
+      {
+        "date": "2025-01-15",
+        "hasMeasurement": true,
+        "sessionCount": 2,
+        "averageAchievement": 82.5,
+        "completedSteps": 8,
+        "totalSteps": 8,
+        "memo": "朝と夜に測定実施"
+      },
+      {
+        "date": "2025-01-16",
+        "hasMeasurement": false,
+        "sessionCount": 0,
+        "memo": null
+      }
+    ],
+    "summary": {
+      "totalSessions": 15,
+      "activeDays": 8,
+      "streak": 3,
+      "monthlyGoal": 20,
+      "progress": 75.0
+    }
+  }
+}
+```
+
+#### POST /api/v1/calendar/:userId/memo
+
+カレンダーのメモを保存します。
+
+**パスパラメータ**
+
+- `userId`: ユーザーの一意識別子
+
+**リクエストボディ**
+
+```json
+{
+  "date": "2025-01-15",
+  "memo": "右手の調子が良い。痛みなし。"
+}
+```
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "user_01HKQB9X5J8Y9K2M3P4Q5R6S7T",
+    "date": "2025-01-15",
+    "memo": "右手の調子が良い。痛みなし。",
+    "updatedAt": "2025-01-15T14:30:00.000Z"
+  }
+}
+```
+
+### システム情報
+
+#### GET /api/v1/health
+
+システムヘルスチェック用エンドポイント。
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "healthy",
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "version": "1.0.0",
+    "uptime": 86400,
+    "services": {
+      "database": "healthy",
+      "mediapipe": "healthy",
+      "storage": "healthy"
+    }
+  }
+}
+```
+
+#### GET /api/v1/config
+
+クライアント設定情報を取得します。
+
+**レスポンス例**
+
+```json
+{
+  "success": true,
+  "data": {
+    "mediapipe": {
+      "version": "0.4.1675469240",
+      "cdnUrl": "https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240",
+      "modelComplexity": 1,
+      "minDetectionConfidence": 0.5,
+      "minTrackingConfidence": 0.5
+    },
+    "measurement": {
+      "targetAngles": {
+        "palmarFlexion": 90,
+        "dorsalFlexion": 70,
+        "ulnarDeviation": 45,
+        "radialDeviation": 45
+      },
+      "validationRules": {
+        "minAngle": 0,
+        "maxAngle": 90,
+        "accuracyThreshold": 0.8
+      }
+    },
+    "features": {
+      "offlineMode": true,
+      "dataExport": true,
+      "multiUser": false
+    }
+  }
+}
+```
+
+```
       "handUsed": "right",
       "measurementType": "wrist-flexion",
       "angleValue": 45.5,
@@ -83,56 +539,89 @@ https://your-domain.com/api
 
 #### POST /api/measurements
 
-新しい測定データを作成します。
+## データモデル仕様
 
-**リクエストボディ**
+### MeasurementSession （測定セッション）
 
-```json
-{
-  "userId": "user-456",
-  "measurementDate": "2025-01-15T10:30:00.000Z",
-  "handUsed": "right",
-  "measurementType": "wrist-flexion",
-  "angleValue": 45.5,
-  "accuracy": 0.95,
-  "landmarks": [
-    { "x": 0.1, "y": 0.2, "z": 0.0 },
-    ...
-  ],
-  "metadata": {
-    "deviceInfo": "iPhone 13",
-    "appVersion": "1.0.0",
-    "sessionDuration": 30000
-  }
+```typescript
+interface MeasurementSession {
+  sessionId: string; // ULID形式の一意識別子
+  userId: string; // ユーザーID（UUID v4）
+  hand: 'left' | 'right'; // 測定対象の手
+  startTime: string; // 開始時刻（ISO 8601）
+  endTime?: string; // 終了時刻（ISO 8601）
+  status: 'active' | 'completed' | 'cancelled';
+  totalSteps: number; // 総ステップ数（4固定）
+  completedSteps: number; // 完了ステップ数
+  deviceInfo?: DeviceInfo; // デバイス情報
+  metadata?: SessionMetadata; // メタデータ
 }
 ```
 
-**レスポンス例**
+### MeasurementResult （測定結果）
 
-```json
-{
-  "success": true,
-  "data": {
-    "id": "measurement-789",
-    "userId": "user-456",
-    "measurementDate": "2025-01-15T10:30:00.000Z",
-    "handUsed": "right",
-    "measurementType": "wrist-flexion",
-    "angleValue": 45.5,
-    "accuracy": 0.95,
-    "landmarks": [...],
-    "metadata": {...},
-    "createdAt": "2025-01-15T10:30:00.000Z",
-    "updatedAt": "2025-01-15T10:30:00.000Z"
-  }
+```typescript
+interface MeasurementResult {
+  resultId: string; // 結果ID（ULID）
+  sessionId: string; // セッションID
+  stepId: StepId; // ステップ識別子
+  stepName: string; // ステップ名（日本語）
+  angleValue: number; // 測定角度値（0-90度）
+  targetAngle: number; // 目標角度値
+  achievement: number; // 達成率（%）
+  accuracy: number; // 測定精度（0-1）
+  timestamp: string; // 測定時刻（ISO 8601）
+  handLandmarks: Point3D[]; // MediaPipe手ランドマーク
+  qualityMetrics: QualityMetrics; // 品質指標
+  isValid: boolean; // データ有効性
 }
 ```
 
-#### GET /api/measurements/{id}
+### Point3D （3次元座標）
 
-特定の測定データを取得します。
+```typescript
+interface Point3D {
+  id: number; // ランドマークID（0-20）
+  x: number; // X座標（正規化 0-1）
+  y: number; // Y座標（正規化 0-1）
+  z: number; // Z座標（相対深度）
+  visibility: number; // 可視性スコア（0-1）
+}
+```
 
-**パラメータ**
+### StepId （測定ステップ）
+
+```typescript
+type StepId =
+  | 'palmar-flexion' // 掌屈
+  | 'dorsal-flexion' // 背屈
+  | 'ulnar-deviation' // 尺屈
+  | 'radial-deviation'; // 橈屈
+```
+
+### QualityMetrics （品質指標）
+
+```typescript
+interface QualityMetrics {
+  handVisibility: number; // 手の可視性（0-1）
+  landmarkStability: number; // ランドマーク安定性（0-1）
+  cameraNoise: number; // カメラノイズレベル（0-1）
+  lightingCondition: number; // 照明条件（0-1）
+  motionBlur: number; // モーションブラー（0-1）
+}
+```
+
+### DeviceInfo （デバイス情報）
+
+```typescript
+interface DeviceInfo {
+  camera: string; // カメラ名
+  browser: string; // ブラウザ情報
+  os: string; // OS情報
+  screenResolution: string; // 画面解像度
+  userAgent: string; // ユーザーエージェント
+}
+```
 
 - `id` (string, required): 測定データID
 

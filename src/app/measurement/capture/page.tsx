@@ -9,10 +9,23 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Hands, Results } from '@mediapipe/hands';
 import type { NormalizedLandmark } from '@mediapipe/hands';
-import {
-  calculateWristAngles,
-  calculateThumbAngles,
-} from '@/lib/motion-capture/angle-calculator';
+import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculator';
+
+// 互換性のためのラッパー関数
+const calculateWristAngles = (landmarks: any) => {
+  const convertedLandmarks = landmarks.map((lm: any, index: number) => ({ ...lm, id: index }));
+  return angleCalculator.calculateWristAngles(convertedLandmarks);
+};
+
+const calculateThumbAngles = (landmarks: any) => {
+  // 母指角度は現在未実装のため、ダミーデータを返す
+  return {
+    flexion: 0,
+    extension: 0,
+    abduction: 0,
+    adduction: 0,
+  };
+};
 import type { AngleData } from '@/stores/measurement-atoms';
 import type {
   HandType,

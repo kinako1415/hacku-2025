@@ -13,11 +13,17 @@ import {
   MeasurementSession as DBMeasurementSession,
   MeasurementResult as DBMeasurementResult,
 } from '@/lib/database/measurement-db';
-import {
-  calculateWristAngle,
-  validateLandmarks,
-  Point3D,
-} from '@/lib/utils/angle-calculator';
+import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculator';
+import { Point3D } from '@/core/domain/types/hand-landmark';
+
+// 互換性のためのラッパー関数
+const calculateWristAngle = (landmarks: Point3D[], stepId: string): number => {
+  return angleCalculator.calculateAngleForStep(landmarks, stepId);
+};
+
+const validateLandmarks = (landmarks: Point3D[]): boolean => {
+  return angleCalculator.validateLandmarks(landmarks);
+};
 import { useMeasurementService } from '@/hooks/useMeasurementService';
 import {
   createMeasurement,
