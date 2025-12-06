@@ -214,7 +214,7 @@ export const FeedbackIntegrationProvider = ({
         window.removeEventListener('offline', handleOffline);
       };
     }
-    
+
     return undefined;
   }, [showNotification]);
 
@@ -658,7 +658,9 @@ const saveErrorLog = (errorReport: ErrorReport): void => {
  */
 export const getErrorLogs = (): ErrorReport[] => {
   try {
-    return JSON.parse(localStorage.getItem('error-logs') || '[]') as ErrorReport[];
+    return JSON.parse(
+      localStorage.getItem('error-logs') || '[]'
+    ) as ErrorReport[];
   } catch (error) {
     console.error('Failed to get error logs:', error);
     return [];
