@@ -1,5 +1,5 @@
 import styles from './page.module.scss';
-import Card from '@/components/layout/card';
+import HomeCard from '@/components/layout/HomeCard';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -11,7 +11,7 @@ export default function Home() {
       <div className={styles.cardWrapper}>
         {/* PC時: 測定、進捗確認、記録管理 / スマホ時: 記録管理、進捗確認、測定、利用の流れ */}
         <Link href="/measurement" className={styles.measurementCard}>
-          <Card
+          <HomeCard
             title="測定"
             description={'AIカメラで手首と\n母指の可動域を正確に測定'}
             width={340}
@@ -19,7 +19,7 @@ export default function Home() {
           />
         </Link>
         <Link href="/progress" className={styles.progressCard}>
-          <Card
+          <HomeCard
             title="進捗確認"
             description={'測定データの推移と\n詳細な統計情報を表示'}
             isBlue={false}
@@ -27,7 +27,7 @@ export default function Home() {
           />
         </Link>
         <Link href="/calendar" className={styles.calendarCard}>
-          <Card
+          <HomeCard
             title="記録管理"
             description={'日々のリハビリ記録を\nカレンダーで管理'}
             isBlue={false}
@@ -36,12 +36,12 @@ export default function Home() {
         </Link>
         {/* スマホ時のみ表示される「利用の流れ」カード */}
         <Link href="/flow" className={styles.flowCard}>
-          <Card
+          <HomeCard
             title="利用の流れ"
             description={''}
             isBlue={false}
             width={340}
-            height={100}
+            height={50}
           />
         </Link>
       </div>

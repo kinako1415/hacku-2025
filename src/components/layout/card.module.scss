@@ -74,15 +74,15 @@
   justify-content: space-between;
 }
 
-// スマホ対応（768px以下）
+// スマホ対応（768px以下）- 記録管理ページ用
 @media screen and (max-width: 768px) {
   .card {
     border-radius: 16px;
     padding-inline: 16px;
     padding-block: 12px;
     min-height: auto;
-    width: calc(50% - 6px) !important; /* インラインスタイルを上書き */
-    height: auto !important; /* インラインスタイルを上書き */
+    width: calc(50% - 6px) !important; /* 2列表示 */
+    height: auto !important;
     min-height: 100px;
   }
 
