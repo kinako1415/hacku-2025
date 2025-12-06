@@ -45,8 +45,23 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.stepsWrapper {
   max-width: 600px;
   margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stepsTitle {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0542fc;
+  margin: 0 0 24px 0;
+  text-align: center;
 }
 
 .step {
@@ -103,6 +118,24 @@
 
   .title {
     font-size: 24px;
+  }
+
+  .content {
+    display: none;
+  }
+
+  .stepsWrapper {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .stepsTitle {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .steps {
+    gap: 16px;
   }
 
   .step {
