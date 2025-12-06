@@ -107,7 +107,7 @@ export const calculateThumbAngles = (
 ): ThumbAngles => {
   // CMC-MCP-TIP の角度を計算
   const cmcMcpTipAngle = calculateAngle3D(mcp, cmc, tip);
-  
+
   return {
     flexion: cmcMcpTipAngle,
     extension: cmcMcpTipAngle,

@@ -5,7 +5,13 @@
 
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  Suspense,
+} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Hands, Results } from '@mediapipe/hands';
 import type { NormalizedLandmark } from '@mediapipe/hands';
@@ -13,9 +19,12 @@ import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculato
 
 // 互換性のためのラッパー関数
 const calculateWristAngles = (landmarks: any) => {
-  const convertedLandmarks = landmarks.map((lm: any, index: number) => ({ ...lm, id: index }));
+  const convertedLandmarks = landmarks.map((lm: any, index: number) => ({
+    ...lm,
+    id: index,
+  }));
   const domainAngles = angleCalculator.calculateWristAngles(convertedLandmarks);
-  
+
   // WristAngles (domain) から AngleData.wrist (store) に変換
   return {
     flexion: domainAngles.palmarFlexion,
@@ -114,7 +123,8 @@ const MeasurementCaptureContent: React.FC = () => {
       description: '手のひら側に手首を曲げてください',
       targetAngle: 'flexion',
       normalRange: { min: 0, max: 90 },
-      instruction: '手首を手のひら側に最大まで曲げてください（正常関節可動域 : 90°）',
+      instruction:
+        '手首を手のひら側に最大まで曲げてください（正常関節可動域 : 90°）',
     },
     {
       id: 'extension',
@@ -122,7 +132,8 @@ const MeasurementCaptureContent: React.FC = () => {
       description: '手の甲側に手首を曲げてください',
       targetAngle: 'extension',
       normalRange: { min: 0, max: 70 },
-      instruction: '手首を手の甲側に最大まで曲げてください（正常関節可動域 : 70°）',
+      instruction:
+        '手首を手の甲側に最大まで曲げてください（正常関節可動域 : 70°）',
     },
     {
       id: 'ulnarDeviation',
@@ -130,7 +141,8 @@ const MeasurementCaptureContent: React.FC = () => {
       description: '小指側に手首を曲げてください',
       targetAngle: 'ulnarDeviation',
       normalRange: { min: 0, max: 55 },
-      instruction: '手首を小指側に最大まで曲げてください（正常関節可動域 : 55°）',
+      instruction:
+        '手首を小指側に最大まで曲げてください（正常関節可動域 : 55°）',
     },
     {
       id: 'radialDeviation',
@@ -138,7 +150,8 @@ const MeasurementCaptureContent: React.FC = () => {
       description: '親指側に手首を曲げてください',
       targetAngle: 'radialDeviation',
       normalRange: { min: 0, max: 25 },
-      instruction: '手首を親指側に最大まで曲げてください（正常関節可動域 : 25°）',
+      instruction:
+        '手首を親指側に最大まで曲げてください（正常関節可動域 : 25°）',
     },
   ];
 
