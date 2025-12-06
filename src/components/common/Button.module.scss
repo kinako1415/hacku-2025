@@ -1,0 +1,145 @@
+/**
+ * ボタンコンポーネントのスタイル
+ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(5, 66, 252, 0.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+/* バリアント: primary */
+.primary {
+  background: #0542fc;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #2563eb;
+  }
+}
+
+/* バリアント: secondary */
+.secondary {
+  background: #f4f4f4;
+  color: #808080;
+
+  &:hover:not(:disabled) {
+    background: #e5e5e5;
+  }
+}
+
+/* バリアント: outline */
+.outline {
+  background: white;
+  color: #0542fc;
+  border: 2px solid #0542fc;
+
+  &:hover:not(:disabled) {
+    background: #0542fc;
+    color: white;
+  }
+}
+
+/* バリアント: disabled */
+.disabled {
+  background: #f4f4f4;
+  color: #c0c0c0;
+  cursor: not-allowed;
+  opacity: 0.6;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* サイズ: small */
+.small {
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 20px;
+  gap: 8px;
+}
+
+/* サイズ: medium */
+.medium {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 24px;
+  gap: 12px;
+}
+
+/* サイズ: large */
+.large {
+  padding: 16px 32px;
+  font-size: 18px;
+  border-radius: 28px;
+  gap: 16px;
+}
+
+/* フルウィズ */
+.fullWidth {
+  width: 100%;
+}
+
+/* アイコン */
+.iconLeft,
+.iconRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  transition: transform 0.2s ease;
+}
+
+.iconLeft {
+  .button:hover:not(:disabled) & {
+    transform: translateX(-3px);
+  }
+}
+
+.iconRight {
+  .button:hover:not(:disabled) & {
+    transform: translateX(3px);
+  }
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .button {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+
+  .large {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+
+  .small {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+}

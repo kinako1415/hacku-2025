@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
+import { Button } from '@/components/common';
 import {
   db,
   MeasurementSession as DBMeasurementSession,
@@ -110,6 +111,8 @@ interface MeasurementStep {
   instruction: string;
   description: string;
   targetAngle: number;
+  videoInstructions: string[];
+  videoPath: string;
 }
 
 /**
@@ -145,6 +148,13 @@ const measurementSteps: MeasurementStep[] = [
     description:
       '手のひらを下に向け、小指側をカメラに映してから測定を開始してください。（正常関節可動域 : 90°）',
     targetAngle: 90,
+    videoInstructions: [
+      '手のひらを下に向け、肘を曲げた姿勢で準備します',
+      '小指側がカメラに見えるように手を置きます',
+      'ゲージが表示されたら、手首を手のひら側に最大限曲げます',
+      '指が下を向くようにし、手首で90°近くまで曲げてください',
+    ],
+    videoPath: '/掌屈.mp4',
   },
   {
     id: 'dorsal-flexion',
@@ -153,6 +163,13 @@ const measurementSteps: MeasurementStep[] = [
     description:
       '手のひらを下に向け、小指側をカメラに映してから測定を開始してください。（正常関節可動域 : 70°）',
     targetAngle: 70,
+    videoInstructions: [
+      '掌屈と同じく、手のひらを下に向けて準備します',
+      '小指側がカメラに見えるように手を置きます',
+      'ゲージが表示されたら、手首を手の甲側に最大限曲げます',
+      '指が上を向くようにし、手首で70°近くまで反らせてください',
+    ],
+    videoPath: '/背屈.mp4',
   },
   {
     id: 'ulnar-deviation',
@@ -161,6 +178,13 @@ const measurementSteps: MeasurementStep[] = [
     description:
       '指が空を指すように手のひらをカメラに向けてから測定を開始してください。（正常関節可動域 : 55°）',
     targetAngle: 55,
+    videoInstructions: [
+      '手のひらをカメラに向け、指を上に伸ばします',
+      '肘を伸ばし、手首をまっすぐに保ちます',
+      'ゲージが表示されたら、手首を小指側に最大限曲げます',
+      '指先が小指側に傾くように、手首で55°近くまで曲げてください',
+    ],
+    videoPath: '/尺屈.mp4',
   },
   {
     id: 'radial-deviation',
@@ -169,6 +193,13 @@ const measurementSteps: MeasurementStep[] = [
     description:
       '指が空を指すように手のひらをカメラに向けてから測定を開始してください。（正常関節可動域 : 25°）',
     targetAngle: 25,
+    videoInstructions: [
+      '尺屈と同じく、手のひらをカメラに向けます',
+      '肘を伸ばし、手首をまっすぐに保ちます',
+      'ゲージが表示されたら、手首を親指側に最大限曲げます',
+      '指先が親指側に傾くように、手首で25°近くまで曲げてください',
+    ],
+    videoPath: '/橈屈.mp4',
   },
 ];
 
@@ -237,9 +268,9 @@ const InstructionsSection: React.FC<{
       </div>
       {/* 次へボタン - instructionsContentの外に移動 */}
       <div className={styles.instructionsNext}>
-        <button className={styles.nextButton} onClick={onNext}>
-          測定へ進む →
-        </button>
+        <Button variant="primary" onClick={onNext} icon="→">
+          測定へ進む
+        </Button>
       </div>
     </div>
   );
@@ -365,7 +396,7 @@ const MeasurementExecution: React.FC<{
       </div>
 
       {/* 指示テキスト */}
-      <div className={styles.instructionText}>
+      <div className={styles.measurementInstructions}>
         <p className={styles.mainInstruction}>{currentStep.instruction}</p>
         <p className={styles.subInstruction}>{currentStep.description}</p>
         <div className={styles.statusContainer}>
@@ -383,29 +414,29 @@ const MeasurementExecution: React.FC<{
 
       {/* コントロールボタン */}
       <div className={styles.controls}>
-        <button className={styles.stopButton} onClick={onStopMeasurement}>
+        <Button variant="outline" onClick={onStopMeasurement}>
           測定終了
-        </button>
+        </Button>
         {!setup.isPhotoTaken ? (
-          <button
-            className={styles.nextPhaseButton}
+          <Button
+            variant="primary"
             onClick={onStartCapture}
             disabled={setup.countdown !== null}
           >
             {setup.countdown !== null
               ? `測定中... ${setup.countdown}`
               : '測定を開始'}
-          </button>
+          </Button>
         ) : (
           <>
-            <button className={styles.nextPhaseButton} onClick={onRetake}>
+            <Button variant="secondary" onClick={onRetake}>
               撮り直す
-            </button>
-            <button className={styles.nextPhaseButton} onClick={onNextStep}>
+            </Button>
+            <Button variant="primary" onClick={onNextStep}>
               {setup.currentMeasurementStep < measurementSteps.length - 1
                 ? '次のフェーズ'
                 : '完了'}
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -450,13 +481,14 @@ const MeasurementInfoSection: React.FC<{
 
       {/* ボタンセクション */}
       <div className={styles.bottomSection}>
-        <button
-          className={styles.startButton}
+        <Button
+          variant={!selectedHand ? 'disabled' : 'primary'}
           onClick={onStartMeasurement}
           disabled={!selectedHand}
+          icon="→"
         >
-          測定へ進む →
-        </button>
+          測定へ進む
+        </Button>
       </div>
     </div>
   );
@@ -576,13 +608,119 @@ const MeasurementResultSection: React.FC<{
         ))}
       </div>
       <div className={styles.resultControls}>
-        <button className={styles.retryButton} onClick={onRetry}>
+        <Button variant="secondary" onClick={onRetry}>
           最初からやり直す
-        </button>
-        <button className={styles.saveButton} onClick={onSave}>
+        </Button>
+        <Button variant="primary" onClick={onSave}>
           結果を保存して終了
-        </button>
+        </Button>
       </div>
+    </div>
+  );
+};
+
+/**
+ * 操作説明モーダルコンポーネント
+ */
+const InstructionModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete?: () => void;
+  selectedHand: HandSelection | null;
+  currentMeasurementStep?: number;
+}> = ({
+  isOpen,
+  onClose,
+  onComplete,
+  selectedHand,
+  currentMeasurementStep = 0,
+}) => {
+  const [step, setStep] = useState<'intro' | 'video'>('intro');
+
+  useEffect(() => {
+    if (isOpen) {
+      // 初回（step 0）のみ導入画面を表示、2回目以降は直接説明画面へ
+      setStep(currentMeasurementStep === 0 ? 'intro' : 'video');
+    }
+  }, [isOpen, currentMeasurementStep]);
+
+  if (!isOpen) return null;
+
+  const handleNext = () => {
+    setStep('video');
+  };
+
+  const handleComplete = () => {
+    onClose();
+    if (onComplete) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      {step === 'intro' ? (
+        // 導入画面（初回のみ表示）
+        <div
+          className={styles.introContent}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.introText}>
+            <p>
+              これから{selectedHand === 'right' ? '右' : '左'}
+              手首を測定していきます。
+            </p>
+            <p>この後に説明が流れますので説明に従って</p>
+            <p>測定を行なってください</p>
+          </div>
+          <Button variant="primary" size="large" onClick={handleNext}>
+            次へ
+          </Button>
+        </div>
+      ) : (
+        // 説明オーバーレイ（Figmaデザイン準拠：オーバーレイに直接テキスト配置）
+        <div className={styles.explanationOverlay}>
+          {/* 右側に白枠の動画プレビュー */}
+          <div className={styles.previewImageWrapper}>
+            <div className={styles.previewImageBorder}>
+              {measurementSteps[currentMeasurementStep] && (
+                <video
+                  src={measurementSteps[currentMeasurementStep].videoPath}
+                  className={styles.previewVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+              )}
+            </div>
+          </div>
+
+          {/* オーバーレイに直接配置されたテキスト */}
+          <div className={styles.overlayText}>
+            {measurementSteps[currentMeasurementStep] && (
+              <>
+                <h2 className={styles.stepTitle}>
+                  step{currentMeasurementStep + 1}.{' '}
+                  {measurementSteps[currentMeasurementStep].name}
+                </h2>
+                {measurementSteps[currentMeasurementStep].videoInstructions.map(
+                  (instruction, index) => (
+                    <p key={index}>{instruction}</p>
+                  )
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 測定へ進むボタン */}
+          <div className={styles.overlayButton}>
+            <Button variant="primary" size="large" onClick={handleComplete}>
+              測定へ進む
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -597,6 +735,9 @@ const MeasurementPage: React.FC = () => {
   const [measurementResults, setMeasurementResults] = useState<
     DBMeasurementResult[]
   >([]);
+
+  // モーダル表示状態
+  const [showInstructionModal, setShowInstructionModal] = useState(false);
 
   // 測定セットアップ状態管理
   const [setup, setSetup] = useState<MeasurementSetup>({
@@ -1052,16 +1193,21 @@ const MeasurementPage: React.FC = () => {
    */
   const nextMeasurementStep = useCallback(() => {
     if (setup.currentMeasurementStep < measurementSteps.length - 1) {
+      // 測定を一旦停止してモーダル表示（測定画面は維持）
       maxAngleRef.current = 0; // 最大角度をリセット
       setSetup((prev) => ({
         ...prev,
+        isCapturing: false,
+        // currentStepは'measurement'のまま維持
         currentMeasurementStep: prev.currentMeasurementStep + 1,
         currentAngle: 0,
         baseAngle: null, // 次のステップでは基準角度をリセット
         isPhotoTaken: false,
         countdown: null,
-        isCapturing: true,
+        phase: 'preparation',
       }));
+      // モーダルを再表示
+      setShowInstructionModal(true);
     } else {
       stopMeasurement();
     }
@@ -1181,21 +1327,28 @@ const MeasurementPage: React.FC = () => {
   };
 
   /**
-   * 測定開始
+   * 測定開始（モーダル表示）
    */
   const handleStartMeasurement = () => {
     if (setup.selectedHand) {
-      console.log('測定画面に遷移します');
-      setSetup((prev) => ({
-        ...prev,
-        currentStep: 'measurement',
-        currentAngle: 0, // MediaPipeからリアルタイム取得
-        baseAngle: null, // 基準角度をリセット（最初のフレームで設定される）
-        isCapturing: true, // 最初からキャプチャを開始
-      }));
+      console.log('測定方法モーダルを表示します');
+      setShowInstructionModal(true);
     } else {
       console.log('手が選択されていません');
     }
+  };
+
+  /**
+   * モーダル完了後、実際の測定を開始
+   */
+  const handleStartActualMeasurement = () => {
+    console.log('測定画面に遷移します');
+    setSetup((prev) => ({
+      ...prev,
+      currentStep: 'measurement',
+      currentAngle: 0,
+      isCapturing: true,
+    }));
   };
 
   /**
@@ -1399,6 +1552,15 @@ const MeasurementPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* やり方確認モーダル */}
+      <InstructionModal
+        isOpen={showInstructionModal}
+        onClose={() => setShowInstructionModal(false)}
+        onComplete={handleStartActualMeasurement}
+        selectedHand={setup.selectedHand}
+        currentMeasurementStep={setup.currentMeasurementStep}
+      />
     </div>
   );
 };

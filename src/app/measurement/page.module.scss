@@ -236,16 +236,12 @@
 
   &:hover {
     border-color: #0542fc;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 
   &.selected {
     border-color: #0542fc;
     background: #0542fc;
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
   }
 }
 
@@ -570,10 +566,10 @@
   line-height: 1;
 }
 
-/* 指示テキスト */
-.instructionText {
+/* 測定実行画面の指示テキスト */
+.measurementInstructions {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .mainInstruction {
@@ -711,6 +707,28 @@
   border: 2px solid #0542fc;
 
   &:hover:not(:disabled) {
+    background: #0542fc;
+    color: white;
+  }
+}
+
+.instructionButton {
+  background: white;
+  color: #0542fc;
+  border: 2px solid #0542fc;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+  justify-content: center;
+
+  &:hover {
     background: #0542fc;
     color: white;
   }
@@ -1180,50 +1198,11 @@
   display: flex;
   gap: 16px;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: 16px;
+  flex-wrap: wrap;
 }
 
-.stopButton {
-  padding: 12px 24px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background: #dc2626;
-  }
-
-  &:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-  }
-}
-
-.nextPhaseButton {
-  padding: 12px 24px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background: #2563eb;
-  }
-
-  &:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-  }
-}
+/* 古いボタンスタイルは削除済み - Buttonコンポーネントを使用 */
 
 /* 測定結果セクション */
 .resultSection {
@@ -1304,5 +1283,545 @@
 
   &:hover {
     background: #2563eb;
+  }
+}
+
+/* やり方確認モーダル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 856px;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+}
+
+/* 2カラムレイアウト */
+.demoContainer {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1460px;
+  height: auto; /* Allow height to adjust */
+  min-height: 600px;
+  max-height: 90vh; /* Limit height to viewport */
+  animation: slideUp 0.3s ease;
+  padding: 0;
+  position: relative;
+  z-index: 1001;
+}
+
+.demoLeft {
+  flex: 0 0 50%; /* Use percentage for responsiveness */
+  max-width: 735px;
+  background: #ffffff;
+  border-radius: 36px;
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.demoRight {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ステップバッジ */
+.stepBadges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.stepBadge {
+  border: 1px solid #0542fc;
+  color: #0542fc;
+  background: white;
+  padding: 6px 16px;
+  border-radius: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:first-child {
+    background: #0542fc;
+    color: white;
+  }
+
+  &.stepBadgeActive {
+    background: #0542fc;
+    color: white;
+  }
+}
+
+/* 現在のステップ表示 */
+.currentStepTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #494949;
+  margin: 0;
+  text-align: center;
+}
+
+.stepNumber {
+  color: #0542fc;
+}
+
+/* メイン説明テキスト */
+.mainInstructions {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Center horizontally */
+  gap: 8px;
+  width: 100%; /* Ensure full width */
+
+  p {
+    font-size: 20px;
+    font-weight: 800;
+    color: #000000; /* Explicit black */
+    margin: 0;
+    line-height: 1.4;
+    position: relative; /* Ensure visibility */
+    z-index: 1;
+  }
+}
+
+.cameraNote {
+  font-size: 15px;
+  font-weight: 500;
+  color: #000;
+  text-align: center;
+  margin: 0;
+}
+
+.startButtonWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+/* ビデオフレーム */
+.videoFrame {
+  width: 100%;
+  max-width: 686px;
+  height: auto;
+  aspect-ratio: 3/4; /* Maintain aspect ratio */
+  border: 18px solid white;
+  border-radius: 21px;
+  overflow: hidden;
+  background: #e5e7eb;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.videoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* 説明オーバーレイ（Figmaデザイン準拠） */
+.explanationOverlay {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlayButton {
+  position: absolute;
+  right: 24%;
+  z-index: 20;
+
+  /* タブレット対応 */
+  @media (max-width: 1024px) {
+    bottom: 8%;
+  }
+
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 24px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.previewImageWrapper {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 686px;
+  height: 853px;
+}
+
+.previewImageBorder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 18px solid white;
+  border-radius: 21px;
+  overflow: hidden;
+}
+
+.previewImage {
+  object-fit: cover;
+}
+
+.previewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlayText {
+  position: absolute;
+  left: 3%;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: left;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.5;
+  z-index: 10;
+  pointer-events: none;
+  max-width: 46%;
+
+  .stepTitle {
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+
+  p {
+    margin: 0;
+    margin-bottom: 16px;
+    color: #ffffff;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* タブレット対応 */
+  @media (max-width: 1024px) {
+    left: 5%;
+    font-size: 20px;
+    max-width: 55%;
+    line-height: 1.4;
+
+    .stepTitle {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      margin-bottom: 12px;
+    }
+  }
+
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    left: 5%;
+    top: 20%;
+    transform: none;
+    font-size: 16px;
+    max-width: 90%;
+    line-height: 1.4;
+
+    .stepTitle {
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    p {
+      margin-bottom: 10px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    max-width: 95%;
+
+    .stepTitle {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+.overlayButton {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+
+  /* タブレット対応 */
+  @media (max-width: 1024px) {
+    bottom: 8%;
+  }
+
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 24px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.previewImageWrapper {
+  /* タブレット対応 */
+  @media (max-width: 1024px) {
+    width: 500px;
+    height: 622px;
+    right: 8px;
+  }
+
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    position: relative;
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 686 / 853;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin: 0 auto;
+    margin-top: 60%;
+  }
+
+  @media (max-width: 480px) {
+    width: 95%;
+    max-width: 300px;
+  }
+}
+
+.previewImageBorder {
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    border: 12px solid white;
+  }
+
+  @media (max-width: 480px) {
+    border: 8px solid white;
+  }
+}
+
+.explanationOverlay {
+  /* モバイル対応 */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    overflow-y: auto;
+  }
+}
+
+/* 導入画面 */
+.introContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  animation: fadeIn 0.5s ease;
+}
+
+.introText {
+  text-align: center;
+  color: white;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin-bottom: 40px;
+
+  p {
+    margin: 0;
+    color: white;
+  }
+}
+
+.nextButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 説明テキスト */
+.instructionText {
+  color: white;
+  max-width: 700px;
+  margin: 0 auto 32px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0 20px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+.videoTitle {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: white;
+}
+
+.phaseSection {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.phaseTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #87acff;
+  margin: 0 0 12px 0;
+}
+
+.instructionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    font-size: 16px;
+    line-height: 1.8;
+    color: white;
+    padding-left: 24px;
+    position: relative;
+    margin-bottom: 8px;
+
+    &::before {
+      content: '•';
+      position: absolute;
+      left: 8px;
+      color: #87acff;
+      font-size: 20px;
+    }
+  }
+}
+
+/* 測定開始ボタン */
+.startMeasurementButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
