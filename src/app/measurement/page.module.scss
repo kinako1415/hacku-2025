@@ -1002,6 +1002,12 @@
   .instructionsNext {
     width: 100%;
   }
+
+  /* 測定用キャンバスの位置調整 */
+  .measurementCanvas {
+    left: 0 !important;
+    width: 100% !important;
+  }
 }
 
 /* 測定実行時のビデオコンテナ */
