@@ -107,6 +107,7 @@ export const DEFAULT_MEASUREMENT_CONFIG: MeasurementConfig = {
   targetHand: 'auto', // 自動検出
 };
 
+
 /**
  * 測定サービスクラス
  */
