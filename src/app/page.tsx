@@ -34,9 +34,9 @@ export default function Home() {
           />
         </Link>
       </div>
-      <Link 
-        href="/assets/homeDescription.svg" 
-        target="_blank" 
+      <Link
+        href="/assets/homeDescription.svg"
+        target="_blank"
         rel="noopener noreferrer"
         className={styles.flowLink}
       >
