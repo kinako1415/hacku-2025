@@ -125,6 +125,7 @@ interface MeasurementSetup {
   currentStep: DisplayStep;
   currentMeasurementStep: number;
   currentAngle: number;
+  baseAngle: number | null; // 測定開始時の基準角度
   phase: MeasurementPhase;
   sessionId: string | null;
   mediaPipeReady: boolean;
@@ -601,6 +602,7 @@ const MeasurementPage: React.FC = () => {
     currentStep: 'instructions',
     currentMeasurementStep: 0,
     currentAngle: 0,
+    baseAngle: null, // 測定開始時の基準角度
     phase: 'preparation',
     sessionId: null,
     mediaPipeReady: false,
@@ -746,17 +748,30 @@ const MeasurementPage: React.FC = () => {
         return;
       }
 
-      const angle = calculateWristAngle(landmarks, currentStep.id);
+      const rawAngle = calculateWristAngle(landmarks, currentStep.id);
 
       const now = performance.now();
       if (now - lastAngleUpdateRef.current > 100) {
-        setSetup((prev) => ({
-          ...prev,
-          currentAngle: Math.round(angle),
-        }));
+        setSetup((prev) => {
+          // 基準角度が未設定の場合、現在の角度を基準として設定
+          const baseAngle = prev.baseAngle !== null ? prev.baseAngle : rawAngle;
+
+          // 相対角度を計算（基準角度からの変化量の絶対値）
+          const relativeAngle = Math.abs(rawAngle - baseAngle);
+
+          return {
+            ...prev,
+            baseAngle,
+            currentAngle: Math.round(relativeAngle),
+          };
+        });
         lastAngleUpdateRef.current = now;
 
-        saveMeasurementToDatabase(angle, landmarks);
+        // データベースには相対角度を保存
+        const baseAngle = setupRef.current.baseAngle;
+        const relativeAngle =
+          baseAngle !== null ? Math.abs(rawAngle - baseAngle) : 0;
+        saveMeasurementToDatabase(relativeAngle, landmarks);
       }
     },
     [drawLandmarks, saveMeasurementToDatabase]
@@ -1004,6 +1019,7 @@ const MeasurementPage: React.FC = () => {
         ...prev,
         currentMeasurementStep: prev.currentMeasurementStep + 1,
         currentAngle: 0,
+        baseAngle: null, // 次のステップでは基準角度をリセット
         isPhotoTaken: false,
         countdown: null,
         isCapturing: true,
@@ -1136,6 +1152,7 @@ const MeasurementPage: React.FC = () => {
         ...prev,
         currentStep: 'measurement',
         currentAngle: 0, // MediaPipeからリアルタイム取得
+        baseAngle: null, // 基準角度をリセット（最初のフレームで設定される）
         isCapturing: true, // 最初からキャプチャを開始
       }));
     } else {
@@ -1156,8 +1173,14 @@ const MeasurementPage: React.FC = () => {
       clearInterval(countdownIntervalRef.current);
     }
 
-    // カウントダウン
-    setSetup((prev) => ({ ...prev, countdown: 3, isCapturing: true }));
+    // カウントダウン開始時に0点調整（基準角度をリセット）
+    setSetup((prev) => ({
+      ...prev,
+      countdown: 3,
+      isCapturing: true,
+      baseAngle: null, // 基準角度をリセットして0点調整
+      currentAngle: 0,
+    }));
 
     countdownIntervalRef.current = setInterval(() => {
       setSetup((prev) => {
@@ -1188,6 +1211,7 @@ const MeasurementPage: React.FC = () => {
       isPhotoTaken: false,
       countdown: null,
       currentAngle: 0,
+      baseAngle: null, // 基準角度をリセット
       isCapturing: true,
     }));
   };
@@ -1241,6 +1265,7 @@ const MeasurementPage: React.FC = () => {
       currentStep: 'instructions',
       currentMeasurementStep: 0,
       currentAngle: 0,
+      baseAngle: null, // 基準角度をリセット
       phase: 'preparation',
       sessionId: null,
       mediaPipeReady: false,
