@@ -73,3 +73,42 @@
   align-items: center;
   justify-content: space-between;
 }
+
+/* スマホ用レイアウト */
+@media (max-width: 768px) {
+  .card {
+    width: 100% !important;
+  }
+
+  .cardTitle {
+    font-size: 40px;
+  }
+
+  .cardTitle.improvements {
+    font-size: 24px !important;
+  }
+
+  .cardDescription {
+    font-size: 16px;
+  }
+
+  .cardDescription.improvements {
+    font-size: 40px !important;
+  }
+
+  .cardRole {
+    font-size: 28px;
+  }
+
+  .cardArrow {
+    top: 20px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+
+    svg {
+      width: 40px;
+      height: 40px;
+    }
+  }
+}
