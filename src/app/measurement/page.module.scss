@@ -148,7 +148,7 @@
 /* 説明セクションの次へボタン */
 .instructionsNext {
   display: flex;
-  justify-content: right;
+  justify-content: flex-end;
   width: 100%;
 }
 
@@ -677,7 +677,7 @@
 /* 下部セクション */
 .bottomSection {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   gap: 16px;
   position: relative;
   background: white;

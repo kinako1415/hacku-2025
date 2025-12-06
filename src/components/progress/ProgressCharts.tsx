@@ -122,16 +122,16 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
     switch (selectedChart) {
       case 'angle':
         return filteredMeasurements.map((m) => ({
-          date: m.createdAt.toISOString().split('T')[0],
-          value: m.wristFlexionAngle || 0,
-          label: `${Math.round(m.wristFlexionAngle || 0)}°`,
+          date: m.createdAt.toISOString().split('T')[0]!,
+          value: m.wristFlexion || 0,
+          label: `${Math.round(m.wristFlexion || 0)}°`,
         }));
 
       case 'accuracy':
         return filteredMeasurements.map((m) => ({
-          date: m.createdAt.toISOString().split('T')[0],
-          value: m.accuracy * 100,
-          label: `${Math.round(m.accuracy * 100)}%`,
+          date: m.createdAt.toISOString().split('T')[0]!,
+          value: m.accuracyScore * 100,
+          label: `${Math.round(m.accuracyScore * 100)}%`,
         }));
 
       case 'completion':
@@ -165,14 +165,13 @@ export const ProgressCharts: React.FC<ProgressChartsProps> = ({
         return filteredRecords
           .filter((r) => r.performanceLevel !== undefined)
           .map((r) => {
-            const dateKey = r.recordDate.toISOString().split('T')[0];
+            const dateKey = r.recordDate.toISOString().split('T')[0]!;
             return {
               date: dateKey,
               value: r.performanceLevel!,
               label: `レベル ${r.performanceLevel}`,
             };
-          })
-          .filter((item): item is DataPoint => Boolean(item.date)); // 型ガードでundefinedを除外
+          });
 
       default:
         return [];

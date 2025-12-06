@@ -4,7 +4,7 @@
  */
 
 import { CalendarRepository } from '@/core/domain/repositories/calendar-repository';
-import { CalendarRecord } from '@/shared/types/common';
+import { CalendarRecord, PainLevel, MotivationLevel, PerformanceLevel } from '@/lib/data-manager/models/calendar-record';
 
 /**
  * メモ保存の入力パラメータ
@@ -13,9 +13,9 @@ export interface SaveMemoInput {
   userId: string;
   recordDate: string; // YYYY-MM-DD形式
   memo: string;
-  painLevel?: number;
-  motivationLevel?: number;
-  performanceLevel?: number;
+  painLevel?: PainLevel;
+  motivationLevel?: MotivationLevel;
+  performanceLevel?: PerformanceLevel;
 }
 
 /**
@@ -42,31 +42,41 @@ export class SaveMemoUseCase {
       const updated: CalendarRecord = {
         ...existing,
         notes: input.memo,
-        painLevel: input.painLevel ?? existing.painLevel,
-        motivationLevel: input.motivationLevel ?? existing.motivationLevel,
-        performanceLevel: input.performanceLevel ?? existing.performanceLevel,
-        updatedAt: Date.now(),
+        updatedAt: new Date(),
       };
+      
+      // オプショナルフィールドは値が存在する場合のみ設定
+      if (input.painLevel !== undefined) {
+        updated.painLevel = input.painLevel;
+      }
+      if (input.motivationLevel !== undefined) {
+        updated.motivationLevel = input.motivationLevel;
+      }
+      if (input.performanceLevel !== undefined) {
+        updated.performanceLevel = input.performanceLevel;
+      }
 
       await this.calendarRepo.update(updated);
       return updated;
     } else {
-      // 新規記録を作成
-      const newRecord: CalendarRecord = {
+      // 新規記録を作成 - recordDateを文字列からDateに変換
+      const recordDate = new Date(input.recordDate + 'T00:00:00.000Z');
+      
+      const newRecord: Omit<CalendarRecord, 'id'> = {
         userId: input.userId,
-        recordDate: input.recordDate,
+        recordDate,
         rehabCompleted: false,
         measurementCompleted: false,
         painLevel: input.painLevel ?? 3,
         motivationLevel: input.motivationLevel ?? 3,
         performanceLevel: input.performanceLevel ?? 3,
         notes: input.memo,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
-      const id = await this.calendarRepo.save(newRecord);
-      return { ...newRecord, id };
+      const id = await this.calendarRepo.save(newRecord as CalendarRecord);
+      return { ...newRecord, id } as CalendarRecord;
     }
   }
 }

@@ -14,7 +14,15 @@ import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculato
 // 互換性のためのラッパー関数
 const calculateWristAngles = (landmarks: any) => {
   const convertedLandmarks = landmarks.map((lm: any, index: number) => ({ ...lm, id: index }));
-  return angleCalculator.calculateWristAngles(convertedLandmarks);
+  const domainAngles = angleCalculator.calculateWristAngles(convertedLandmarks);
+  
+  // WristAngles (domain) から AngleData.wrist (store) に変換
+  return {
+    flexion: domainAngles.palmarFlexion,
+    extension: domainAngles.dorsalFlexion,
+    radialDeviation: domainAngles.radialDeviation,
+    ulnarDeviation: domainAngles.ulnarDeviation,
+  };
 };
 
 const calculateThumbAngles = (landmarks: any) => {

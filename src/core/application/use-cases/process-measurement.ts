@@ -54,10 +54,19 @@ export class ProcessMeasurementUseCase {
     );
 
     // 角度計算結果を取得（信頼度付き）
+    // ランドマーク0, 5, 9が存在することを確認
+    const landmark0 = input.landmarks[0];
+    const landmark5 = input.landmarks[5];
+    const landmark9 = input.landmarks[9];
+    
+    if (!landmark0 || !landmark5 || !landmark9) {
+      throw new Error('必要なランドマークが見つかりません');
+    }
+    
     const angleResult = angleCalculator.calculateAngle3Points(
-      input.landmarks[0],
-      input.landmarks[5],
-      input.landmarks[9]
+      landmark0,
+      landmark5,
+      landmark9
     );
 
     // 目標角度を取得

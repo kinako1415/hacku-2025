@@ -23,7 +23,7 @@ interface RecordDetailProps {
   onSave: (
     data: CreateCalendarRecordInput | UpdateCalendarRecordInput
   ) => Promise<void>;
-  onDelete?: (recordId: string) => Promise<void>;
+  onDelete?: (recordId: number) => Promise<void>;
   onClose?: () => void;
   isLoading?: boolean;
   className?: string;
@@ -186,7 +186,7 @@ export const RecordDetail: React.FC<RecordDetailProps> = ({
    * 削除処理
    */
   const handleDelete = async (): Promise<void> => {
-    if (record && onDelete && window.confirm('この記録を削除しますか？')) {
+    if (record && record.id !== undefined && onDelete && window.confirm('この記録を削除しますか？')) {
       try {
         await onDelete(record.id);
       } catch (error) {

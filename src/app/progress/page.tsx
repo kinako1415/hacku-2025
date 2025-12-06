@@ -16,7 +16,6 @@ import { MotionChartsContainer } from '@/components/progress/MotionChartsContain
 import type { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import type { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 import styles from './page.module.scss';
-import { tr } from 'zod/locales';
 
 /**
  * 開発者用設定: サンプルデータを強制使用するかどうか

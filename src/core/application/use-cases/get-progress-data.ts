@@ -57,8 +57,8 @@ export class GetProgressDataUseCase {
       return this.createDefaultProgressData(input.userId, input.analysisPeriod);
     }
 
-    // 統計情報を計算
-    const angles = measurements.map((m) => m.angleValue);
+    // 統計情報を計算 - wristFlexionを主要な角度指標として使用
+    const angles = measurements.map((m) => m.wristFlexion);
     const averageAngle = this.average(angles);
     const maxAngle = Math.max(...angles);
     const minAngle = Math.min(...angles);

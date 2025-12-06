@@ -7,8 +7,8 @@ import { db } from '@/lib/data-manager/database';
 import {
   MeasurementSession,
   MeasurementResult,
-  MotionMeasurement,
 } from '@/core/domain/types/measurement';
+import { MotionMeasurement } from '@/lib/data-manager/models/motion-measurement';
 import {
   MeasurementRepository,
   MeasurementResultRepository,
@@ -22,14 +22,35 @@ export class DexieMeasurementRepository implements MeasurementRepository {
   async save(session: MeasurementSession): Promise<void> {
     // DexieのテーブルにはIndexedDBのauto-incrementをid使用するため、
     // sessionIdは別フィールドとして保存
+    // Note: このメソッドはMeasurementSessionを保存するが、実際のテーブルは
+    // MotionMeasurement型を期待している。Phase 2.3で完全実装予定。
     await db.measurements.add({
       userId: session.userId,
-      measurementDate: session.startTime.getTime(),
+      measurementDate: session.startTime,
       handUsed: session.hand,
-      angleValue: 0, // セッション開始時は0
-      accuracy: 0,
-      createdAt: session.startTime.getTime(),
-    });
+      // 以下はMotionMeasurement型に必要な最小限のプロパティ
+      wristFlexion: 0,
+      wristExtension: 0,
+      wristUlnarDeviation: 0,
+      wristRadialDeviation: 0,
+      thumbFlexion: 0,
+      thumbExtension: 0,
+      thumbAdduction: 0,
+      thumbAbduction: 0,
+      accuracyScore: 0,
+      comparisonResult: {
+        wristFlexion: { status: 'normal', within_range: true },
+        wristExtension: { status: 'normal', within_range: true },
+        wristUlnarDeviation: { status: 'normal', within_range: true },
+        wristRadialDeviation: { status: 'normal', within_range: true },
+        thumbFlexion: { status: 'normal', within_range: true },
+        thumbExtension: { status: 'normal', within_range: true },
+        thumbAdduction: { status: 'normal', within_range: true },
+        thumbAbduction: { status: 'normal', within_range: true },
+        overallStatus: 'normal',
+      },
+      createdAt: session.startTime,
+    } as any); // 型アサーションで一時的に回避
   }
 
   async findById(sessionId: string): Promise<MeasurementSession | null> {
@@ -60,8 +81,8 @@ export class DexieMeasurementRepository implements MeasurementRepository {
       .equals(userId)
       .and(
         (m) =>
-          m.measurementDate >= startDate.getTime() &&
-          m.measurementDate <= endDate.getTime()
+          m.measurementDate >= startDate &&
+          m.measurementDate <= endDate
       )
       .toArray();
 
@@ -113,15 +134,8 @@ export class DexieMotionMeasurementRepository
   implements MotionMeasurementRepository
 {
   async save(measurement: MotionMeasurement): Promise<number> {
-    const id = await db.measurements.add({
-      userId: measurement.userId,
-      measurementDate: measurement.measurementDate,
-      handUsed: measurement.handUsed,
-      angleValue: measurement.angleValue,
-      accuracy: measurement.accuracy,
-      createdAt: measurement.createdAt,
-    });
-    return id;
+    const id = await db.measurements.add(measurement);
+    return id as number;
   }
 
   async findById(id: number): Promise<MotionMeasurement | null> {
@@ -149,10 +163,14 @@ export class DexieMotionMeasurementRepository
     startDate: number,
     endDate: number
   ): Promise<MotionMeasurement[]> {
+    // number timestamp を Date に変換
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
     const measurements = await db.measurements
       .where('userId')
       .equals(userId)
-      .and((m) => m.measurementDate >= startDate && m.measurementDate <= endDate)
+      .and((m) => m.measurementDate >= start && m.measurementDate <= end)
       .toArray();
 
     return measurements;

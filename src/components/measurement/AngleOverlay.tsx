@@ -16,7 +16,15 @@ import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculato
 // 互換性のためのラッパー関数
 const calculateWristAngles = (landmarks: any) => {
   const convertedLandmarks = landmarks.map((lm: any, index: number) => ({ ...lm, id: index }));
-  return angleCalculator.calculateWristAngles(convertedLandmarks);
+  const domainAngles = angleCalculator.calculateWristAngles(convertedLandmarks);
+  
+  // WristAngles (domain) から AngleData.wrist (store) に変換
+  return {
+    flexion: domainAngles.palmarFlexion,
+    extension: domainAngles.dorsalFlexion,
+    radialDeviation: domainAngles.radialDeviation,
+    ulnarDeviation: domainAngles.ulnarDeviation,
+  };
 };
 
 const calculateThumbAngles = (landmarks: any) => {
@@ -155,14 +163,16 @@ export const AngleOverlay = forwardRef<HTMLCanvasElement, AngleOverlayProps>(
         ctx.lineWidth = 2;
 
         connections.forEach(([start, end]) => {
-          const startPoint = landmarks[start];
-          const endPoint = landmarks[end];
+          if (start !== undefined && end !== undefined) {
+            const startPoint = landmarks[start];
+            const endPoint = landmarks[end];
 
-          if (startPoint && endPoint) {
-            ctx.beginPath();
-            ctx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
-            ctx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
-            ctx.stroke();
+            if (startPoint && endPoint) {
+              ctx.beginPath();
+              ctx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
+              ctx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
+              ctx.stroke();
+            }
           }
         });
       },
@@ -310,6 +320,14 @@ export const AngleOverlay = forwardRef<HTMLCanvasElement, AngleOverlayProps>(
         ) {
           const landmarks = results.multiHandLandmarks[0];
 
+          // null チェック
+          if (!landmarks) {
+            if (onAnglesUpdate) {
+              onAnglesUpdate(null);
+            }
+            return;
+          }
+
           // 手のランドマークを描画
           drawHandLandmarks(ctx, landmarks, canvas.width, canvas.height);
 
@@ -413,6 +431,7 @@ export const AngleOverlay = forwardRef<HTMLCanvasElement, AngleOverlayProps>(
           window.removeEventListener('resize', handleResize);
         };
       }
+      return undefined;
     }, [videoElement, resizeCanvas]);
 
     return (

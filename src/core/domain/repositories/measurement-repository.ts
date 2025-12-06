@@ -99,27 +99,27 @@ export interface MeasurementResultRepository {
 }
 
 /**
- * 測定データリポジトリ（IndexedDB用）
+ * 測定データリポジトリインターフェース（IndexedDB用）
  */
 export interface MotionMeasurementRepository {
   /**
    * 測定データを保存
    * @param measurement 測定データ
-   * @returns 保存されたデータのID
+   * @returns 保存されたレコードのID
    */
-  save(measurement: MotionMeasurement): Promise<number>;
+  save(measurement: import('@/lib/data-manager/models/motion-measurement').MotionMeasurement): Promise<number>;
 
   /**
    * IDで測定データを取得
-   * @param id 測定データID
+   * @param id レコードID
    * @returns 測定データ（存在しない場合はnull）
    */
-  findById(id: number): Promise<MotionMeasurement | null>;
+  findById(id: number): Promise<import('@/lib/data-manager/models/motion-measurement').MotionMeasurement | null>;
 
   /**
    * ユーザーIDで測定データを取得
    * @param userId ユーザーID
-   * @param limit 取得件数上限
+   * @param limit 取得件数
    * @param offset オフセット
    * @returns 測定データ配列
    */
@@ -127,24 +127,24 @@ export interface MotionMeasurementRepository {
     userId: string,
     limit?: number,
     offset?: number
-  ): Promise<MotionMeasurement[]>;
+  ): Promise<import('@/lib/data-manager/models/motion-measurement').MotionMeasurement[]>;
 
   /**
    * 日付範囲で測定データを取得
    * @param userId ユーザーID
-   * @param startDate 開始日時（timestamp）
-   * @param endDate 終了日時（timestamp）
+   * @param startDate 開始日（タイムスタンプ）
+   * @param endDate 終了日（タイムスタンプ）
    * @returns 測定データ配列
    */
   findByDateRange(
     userId: string,
     startDate: number,
     endDate: number
-  ): Promise<MotionMeasurement[]>;
+  ): Promise<import('@/lib/data-manager/models/motion-measurement').MotionMeasurement[]>;
 
   /**
    * 測定データを削除
-   * @param id 測定データID
+   * @param id レコードID
    */
   delete(id: number): Promise<void>;
 
@@ -155,9 +155,9 @@ export interface MotionMeasurementRepository {
   deleteByUserId(userId: string): Promise<void>;
 
   /**
-   * 測定データ総数を取得
+   * 測定データ数を取得
    * @param userId ユーザーID（省略時は全ユーザー）
-   * @returns 測定データ総数
+   * @returns データ数
    */
   count(userId?: string): Promise<number>;
 }

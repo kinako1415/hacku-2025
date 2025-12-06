@@ -4,7 +4,7 @@
  */
 
 import { db } from '@/lib/data-manager/database';
-import { CalendarRecord } from '@/shared/types/common';
+import { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 import { CalendarRepository } from '@/core/domain/repositories/calendar-repository';
 
 /**
@@ -12,19 +12,31 @@ import { CalendarRepository } from '@/core/domain/repositories/calendar-reposito
  */
 export class DexieCalendarRepository implements CalendarRepository {
   async save(record: CalendarRecord): Promise<number> {
-    const id = await db.records.add({
+    const dataToSave: any = {
       userId: record.userId,
       recordDate: record.recordDate,
       rehabCompleted: record.rehabCompleted,
       measurementCompleted: record.measurementCompleted,
-      painLevel: record.painLevel,
-      motivationLevel: record.motivationLevel,
-      performanceLevel: record.performanceLevel,
-      notes: record.notes,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
-    });
-    return id;
+    };
+    
+    // オプショナルフィールドは値が存在する場合のみ含める
+    if (record.painLevel !== undefined) {
+      dataToSave.painLevel = record.painLevel;
+    }
+    if (record.motivationLevel !== undefined) {
+      dataToSave.motivationLevel = record.motivationLevel;
+    }
+    if (record.performanceLevel !== undefined) {
+      dataToSave.performanceLevel = record.performanceLevel;
+    }
+    if (record.notes !== undefined) {
+      dataToSave.notes = record.notes;
+    }
+    
+    const id = await db.records.add(dataToSave);
+    return id as number;
   }
 
   async findById(id: number): Promise<CalendarRecord | null> {
@@ -64,10 +76,14 @@ export class DexieCalendarRepository implements CalendarRepository {
     startDate: string,
     endDate: string
   ): Promise<CalendarRecord[]> {
+    // 文字列の日付をDateオブジェクトに変換して比較
+    const start = new Date(startDate + 'T00:00:00.000Z');
+    const end = new Date(endDate + 'T23:59:59.999Z');
+    
     const records = await db.records
       .where('userId')
       .equals(userId)
-      .and((r) => r.recordDate >= startDate && r.recordDate <= endDate)
+      .and((r) => r.recordDate >= start && r.recordDate <= end)
       .toArray();
 
     return records;

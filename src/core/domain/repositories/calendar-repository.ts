@@ -3,7 +3,7 @@
  * クリーンアーキテクチャ: ドメイン層
  */
 
-import { CalendarRecord } from '@/shared/types/common';
+import { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 
 /**
  * カレンダー記録リポジトリ

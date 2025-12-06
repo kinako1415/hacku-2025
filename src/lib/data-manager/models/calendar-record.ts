@@ -8,7 +8,7 @@ export type PainLevel = 1 | 2 | 3 | 4 | 5; // 1=痛みなし, 5=激痛
 export type MotivationLevel = 1 | 2 | 3 | 4 | 5; // 1=低い, 5=高い
 
 export interface CalendarRecord {
-  id: string; // UUID
+  id?: number; // Dexie auto-increment ID
   userId: string; // User.id参照
   recordDate: Date; // 記録対象日（YYYY-MM-DD形式）
 
@@ -172,7 +172,7 @@ export const createCalendarRecord = (
   const now = new Date();
 
   const record: CalendarRecord = {
-    id: crypto.randomUUID(),
+    // id is omitted - Dexie will auto-assign
     userId: input.userId,
     recordDate: input.recordDate,
     rehabCompleted: input.rehabCompleted,

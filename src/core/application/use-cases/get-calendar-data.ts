@@ -4,7 +4,7 @@
  */
 
 import { CalendarRepository } from '@/core/domain/repositories/calendar-repository';
-import { CalendarRecord } from '@/shared/types/common';
+import { CalendarRecord } from '@/lib/data-manager/models/calendar-record';
 
 /**
  * カレンダーデータ取得の入力パラメータ

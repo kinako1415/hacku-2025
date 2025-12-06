@@ -85,7 +85,6 @@ const generateSampleCalendarRecords = (): CalendarRecord[] => {
       const progress = (30 - i) / 30;
 
       const recordData: CalendarRecord = {
-        id: `record-${i}`,
         userId: 'sample-user',
         recordDate: recordDate,
         rehabCompleted: Math.random() > 0.15, // 85%の完了率
