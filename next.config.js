@@ -5,7 +5,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // ビルド時の型チェックは実施
+    // ビルド時の型チェックを実施
     ignoreBuildErrors: false,
   },
   sassOptions: {

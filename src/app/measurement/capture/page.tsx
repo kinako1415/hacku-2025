@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Hands, Results } from '@mediapipe/hands';
 import type { NormalizedLandmark } from '@mediapipe/hands';
@@ -89,7 +89,8 @@ interface DetectionArea {
   height: number;
 }
 
-const MeasurementCapturePage: React.FC = () => {
+// useSearchParams()を使用する内部コンポーネント
+const MeasurementCaptureContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedHand = (searchParams?.get('hand') as HandType) || 'right';
@@ -629,6 +630,15 @@ const MeasurementCapturePage: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Suspenseで囲んでexport
+const MeasurementCapturePage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>読み込み中...</div>}>
+      <MeasurementCaptureContent />
+    </Suspense>
   );
 };
 

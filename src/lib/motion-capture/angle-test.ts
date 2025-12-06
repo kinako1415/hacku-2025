@@ -8,7 +8,7 @@ import {
   calculateThumbAngles,
   type WristAngles,
   type ThumbAngles,
-} from '@/lib/motion-capture/angle-calculator';
+} from '@/lib/mediapipe/angle-calculator';
 
 /**
  * テスト用ランドマークデータ

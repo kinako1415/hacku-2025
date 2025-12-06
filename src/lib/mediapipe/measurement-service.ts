@@ -102,7 +102,7 @@ export interface MeasurementCallbacks {
 export const DEFAULT_MEASUREMENT_CONFIG: MeasurementConfig = {
   measurementDuration: 10, // 10秒間測定
   samplingRate: 10, // 10Hz（0.1秒間隔）
-  confidenceThreshold: ANGLE_CONFIDENCE_THRESHOLDS.MEDIUM,
+  confidenceThreshold: ANGLE_CONFIDENCE_THRESHOLDS.medium,
   stabilizationTime: 2, // 2秒間の安定化時間
   targetHand: 'auto', // 自動検出
 };
@@ -290,7 +290,7 @@ export class MeasurementService {
       // 現在の角度更新
       if (
         angles &&
-        angles.overallConfidence >= this.config.confidenceThreshold
+        (angles.overallConfidence ?? 0) >= this.config.confidenceThreshold
       ) {
         this.currentSession.currentAngles = angles;
       }
@@ -376,6 +376,7 @@ export class MeasurementService {
       return {
         wrist: wristAngles,
         thumb: thumbAngles,
+        timestamp: Date.now(),
         overallConfidence,
       };
     } catch (error) {
@@ -492,10 +493,10 @@ export class MeasurementService {
         thumbLandmarks.tip
       );
 
-      flexion = thumbAngle;
-      extension = thumbAngle;
-      adduction = thumbAngle;
-      abduction = thumbAngle;
+      flexion = thumbAngle.flexion;
+      extension = thumbAngle.extension;
+      adduction = thumbAngle.adduction;
+      abduction = thumbAngle.abduction;
     }
 
     return {
@@ -587,6 +588,7 @@ export class MeasurementService {
         adduction: avgThumbAdduction,
         abduction: avgThumbAbduction,
       },
+      timestamp: Date.now(),
       overallConfidence: this.calculateOverallConfidence(
         {
           flexion: avgWristFlexion,
@@ -677,7 +679,7 @@ export class MeasurementService {
       thumbAdduction: averageAngles.thumb.adduction.angle,
       thumbAbduction: averageAngles.thumb.abduction.angle,
 
-      accuracyScore: averageAngles.overallConfidence,
+      accuracyScore: averageAngles.overallConfidence ?? 0,
       sampleCount: validSamples.length,
       measurementDuration:
         (Date.now() - this.currentSession.startTime.getTime()) / 1000,
