@@ -7,6 +7,9 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .cardWrapper {
@@ -16,4 +19,43 @@
 
 .cardWrapper a {
   text-decoration: none;
+}
+
+// 利用の流れリンク
+.flowLink {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// スマホ対応（768px以下）
+@media screen and (max-width: 768px) {
+  .homePage {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    padding: 80px 16px 100px;
+    min-height: 100vh;
+    justify-content: flex-start;
+  }
+
+  .cardWrapper {
+    flex-direction: column;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .flowLink {
+    width: 100%;
+    max-width: 340px;
+    
+    img {
+      width: 100% !important;
+      height: auto !important;
+    }
+  }
 }

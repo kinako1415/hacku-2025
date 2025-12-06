@@ -34,7 +34,14 @@ export default function Home() {
           />
         </Link>
       </div>
-      <Image src={icon} alt="Top Illustration" width={1060} height={220} />
+      <Link 
+        href="/assets/homeDescription.svg" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className={styles.flowLink}
+      >
+        <Image src={icon} alt="利用の流れ" width={1060} height={220} />
+      </Link>
     </div>
   );
 }
