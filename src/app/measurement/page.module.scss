@@ -735,8 +735,9 @@
 @media (max-width: 768px) {
   .measurementPage {
     margin: 0;
-    height: 100vh;
-    padding: 16px;
+    height: auto;
+    min-height: 100vh;
+    padding: 16px 16px 100px 16px;
     box-sizing: border-box;
   }
 
