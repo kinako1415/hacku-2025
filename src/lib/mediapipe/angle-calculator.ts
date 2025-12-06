@@ -1,13 +1,12 @@
 /**
  * レガシーラッパー: src/lib/mediapipe/angle-calculator.ts
  * 後方互換性のため、既存の呼び出しコードを新実装にリダイレクト
- * 
+ *
  * ⚠️ このファイルは後方互換性のために残されています
  * 新しいコードでは直接 @/core/infrastructure/mediapipe/angle-calculator を使用してください
  */
 
 import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculator';
-import { Point3D } from '@/core/domain/types/hand-landmark';
 import { NormalizedLandmark } from '@mediapipe/hands';
 
 // 型定義の再エクスポート（既存コードとの互換性）
@@ -16,6 +15,7 @@ export interface Point2D {
   y: number;
 }
 
+// ローカル型定義（id不要）
 export interface Point3D {
   x: number;
   y: number;
@@ -48,12 +48,18 @@ export const calculateAngle3D = (
 };
 
 export const calculateFlexionExtension = (landmarks: Point3D[]): number => {
-  const convertedLandmarks = landmarks.map((lm, index) => ({ ...lm, id: index }));
+  const convertedLandmarks = landmarks.map((lm, index) => ({
+    ...lm,
+    id: index,
+  }));
   return angleCalculator.calculateFlexionExtension(convertedLandmarks);
 };
 
 export const calculateRadialUlnarDeviation = (landmarks: Point3D[]): number => {
-  const convertedLandmarks = landmarks.map((lm, index) => ({ ...lm, id: index }));
+  const convertedLandmarks = landmarks.map((lm, index) => ({
+    ...lm,
+    id: index,
+  }));
   return angleCalculator.calculateRadialUlnarDeviation(convertedLandmarks);
 };
 
