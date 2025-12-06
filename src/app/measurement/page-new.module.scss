@@ -61,8 +61,6 @@
 
   &:hover {
     border-color: #3182ce;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 
   &.selected {
@@ -188,11 +186,6 @@
 .startButton {
   background: linear-gradient(135deg, #3182ce 0%, #2c5aa0 100%);
   color: white;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(49, 130, 206, 0.3);
-  }
 }
 
 /* 右側：カメラセクション */

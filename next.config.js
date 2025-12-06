@@ -12,7 +12,17 @@ const nextConfig = {
     includePaths: ['./src'],
   },
   images: {
-    domains: ['api.iconify.design'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.iconify.design',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3845',
+      },
+    ],
   },
   webpack: (config) => {
     // MediaPipe用の設定

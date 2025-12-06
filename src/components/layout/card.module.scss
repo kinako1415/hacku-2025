@@ -9,6 +9,10 @@
   flex-direction: column;
   justify-content: center;
   cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .cardTitle {
@@ -48,6 +52,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .cardArrow {
+  transform: translate(5px, -5px);
 }
 
 .white {
