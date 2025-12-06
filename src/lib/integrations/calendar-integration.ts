@@ -111,7 +111,7 @@ export const useCalendarIntegration = () => {
   const createRecord = useCallback(
     async (recordData: Partial<CalendarRecord>) => {
       const newRecord: CalendarRecord = {
-        id: `record-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: Date.now(), // Use number instead of string
         userId: 'user-1', // 実際の実装では認証されたユーザーIDを使用
         recordDate: recordData.recordDate || new Date(),
         rehabCompleted: recordData.rehabCompleted ?? false,
@@ -137,7 +137,7 @@ export const useCalendarIntegration = () => {
 
   // レコード更新
   const updateRecord = useCallback(
-    async (id: string, updates: Partial<CalendarRecord>) => {
+    async (id: number, updates: Partial<CalendarRecord>) => {
       const updatedRecords = state.records.map((record) =>
         record.id === id
           ? { ...record, ...updates, updatedAt: new Date() }
@@ -152,7 +152,7 @@ export const useCalendarIntegration = () => {
 
   // レコード削除
   const deleteRecord = useCallback(
-    async (id: string) => {
+    async (id: number) => {
       const updatedRecords = state.records.filter((record) => record.id !== id);
       await saveRecords(updatedRecords);
     },
@@ -316,7 +316,7 @@ const generateSampleRecords = (): CalendarRecord[] => {
       const progress = (30 - i) / 30;
 
       const recordData: CalendarRecord = {
-        id: `sample-record-${i}`,
+        id: i, // Use number instead of string
         userId: 'user-1',
         recordDate,
         rehabCompleted: Math.random() > 0.15, // 85%の完了率

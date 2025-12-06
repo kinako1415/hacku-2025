@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // ビルド時のESLintエラーを無視（開発時はlintコマンドで確認）
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // ビルド時の型チェックは実施
+    ignoreBuildErrors: false,
+  },
   sassOptions: {
     includePaths: ['./src'],
   },

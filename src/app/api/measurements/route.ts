@@ -8,12 +8,8 @@ import { db } from '@/lib/data-manager/database';
 import {
   createMeasurement,
   validateMeasurement,
-  calculateComparisonResult,
 } from '@/lib/data-manager/models/motion-measurement';
-import type {
-  CreateMeasurementInput,
-  MotionMeasurement,
-} from '@/lib/data-manager/models/motion-measurement';
+import type { CreateMeasurementInput } from '@/lib/data-manager/models/motion-measurement';
 
 /**
  * GET /api/measurements

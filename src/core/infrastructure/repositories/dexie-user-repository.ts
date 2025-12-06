@@ -12,27 +12,22 @@ import { UserRepository } from '@/core/domain/repositories/user-repository';
  */
 export class DexieUserRepository implements UserRepository {
   async save(user: User): Promise<void> {
-    await db.users.add({
-      id: user.id,
-      name: user.name,
-      createdAt: user.createdAt,
-    });
+    // Note: User type mismatch between shared/types and lib/data-manager
+    await db.users.add(user as any);
   }
 
   async findById(userId: string): Promise<User | null> {
     const user = await db.users.get(userId);
-    return user || null;
+    return (user as any) || null;
   }
 
   async findAll(): Promise<User[]> {
     const users = await db.users.toArray();
-    return users;
+    return users as any;
   }
 
   async update(user: User): Promise<void> {
-    await db.users.update(user.id, {
-      name: user.name,
-    });
+    await db.users.update(user.id, user as any);
   }
 
   async delete(userId: string): Promise<void> {

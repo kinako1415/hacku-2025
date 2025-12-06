@@ -138,16 +138,15 @@ export const FeedbackIntegrationProvider = ({
 
   // オンライン状態監視
   useEffect(() => {
-    const handleOnline = () => {
+    const handleOnline = useCallback(() => {
       setState((prev) => ({ ...prev, isOnline: true }));
       showNotification({
         type: 'success',
-        title: '接続復旧',
-        message: 'インターネット接続が復旧しました',
-        duration: 3000,
+        message: 'オンラインに戻りました',
       });
       retryFailedActions();
-    };
+      return undefined;
+    }, [showNotification, retryFailedActions]);
 
     const handleOffline = () => {
       setState((prev) => ({ ...prev, isOnline: false }));

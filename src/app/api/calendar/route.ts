@@ -9,7 +9,6 @@ import {
   createCalendarRecord,
   updateCalendarRecord,
   validateCalendarRecord,
-  formatRecordDate,
   parseRecordDate,
   calculateWeeklyStats,
 } from '@/lib/data-manager/models/calendar-record';
@@ -48,7 +47,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // 基本クエリ
-    let query = db.records.where('userId').equals(userId).sortBy('recordDate');
+    const query = db.records
+      .where('userId')
+      .equals(userId)
+      .sortBy('recordDate');
     let records = await query;
 
     // 日付フィルタリング
@@ -174,10 +176,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       {
         success: true,
         data: newRecord,
-        message:
-          existingRecord
-            ? 'カレンダー記録が正常に更新されました'
-            : 'カレンダー記録が正常に作成されました',
+        message: existingRecord
+          ? 'カレンダー記録が正常に更新されました'
+          : 'カレンダー記録が正常に作成されました',
       },
       { status: existingRecord ? 200 : 201 }
     );

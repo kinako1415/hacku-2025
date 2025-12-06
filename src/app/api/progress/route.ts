@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/data-manager/database';
 import {
   createProgressData,
-  validateProgressData,
   getAnalysisPeriodDays,
   calculateAngleTrend,
   calculateOverallTrend,
@@ -417,7 +416,7 @@ function calculateMotionProgress(measurements: any[]): MotionProgress {
  */
 function calculateActivityProgress(
   records: any[],
-  periodDays: number
+  _periodDays: number
 ): ActivityProgress {
   const rehabCompleted = records.filter((r) => r.rehabCompleted).length;
   const measurementCompleted = records.filter(
