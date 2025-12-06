@@ -18,6 +18,12 @@ export default function Header() {
         {/* 右: メニュー */}
         <nav className={styles.simpleNav}>
           <Link
+            href="/"
+            className={styles.homeLink}
+          >
+            Rehabit
+          </Link>
+          <Link
             href="/measurement"
             className={
               pathname === '/measurement'

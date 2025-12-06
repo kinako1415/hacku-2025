@@ -68,6 +68,15 @@ a.hover {
   color: #808080;
 }
 
+// ホームリンク（PC時は非表示）
+.homeLink {
+  display: none;
+  color: #0542fc;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px;
+}
+
 // スマホ対応（768px以下）- ボトムナビゲーション
 @media screen and (max-width: 768px) {
   .header {
@@ -94,6 +103,13 @@ a.hover {
     flex: 1;
     justify-content: space-around;
     gap: 0;
+  }
+
+  .homeLink {
+    display: block;
+    font-size: 14px;
+    color: #0542fc;
+    font-weight: bold;
   }
 
   .simpleNavLink,
