@@ -733,64 +733,274 @@
 
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
+  .measurementPage {
+    margin: 0;
+    height: 100vh;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
   .mainContent {
     flex-direction: column;
+    gap: 16px;
+    min-height: auto;
   }
 
-  .leftSection,
-  .rightSection {
+  .leftContent,
+  .rightContent {
     max-width: 100%;
+    flex: none;
   }
 
-  .rightSection {
-    min-height: 400px;
+  .leftContent {
+    margin-top: 0;
+    order: 2;
+    flex: 1;
+  }
+
+  .rightContent {
+    order: 1;
+    min-height: 300px;
+    max-height: 400px;
+
+    &.inactive {
+      display: none;
+    }
   }
 
   .instructionsSection {
     max-width: 100%;
+    padding: 24px 16px 16px;
+  }
+
+  .title {
+    font-size: 1.25rem;
   }
 
   .stepNumber {
     width: 28px;
     height: 28px;
-    font-size: 0.75rem;
+    font-size: 1rem;
+    margin-right: 12px;
   }
 
   .stepTitle {
-    font-size: 1rem;
+    font-size: 1.125rem;
   }
 
   .stepDescription {
-    font-size: 0.8rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .instructionsContent {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .handSelectionSection {
+    padding: 24px 16px 12px;
+  }
+
+  .selectionTitle {
+    font-size: 1.25rem;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .selectionNote {
+    font-size: 12px;
   }
 
   .handCards {
     grid-template-columns: 1fr;
     gap: 12px;
+    height: auto;
+  }
+
+  .handCard {
+    padding: 20px;
+  }
+
+  .handTitle {
+    font-size: 28px;
+  }
+
+  .handDescription {
+    font-size: 13px;
+  }
+
+  .tag {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .measurementInfoSection {
+    padding: 0 16px 16px;
+  }
+
+  .infoSectionTitle {
+    font-size: 1.25rem;
   }
 
   .infoGrid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
+  }
+
+  .infoItem {
+    padding: 16px;
+  }
+
+  .infoItemTitle {
+    font-size: 18px;
+  }
+
+  .infoItemText {
+    font-size: 13px;
   }
 
   .bottomSection {
     flex-direction: column;
     gap: 12px;
+    margin-top: 16px;
   }
 
   .testButton,
   .startButton {
     min-width: auto;
     width: 100%;
+    padding: 14px 24px;
   }
 
   .cameraFrame {
-    max-width: 360px;
+    max-width: 100%;
+  }
+
+  .dashedFrame {
+    inset: 60px 40px;
+    border-width: 2px;
   }
 
   .frameInstruction {
     font-size: 0.875rem;
+    top: 40px;
+    padding: 6px 12px;
+  }
+
+  .cameraHeader {
+    top: 16px;
+    right: 16px;
+  }
+
+  .statusBadge {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .measurementExecution {
+    padding: 24px 16px;
+    gap: 16px;
+  }
+
+  .measurementTags {
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .measurementTag {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .stepLabel {
+    font-size: 1.125rem;
+  }
+
+  .angleDisplay {
+    margin: 24px 0;
+  }
+
+  .angleValue {
+    font-size: 4rem;
+  }
+
+  .mainInstruction {
+    font-size: 1rem;
+  }
+
+  .subInstruction {
+    font-size: 0.875rem;
+  }
+
+  .statusContainer {
+    padding: 10px 12px;
+  }
+
+  .loadingStatus,
+  .detectedStatus,
+  .waitingStatus {
+    font-size: 0.875rem;
+  }
+
+  .controls {
+    gap: 12px;
+    margin-top: 16px;
+    flex-direction: column;
+  }
+
+  .stopButton,
+  .nextPhaseButton {
+    width: 100%;
+    padding: 14px 24px;
+  }
+
+  .resultSection {
+    padding: 24px 16px;
+    gap: 24px;
+  }
+
+  .resultTitle {
+    font-size: 1.5rem;
+  }
+
+  .resultSummary {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .resultItem {
+    padding: 14px;
+  }
+
+  .resultName {
+    font-size: 1rem;
+  }
+
+  .resultAngle {
+    font-size: 1.25rem;
+  }
+
+  .resultControls {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .retryButton,
+  .saveButton {
+    width: 100%;
+    padding: 14px 24px;
+  }
+
+  .nextButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .instructionsNext {
+    width: 100%;
   }
 }
 
