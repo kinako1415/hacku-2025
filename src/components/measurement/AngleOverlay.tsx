@@ -15,7 +15,10 @@ import { angleCalculator } from '@/core/infrastructure/mediapipe/angle-calculato
 
 // 互換性のためのラッパー関数
 const calculateWristAngles = (landmarks: any) => {
-  const convertedLandmarks = landmarks.map((lm: any, index: number) => ({ ...lm, id: index }));
+  const convertedLandmarks = landmarks.map((lm: any, index: number) => ({
+    ...lm,
+    id: index,
+  }));
   return angleCalculator.calculateWristAngles(convertedLandmarks);
 };
 
@@ -90,9 +93,12 @@ export const AngleOverlay = forwardRef<HTMLCanvasElement, AngleOverlayProps>(
         canvasWidth: number,
         canvasHeight: number
       ): void => {
+        // ビデオは鏡像表示（scaleX(-1)）なのでオーバーレイ側もX座標を反転させて揃える
+        const toCanvasX = (x: number): number => (1 - x) * canvasWidth;
+
         // 関節点の描画
         landmarks.forEach((landmark, index) => {
-          const x = landmark.x * canvasWidth;
+          const x = toCanvasX(landmark.x);
           const y = landmark.y * canvasHeight;
 
           ctx.beginPath();
@@ -160,8 +166,8 @@ export const AngleOverlay = forwardRef<HTMLCanvasElement, AngleOverlayProps>(
 
           if (startPoint && endPoint) {
             ctx.beginPath();
-            ctx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
-            ctx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
+            ctx.moveTo(toCanvasX(startPoint.x), startPoint.y * canvasHeight);
+            ctx.lineTo(toCanvasX(endPoint.x), endPoint.y * canvasHeight);
             ctx.stroke();
           }
         });
