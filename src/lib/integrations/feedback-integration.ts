@@ -7,6 +7,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
   createContext,
   useContext,
   ReactNode,
@@ -136,37 +137,12 @@ export const FeedbackIntegrationProvider = ({
     pendingActions: [],
   });
 
-  // オンライン状態監視
-  useEffect(() => {
-    const handleOnline = useCallback(() => {
-      setState((prev) => ({ ...prev, isOnline: true }));
-      showNotification({
-        type: 'success',
-        message: 'オンラインに戻りました',
-      });
-      retryFailedActions();
-      return undefined;
-    }, [showNotification, retryFailedActions]);
-
-    const handleOffline = () => {
-      setState((prev) => ({ ...prev, isOnline: false }));
-      showNotification({
-        type: 'warning',
-        title: '接続なし',
-        message: 'オフラインモードで動作しています',
-        duration: 5000,
-      });
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      };
-    }
+  // 通知非表示
+  const hideNotification = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      notifications: prev.notifications.filter((n) => n.id !== id),
+    }));
   }, []);
 
   // 通知表示
@@ -194,21 +170,53 @@ export const FeedbackIntegrationProvider = ({
 
       return id;
     },
-    []
+    [hideNotification]
   );
-
-  // 通知非表示
-  const hideNotification = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      notifications: prev.notifications.filter((n) => n.id !== id),
-    }));
-  }, []);
 
   // 全通知クリア
   const clearAllNotifications = useCallback(() => {
     setState((prev) => ({ ...prev, notifications: [] }));
   }, []);
+
+  // 失敗したアクションの再試行（事前定義）
+  const retryFailedActionsRef = useRef<() => Promise<void>>();
+
+  // オンライン状態監視
+  useEffect(() => {
+    const handleOnline = () => {
+      setState((prev) => ({ ...prev, isOnline: true }));
+      showNotification({
+        type: 'success',
+        title: 'オンライン',
+        message: 'オンラインに戻りました',
+      });
+      if (retryFailedActionsRef.current) {
+        retryFailedActionsRef.current();
+      }
+    };
+
+    const handleOffline = () => {
+      setState((prev) => ({ ...prev, isOnline: false }));
+      showNotification({
+        type: 'warning',
+        title: '接続なし',
+        message: 'オフラインモードで動作しています',
+        duration: 5000,
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+    
+    return undefined;
+  }, [showNotification]);
 
   // エラーレポート
   const reportError = useCallback(
@@ -648,9 +656,9 @@ const saveErrorLog = (errorReport: ErrorReport): void => {
 /**
  * エラーログ取得
  */
-export const getErrorLogs = (): any[] => {
+export const getErrorLogs = (): ErrorReport[] => {
   try {
-    return JSON.parse(localStorage.getItem('error-logs') || '[]');
+    return JSON.parse(localStorage.getItem('error-logs') || '[]') as ErrorReport[];
   } catch (error) {
     console.error('Failed to get error logs:', error);
     return [];
