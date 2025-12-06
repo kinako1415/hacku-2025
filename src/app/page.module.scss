@@ -21,7 +21,25 @@
   text-decoration: none;
 }
 
-// 利用の流れリンク
+// PC時の順番: 測定、進捗確認、記録管理
+.measurementCard {
+  order: 1;
+}
+
+.progressCard {
+  order: 2;
+}
+
+.calendarCard {
+  order: 3;
+}
+
+// PC時は非表示（スマホ時のみ表示）
+.flowCard {
+  display: none;
+}
+
+// 利用の流れリンク（PC時の画像）
 .flowLink {
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -34,28 +52,52 @@
 // スマホ対応（768px以下）
 @media screen and (max-width: 768px) {
   .homePage {
-    position: relative;
-    top: auto;
-    left: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     transform: none;
-    padding: 80px 16px 100px;
-    min-height: 100vh;
-    justify-content: flex-start;
+    padding: 50px 16px 90px;
+    height: 100vh;
+    height: 100dvh; // モバイルブラウザ対応
+    overflow: hidden;
+    justify-content: center;
   }
 
   .cardWrapper {
     flex-direction: column;
     width: 100%;
     max-width: 340px;
+    gap: 10px;
   }
 
-  .flowLink {
-    width: 100%;
-    max-width: 340px;
+  // スマホ時の順番: 記録管理、進捗確認、測定、利用の流れ
+  .calendarCard {
+    order: 1;
+  }
 
-    img {
-      width: 100% !important;
-      height: auto !important;
+  .progressCard {
+    order: 2;
+  }
+
+  .measurementCard {
+    order: 3;
+  }
+
+  // スマホ時は「利用の流れ」カードを表示
+  .flowCard {
+    display: block;
+    order: 4;
+
+    // 「利用の流れ」のタイトルを青色に
+    :global(.cardTitle) {
+      color: #0542fc;
     }
+  }
+
+  // スマホ時は画像リンクを非表示
+  .flowLink {
+    display: none;
   }
 }

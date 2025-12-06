@@ -73,3 +73,36 @@
   align-items: center;
   justify-content: space-between;
 }
+
+// スマホ対応（768px以下）
+@media screen and (max-width: 768px) {
+  .card {
+    border-radius: 16px;
+    padding-inline: 16px;
+    padding-block: 6px;
+    min-height: auto;
+  }
+
+  .cardTitle {
+    font-size: 26px;
+    line-height: 1.1;
+  }
+
+  .cardDescription {
+    font-size: 11px;
+    margin-top: 0;
+    line-height: 1.2;
+  }
+
+  .cardArrow {
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
