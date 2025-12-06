@@ -137,3 +137,102 @@
   position: absolute;
   top: 20px;
 }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mainTh {
+  padding: 4px;
+}
+
+.mainCols {
+  height: auto;
+}
+
+/* スマホ用レイアウト */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px 12px;
+    max-height: none;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .PrevNextMonthButton {
+    order: -1;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .headerLeft {
+    justify-content: center;
+  }
+
+  .dateText {
+    font-size: 22px;
+  }
+
+  .dateSeparator {
+    font-size: 22px;
+  }
+
+  .headerTh {
+    font-size: 11px;
+  }
+
+  .day {
+    width: 100%;
+    max-width: 44px;
+    height: 44px;
+    font-size: 13px;
+    padding: 12px 0 0 0;
+    border-radius: 10px;
+
+    &.measured {
+      font-size: 13px;
+      padding: 10px 0 0 0;
+      border-radius: 10px;
+
+      &::after {
+        content: '済';
+        font-size: 9px;
+        width: 24px;
+        height: 14px;
+        bottom: -4px;
+        border-radius: 4px;
+        top: auto;
+        bottom: 4px;
+      }
+    }
+  }
+
+  .today {
+    font-size: 12px;
+    width: 24px;
+    height: 20px;
+    border-radius: 5px;
+    top: 6px;
+  }
+
+  .mainTh {
+    padding: 2px 1px;
+  }
+
+  .headerCols {
+    height: 32px;
+  }
+
+  .table {
+    table-layout: fixed;
+    width: 100%;
+  }
+}

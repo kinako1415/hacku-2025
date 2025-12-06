@@ -37,10 +37,21 @@ export default function CalendarPage(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    // スクロール禁止
-    document.body.style.overflow = 'hidden';
+    // PCの場合のみスクロール禁止（スマホは768px以下）
+    const updateOverflow = () => {
+      if (window.innerWidth > 768) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    };
+
+    updateOverflow();
+    window.addEventListener('resize', updateOverflow);
+
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('resize', updateOverflow);
     };
   }, []);
 

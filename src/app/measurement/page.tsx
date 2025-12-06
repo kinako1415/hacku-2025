@@ -128,6 +128,7 @@ interface MeasurementSetup {
   currentStep: DisplayStep;
   currentMeasurementStep: number;
   currentAngle: number;
+  baseAngle: number | null; // 測定開始時の基準角度
   phase: MeasurementPhase;
   sessionId: string | null;
   mediaPipeReady: boolean;
@@ -404,7 +405,9 @@ const MeasurementExecution: React.FC<{
           ) : setup.currentAngle > 0 ? (
             <p className={styles.detectedStatus}>✓ 手を検出中 - 測定中</p>
           ) : (
-            <p className={styles.waitingStatus}>手をカメラに向けてください</p>
+            <p className={styles.waitingStatus}>
+              {setup.selectedHand === 'left' ? '左' : '右'}手をカメラに向けてください
+            </p>
           )}
         </div>
       </div>
@@ -742,6 +745,7 @@ const MeasurementPage: React.FC = () => {
     currentStep: 'instructions',
     currentMeasurementStep: 0,
     currentAngle: 0,
+    baseAngle: null, // 測定開始時の基準角度
     phase: 'preparation',
     sessionId: null,
     mediaPipeReady: false,
@@ -749,6 +753,9 @@ const MeasurementPage: React.FC = () => {
     countdown: null,
     isPhotoTaken: false,
   });
+
+  // 各フェーズの最大角度を保持
+  const maxAngleRef = useRef<number>(0);
 
   // カメラ状態管理
   const [cameraState, setCameraState] = useState<CameraState>({
@@ -860,8 +867,6 @@ const MeasurementPage: React.FC = () => {
    */
   const processHandResults = useCallback(
     (results: any) => {
-      drawLandmarks(results);
-
       if (!setupRef.current.isCapturing) {
         return;
       }
@@ -874,7 +879,36 @@ const MeasurementPage: React.FC = () => {
         return;
       }
 
-      const landmarks: Point3D[] = results.multiHandLandmarks[0];
+      // 複数の手から対象の手を探す
+      let targetHandIndex = -1;
+      for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+        const handedness = results.multiHandedness?.[i]?.label || 'Right';
+
+        // MediaPipeのhandednessはカメラ視点（鏡像）なので、実際の左右を判定する
+        // カメラに映った「Right」は実際には左手、「Left」は実際には右手
+        const detectedHand = handedness === 'Right' ? 'left' : 'right';
+
+        if (detectedHand === setupRef.current.selectedHand) {
+          targetHandIndex = i;
+          break;
+        }
+      }
+
+      // 対象の手が見つからない場合
+      if (targetHandIndex === -1) {
+        setSetup((prev) => ({ ...prev, currentAngle: 0 }));
+        // 対象外の手のランドマークは描画しない
+        drawLandmarks({ multiHandLandmarks: [], multiHandedness: [] });
+        return;
+      }
+
+      // 対象の手のみを描画
+      drawLandmarks({
+        multiHandLandmarks: [results.multiHandLandmarks[targetHandIndex]],
+        multiHandedness: [results.multiHandedness[targetHandIndex]],
+      });
+
+      const landmarks: Point3D[] = results.multiHandLandmarks[targetHandIndex];
 
       if (!validateLandmarks(landmarks)) {
         setSetup((prev) => ({ ...prev, currentAngle: 0 }));
@@ -887,17 +921,35 @@ const MeasurementPage: React.FC = () => {
         return;
       }
 
-      const angle = calculateWristAngle(landmarks, currentStep.id);
+      const rawAngle = calculateWristAngle(landmarks, currentStep.id);
 
       const now = performance.now();
       if (now - lastAngleUpdateRef.current > 100) {
-        setSetup((prev) => ({
-          ...prev,
-          currentAngle: Math.round(angle),
-        }));
+        setSetup((prev) => {
+          // 基準角度が未設定の場合、現在の角度を基準として設定
+          const baseAngle = prev.baseAngle !== null ? prev.baseAngle : rawAngle;
+
+          // 相対角度を計算（基準角度からの変化量の絶対値）
+          const relativeAngle = Math.abs(rawAngle - baseAngle);
+
+          // 最大角度を更新
+          if (relativeAngle > maxAngleRef.current) {
+            maxAngleRef.current = relativeAngle;
+          }
+
+          return {
+            ...prev,
+            baseAngle,
+            currentAngle: Math.round(relativeAngle),
+          };
+        });
         lastAngleUpdateRef.current = now;
 
-        saveMeasurementToDatabase(angle, landmarks);
+        // データベースには相対角度を保存
+        const baseAngle = setupRef.current.baseAngle;
+        const relativeAngle =
+          baseAngle !== null ? Math.abs(rawAngle - baseAngle) : 0;
+        saveMeasurementToDatabase(relativeAngle, landmarks);
       }
     },
     [drawLandmarks, saveMeasurementToDatabase]
@@ -924,10 +976,10 @@ const MeasurementPage: React.FC = () => {
       });
 
       hands.setOptions({
-        maxNumHands: 1,
+        maxNumHands: 2, // 両手を検出して対象の手を選択
         modelComplexity: 1,
-        minDetectionConfidence: 0.3, // さらに低い閾値に変更
-        minTrackingConfidence: 0.2, // さらに低い閾値に変更
+        minDetectionConfidence: 0.3,
+        minTrackingConfidence: 0.2,
       });
 
       hands.onResults((results) => {
@@ -1142,12 +1194,14 @@ const MeasurementPage: React.FC = () => {
   const nextMeasurementStep = useCallback(() => {
     if (setup.currentMeasurementStep < measurementSteps.length - 1) {
       // 測定を一旦停止してモーダル表示（測定画面は維持）
+      maxAngleRef.current = 0; // 最大角度をリセット
       setSetup((prev) => ({
         ...prev,
         isCapturing: false,
         // currentStepは'measurement'のまま維持
         currentMeasurementStep: prev.currentMeasurementStep + 1,
         currentAngle: 0,
+        baseAngle: null, // 次のステップでは基準角度をリセット
         isPhotoTaken: false,
         countdown: null,
         phase: 'preparation',
@@ -1310,8 +1364,15 @@ const MeasurementPage: React.FC = () => {
       clearInterval(countdownIntervalRef.current);
     }
 
-    // カウントダウン
-    setSetup((prev) => ({ ...prev, countdown: 3, isCapturing: true }));
+    // カウントダウン開始時に0点調整（基準角度と最大角度をリセット）
+    maxAngleRef.current = 0; // 最大角度をリセット
+    setSetup((prev) => ({
+      ...prev,
+      countdown: 3,
+      isCapturing: true,
+      baseAngle: null, // 基準角度をリセットして0点調整
+      currentAngle: 0,
+    }));
 
     countdownIntervalRef.current = setInterval(() => {
       setSetup((prev) => {
@@ -1324,11 +1385,14 @@ const MeasurementPage: React.FC = () => {
           if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current);
           }
+          // カウントダウン終了時に最大角度を現在の角度として設定
+          const finalAngle = Math.round(maxAngleRef.current);
           return {
             ...prev,
             countdown: null,
             isPhotoTaken: true,
             isCapturing: false,
+            currentAngle: finalAngle, // 最大角度を保存
           };
         }
         return { ...prev, countdown: prev.countdown - 1 };
@@ -1337,11 +1401,13 @@ const MeasurementPage: React.FC = () => {
   };
 
   const handleRetake = () => {
+    maxAngleRef.current = 0; // 最大角度をリセット
     setSetup((prev) => ({
       ...prev,
       isPhotoTaken: false,
       countdown: null,
       currentAngle: 0,
+      baseAngle: null, // 基準角度をリセット
       isCapturing: true,
     }));
   };
@@ -1395,6 +1461,7 @@ const MeasurementPage: React.FC = () => {
       currentStep: 'instructions',
       currentMeasurementStep: 0,
       currentAngle: 0,
+      baseAngle: null, // 基準角度をリセット
       phase: 'preparation',
       sessionId: null,
       mediaPipeReady: false,
@@ -1463,9 +1530,13 @@ const MeasurementPage: React.FC = () => {
         </div>
 
         {/* 右側: カメラセクション */}
-        <div className={styles.rightContent}>
+        <div
+          className={`${styles.rightContent} ${
+            setup.currentStep !== 'measurement' ? styles.inactive : ''
+          }`}
+        >
           {/* ヘッダー - アクティブ時のみ表示 */}
-          {!(setup.currentStep === 'instructions' || !setup.selectedHand) && (
+          {setup.currentStep === 'measurement' && (
             <div className={styles.cameraHeader}>
               <span className={styles.statusBadge}>
                 {cameraState.isReady ? '測定中' : 'カメラ準備中'}
@@ -1474,9 +1545,7 @@ const MeasurementPage: React.FC = () => {
           )}
           <CameraPreview
             cameraState={cameraState}
-            isInactive={
-              setup.currentStep === 'instructions' || !setup.selectedHand
-            }
+            isInactive={setup.currentStep !== 'measurement'}
             {...(setup.currentStep === 'measurement'
               ? { videoRef, canvasRef }
               : {})}

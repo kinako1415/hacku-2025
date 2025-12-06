@@ -17,6 +17,9 @@ export default function Header() {
         </div>
         {/* 右: メニュー */}
         <nav className={styles.simpleNav}>
+          <Link href="/" className={styles.homeLink}>
+            Rehabit
+          </Link>
           <Link
             href="/measurement"
             className={
