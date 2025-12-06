@@ -29,8 +29,6 @@ import styles from './page.module.scss';
  */
 const FORCE_USE_SAMPLE_DATA = false;
 
-
-
 /**
  * テスト用サンプルデータを生成
  */
@@ -762,11 +760,20 @@ const ProgressPage: React.FC = () => {
     [filteredMeasurements]
   );
 
+  // レスポンシブ時はスクロールを有効にする
   useEffect(() => {
-    // スクロール禁止
-    document.body.style.overflow = 'hidden';
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        document.body.style.overflow = '';
+      } else {
+        document.body.style.overflow = 'hidden';
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
