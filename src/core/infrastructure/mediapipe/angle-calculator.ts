@@ -220,8 +220,8 @@ export class AngleCalculator {
     const scalingFactor = 3.0; // Z値のスケーリング
     angleDeg = angleDeg * scalingFactor;
 
-    // 0-90度の範囲に制限
-    return Math.min(Math.max(Math.abs(angleDeg), 0), 90);
+    // マイナス制限のみ（上限なし）
+    return Math.max(Math.abs(angleDeg), 0);
   }
 
   /**
@@ -244,7 +244,15 @@ export class AngleCalculator {
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
     const middleTip = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_TIP];
 
-    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp || !middleTip) return 0;
+    if (
+      !wrist ||
+      !indexMcp ||
+      !middleMcp ||
+      !ringMcp ||
+      !pinkyMcp ||
+      !middleTip
+    )
+      return 0;
 
     // MCP点の平均Y座標
     const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
@@ -269,7 +277,7 @@ export class AngleCalculator {
 
     // 手首から手のひら中央への水平距離（X軸方向の変化が主）
     const wristToPalmX = Math.abs(palmCenter.x - wrist.x);
-    
+
     // 小指側から見た場合、X軸方向が前腕の長軸方向に近い
     // Y軸の変化（下方向への移動）から角度を計算
     const horizontalDistance = Math.max(wristToPalmX, 0.01);
@@ -286,8 +294,8 @@ export class AngleCalculator {
       angleDeg += tipYDiff * 30; // 補正係数
     }
 
-    // 0-90度の範囲に制限
-    return Math.min(Math.max(angleDeg, 0), 90);
+    // マイナス制限のみ（上限なし）
+    return Math.max(angleDeg, 0);
   }
 
   /**
@@ -433,7 +441,15 @@ export class AngleCalculator {
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
     const middleTip = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_TIP];
 
-    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp || !middleTip) return 0;
+    if (
+      !wrist ||
+      !indexMcp ||
+      !middleMcp ||
+      !ringMcp ||
+      !pinkyMcp ||
+      !middleTip
+    )
+      return 0;
 
     // MCP点の平均Y座標
     const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
@@ -458,7 +474,7 @@ export class AngleCalculator {
 
     // 手首から手のひら中央への水平距離（X軸方向の変化が主）
     const wristToPalmX = Math.abs(palmCenter.x - wrist.x);
-    
+
     // 小指側から見た場合、X軸方向が前腕の長軸方向に近い
     // Y軸の変化（上方向への移動）から角度を計算
     const horizontalDistance = Math.max(wristToPalmX, 0.01);
@@ -475,8 +491,8 @@ export class AngleCalculator {
       angleDeg += tipYDiff * 25; // 補正係数
     }
 
-    // 0-70度の範囲に制限（背屈の生理的範囲）
-    return Math.min(Math.max(angleDeg, 0), 70);
+    // マイナス制限のみ（上限なし）
+    return Math.max(angleDeg, 0);
   }
 
   /**
