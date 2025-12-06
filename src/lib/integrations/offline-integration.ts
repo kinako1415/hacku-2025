@@ -520,6 +520,8 @@ export const useNetworkStatus = () => {
         window.removeEventListener('offline', handleOffline);
       };
     }
+
+    return undefined;
   }, []);
 
   return { isOnline };
