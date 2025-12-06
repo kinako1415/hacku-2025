@@ -29,8 +29,6 @@ import styles from './page.module.scss';
  */
 const FORCE_USE_SAMPLE_DATA = false;
 
-
-
 /**
  * テスト用サンプルデータを生成
  */
