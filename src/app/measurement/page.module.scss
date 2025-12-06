@@ -716,6 +716,28 @@
   }
 }
 
+.instructionButton {
+  background: white;
+  color: #0542fc;
+  border: 2px solid #0542fc;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 160px;
+  justify-content: center;
+
+  &:hover {
+    background: #0542fc;
+    color: white;
+  }
+}
+
 .startButton {
   background: #f4f4f4;
   color: #808080;
@@ -946,5 +968,179 @@
 
   &:hover {
     background: #2563eb;
+  }
+}
+
+/* やり方確認モーダル */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 856px;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ステップバッジ */
+.stepBadges {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stepBadge {
+  border: 1px solid #0542fc;
+  color: #0542fc;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &.stepBadgeActive {
+    background: #0542fc;
+    color: white;
+  }
+}
+
+/* ビデオフレーム */
+.videoFrame {
+  width: 100%;
+  max-width: 856px;
+  aspect-ratio: 16 / 9;
+  border: 18px solid white;
+  border-radius: 40px;
+  overflow: hidden;
+  background: #64748b;
+}
+
+.videoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* 導入画面 */
+.introContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  animation: fadeIn 0.5s ease;
+}
+
+.introText {
+  text-align: center;
+  color: white;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin-bottom: 40px;
+
+  p {
+    margin: 0;
+    color: white;
+  }
+}
+
+.nextButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 説明テキスト */
+.instructionText {
+  text-align: center;
+  color: white;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 32px;
+
+  p {
+    margin: 4px 0;
+    color: white;
+  }
+}
+
+/* 測定開始ボタン */
+.startMeasurementButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  border-radius: 24px;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }

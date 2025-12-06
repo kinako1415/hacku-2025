@@ -585,6 +585,87 @@ const MeasurementResultSection: React.FC<{
 };
 
 /**
+ * 操作説明モーダルコンポーネント
+ */
+const InstructionModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete?: () => void;
+  selectedHand: HandSelection | null;
+}> = ({ isOpen, onClose, onComplete, selectedHand }) => {
+  const [step, setStep] = useState<'intro' | 'video'>('intro');
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep('intro');
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleNext = () => {
+    setStep('video');
+  };
+
+  const handleComplete = () => {
+    onClose();
+    if (onComplete) {
+      onComplete();
+    }
+  };
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      {step === 'intro' ? (
+        // 導入画面
+        <div
+          className={styles.introContent}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className={styles.introText}>
+            <p>
+              これから{selectedHand === 'right' ? '右' : '左'}
+              手首を測定していきます。
+            </p>
+            <p>この後に説明が流れますので説明に従って</p>
+            <p>測定を行なってください</p>
+          </div>
+          <button className={styles.nextButton} onClick={handleNext}>
+            次へ
+          </button>
+        </div>
+      ) : (
+        // ビデオデモ画面
+        <div
+          className={styles.modalContent}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* ビデオフレーム */}
+          <div className={styles.videoFrame}>
+            <div className={styles.videoPlaceholder}>デモ動画</div>
+          </div>
+
+          {/* 説明テキスト */}
+          <div className={styles.instructionText}>
+            <p>手のひら側に手首を曲げてください</p>
+            <p>手首を手のひら側に最大まで曲げてください（0-90°）</p>
+            <p>手をカメラに向けてください</p>
+            <p>次のフェーズ</p>
+          </div>
+
+          <button
+            className={styles.startMeasurementButton}
+            onClick={handleComplete}
+          >
+            測定を開始
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
  * メイン測定ページコンポーネント
  */
 const MeasurementPage: React.FC = () => {
@@ -594,6 +675,9 @@ const MeasurementPage: React.FC = () => {
   const [measurementResults, setMeasurementResults] = useState<
     DBMeasurementResult[]
   >([]);
+
+  // モーダル表示状態
+  const [showInstructionModal, setShowInstructionModal] = useState(false);
 
   // 測定セットアップ状態管理
   const [setup, setSetup] = useState<MeasurementSetup>({
@@ -1127,20 +1211,28 @@ const MeasurementPage: React.FC = () => {
   };
 
   /**
-   * 測定開始
+   * 測定開始（モーダル表示）
    */
   const handleStartMeasurement = () => {
     if (setup.selectedHand) {
-      console.log('測定画面に遷移します');
-      setSetup((prev) => ({
-        ...prev,
-        currentStep: 'measurement',
-        currentAngle: 0, // MediaPipeからリアルタイム取得
-        isCapturing: true, // 最初からキャプチャを開始
-      }));
+      console.log('測定方法モーダルを表示します');
+      setShowInstructionModal(true);
     } else {
       console.log('手が選択されていません');
     }
+  };
+
+  /**
+   * モーダル完了後、実際の測定を開始
+   */
+  const handleStartActualMeasurement = () => {
+    console.log('測定画面に遷移します');
+    setSetup((prev) => ({
+      ...prev,
+      currentStep: 'measurement',
+      currentAngle: 0,
+      isCapturing: true,
+    }));
   };
 
   /**
@@ -1329,6 +1421,14 @@ const MeasurementPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* やり方確認モーダル */}
+      <InstructionModal
+        isOpen={showInstructionModal}
+        onClose={() => setShowInstructionModal(false)}
+        onComplete={handleStartActualMeasurement}
+        selectedHand={setup.selectedHand}
+      />
     </div>
   );
 };
