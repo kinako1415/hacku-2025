@@ -613,6 +613,9 @@ const MeasurementPage: React.FC = () => {
     isPhotoTaken: false,
   });
 
+  // 各フェーズの最大角度を保持
+  const maxAngleRef = useRef<number>(0);
+
   // カメラ状態管理
   const [cameraState, setCameraState] = useState<CameraState>({
     stream: null,
@@ -787,6 +790,11 @@ const MeasurementPage: React.FC = () => {
 
           // 相対角度を計算（基準角度からの変化量の絶対値）
           const relativeAngle = Math.abs(rawAngle - baseAngle);
+
+          // 最大角度を更新
+          if (relativeAngle > maxAngleRef.current) {
+            maxAngleRef.current = relativeAngle;
+          }
 
           return {
             ...prev,
@@ -1044,6 +1052,7 @@ const MeasurementPage: React.FC = () => {
    */
   const nextMeasurementStep = useCallback(() => {
     if (setup.currentMeasurementStep < measurementSteps.length - 1) {
+      maxAngleRef.current = 0; // 最大角度をリセット
       setSetup((prev) => ({
         ...prev,
         currentMeasurementStep: prev.currentMeasurementStep + 1,
@@ -1202,7 +1211,8 @@ const MeasurementPage: React.FC = () => {
       clearInterval(countdownIntervalRef.current);
     }
 
-    // カウントダウン開始時に0点調整（基準角度をリセット）
+    // カウントダウン開始時に0点調整（基準角度と最大角度をリセット）
+    maxAngleRef.current = 0; // 最大角度をリセット
     setSetup((prev) => ({
       ...prev,
       countdown: 3,
@@ -1222,11 +1232,14 @@ const MeasurementPage: React.FC = () => {
           if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current);
           }
+          // カウントダウン終了時に最大角度を現在の角度として設定
+          const finalAngle = Math.round(maxAngleRef.current);
           return {
             ...prev,
             countdown: null,
             isPhotoTaken: true,
             isCapturing: false,
+            currentAngle: finalAngle, // 最大角度を保存
           };
         }
         return { ...prev, countdown: prev.countdown - 1 };
@@ -1235,6 +1248,7 @@ const MeasurementPage: React.FC = () => {
   };
 
   const handleRetake = () => {
+    maxAngleRef.current = 0; // 最大角度をリセット
     setSetup((prev) => ({
       ...prev,
       isPhotoTaken: false,
