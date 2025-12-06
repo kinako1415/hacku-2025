@@ -1,0 +1,160 @@
+.flowPage {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  color: #0542fc;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+.flowImage {
+  max-width: 100%;
+  height: auto;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stepsWrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stepsTitle {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0542fc;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  background: #0542fc;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.stepContent {
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+// スマホ対応
+@media screen and (max-width: 768px) {
+  .flowPage {
+    padding: 16px;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .content {
+    display: none;
+  }
+
+  .stepsWrapper {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .stepsTitle {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .steps {
+    gap: 16px;
+  }
+
+  .step {
+    padding: 16px;
+  }
+
+  .stepNumber {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .stepContent {
+    h3 {
+      font-size: 16px;
+    }
+
+    p {
+      font-size: 13px;
+    }
+  }
+}

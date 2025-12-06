@@ -74,41 +74,35 @@
   justify-content: space-between;
 }
 
-/* スマホ用レイアウト */
-@media (max-width: 768px) {
+// スマホ対応（768px以下）
+@media screen and (max-width: 768px) {
   .card {
-    width: 100% !important;
+    border-radius: 16px;
+    padding-inline: 16px;
+    padding-block: 6px;
+    min-height: auto;
   }
 
   .cardTitle {
-    font-size: 40px;
-  }
-
-  .cardTitle.improvements {
-    font-size: 24px !important;
+    font-size: 26px;
+    line-height: 1.1;
   }
 
   .cardDescription {
-    font-size: 16px;
-  }
-
-  .cardDescription.improvements {
-    font-size: 40px !important;
-  }
-
-  .cardRole {
-    font-size: 28px;
+    font-size: 11px;
+    margin-top: 0;
+    line-height: 1.2;
   }
 
   .cardArrow {
-    top: 20px;
-    right: 8px;
-    width: 48px;
-    height: 48px;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
 
     svg {
-      width: 40px;
-      height: 40px;
+      width: 24px;
+      height: 24px;
     }
   }
 }
