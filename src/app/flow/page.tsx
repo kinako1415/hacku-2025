@@ -13,15 +13,6 @@ export default function FlowPage() {
         </Link>
       </div>
 
-      <div className={styles.content}>
-        <Image
-          src={icon}
-          alt="ご利用の流れ"
-          className={styles.flowImage}
-          priority
-        />
-      </div>
-
       <div className={styles.stepsWrapper}>
         <h2 className={styles.stepsTitle}>ご利用の流れ</h2>
         <div className={styles.steps}>

@@ -46,9 +46,9 @@ export default function Home() {
         </Link>
       </div>
       {/* PC時のみ表示される画像リンク */}
-      <Link href="/flow" className={styles.flowLink}>
+      <div className={styles.flowLink}>
         <Image src={icon} alt="利用の流れ" width={1060} height={220} />
-      </Link>
+      </div>
     </div>
   );
 }
