@@ -1363,9 +1363,13 @@ const MeasurementPage: React.FC = () => {
         </div>
 
         {/* 右側: カメラセクション */}
-        <div className={styles.rightContent}>
+        <div
+          className={`${styles.rightContent} ${
+            setup.currentStep !== 'measurement' ? styles.inactive : ''
+          }`}
+        >
           {/* ヘッダー - アクティブ時のみ表示 */}
-          {!(setup.currentStep === 'instructions' || !setup.selectedHand) && (
+          {setup.currentStep === 'measurement' && (
             <div className={styles.cameraHeader}>
               <span className={styles.statusBadge}>
                 {cameraState.isReady ? '測定中' : 'カメラ準備中'}
@@ -1374,9 +1378,7 @@ const MeasurementPage: React.FC = () => {
           )}
           <CameraPreview
             cameraState={cameraState}
-            isInactive={
-              setup.currentStep === 'instructions' || !setup.selectedHand
-            }
+            isInactive={setup.currentStep !== 'measurement'}
             {...(setup.currentStep === 'measurement'
               ? { videoRef, canvasRef }
               : {})}
