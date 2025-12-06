@@ -25,7 +25,8 @@
   background: #e9effe; /* rootページと同じ背景色 */
   display: flex;
   flex-direction: column;
-  padding-bottom: 100px;
+  padding-bottom: 120px;
+  overflow-y: auto;
   // padding: 0 24px;
 }
 
