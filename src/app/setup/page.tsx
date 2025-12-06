@@ -649,7 +649,7 @@ export default function SetupPage() {
       {/* フッター */}
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
-          <p>AI駆動手首・母指可動域リハビリテーションアプリ</p>
+          <p>手首・母指可動域リハビリテーションアプリ</p>
           <div className={styles.footerLinks}>
             <a href="/privacy">プライバシーポリシー</a>
             <a href="/terms">利用規約</a>

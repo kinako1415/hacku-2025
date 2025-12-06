@@ -4,7 +4,7 @@ import '../styles/variables.css';
 import Header from '@/components/common/Header';
 
 export const metadata: Metadata = {
-  title: 'AI駆動手首・母指可動域リハビリテーションアプリ',
+  title: '手首・母指可動域リハビリテーションアプリ',
   description: 'カメラベース可動域測定とカレンダー記録管理',
 };
 
