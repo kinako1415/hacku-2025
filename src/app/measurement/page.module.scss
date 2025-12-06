@@ -762,6 +762,9 @@
     order: 1;
     min-height: 300px;
     max-height: 400px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 
     &.inactive {
       display: none;
@@ -819,20 +822,34 @@
   }
 
   .handCard {
-    padding: 20px;
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &.selected {
+      box-shadow: 0 8px 24px rgba(5, 66, 252, 0.25);
+      animation: selectPulse 0.5s ease;
+    }
   }
 
   .handTitle {
-    font-size: 28px;
+    font-size: 32px;
+    font-weight: 800;
   }
 
   .handDescription {
-    font-size: 13px;
+    font-size: 14px;
+    margin-top: 8px;
   }
 
   .tag {
-    font-size: 12px;
-    padding: 3px 10px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.3s ease;
   }
 
   .measurementInfoSection {
@@ -899,61 +916,149 @@
   }
 
   .measurementExecution {
-    padding: 24px 16px;
-    gap: 16px;
+    padding: 16px;
+    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
   }
 
   .measurementTags {
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
+    justify-content: center;
   }
 
   .measurementTag {
-    padding: 6px 12px;
-    font-size: 0.75rem;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &.active {
+      box-shadow: 0 4px 12px rgba(5, 66, 252, 0.3);
+      transform: scale(1.05);
+    }
+
+    &.completed {
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
   }
 
   .stepLabel {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
+    text-align: center;
+    font-weight: 700;
+    color: #0542fc;
   }
 
   .angleDisplay {
-    margin: 24px 0;
+    margin: 16px 0;
+    padding: 24px;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e9ff 100%);
+    border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(5, 66, 252, 0.1);
   }
 
   .angleValue {
-    font-size: 4rem;
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #0542fc 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    letter-spacing: -2px;
   }
 
   .mainInstruction {
-    font-size: 1rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
   }
 
   .subInstruction {
     font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: center;
+    opacity: 0.8;
   }
 
   .statusContainer {
-    padding: 10px 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-top: 8px;
   }
 
   .loadingStatus,
   .detectedStatus,
   .waitingStatus {
     font-size: 0.875rem;
+    font-weight: 600;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .detectedStatus {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  }
+
+  .loadingStatus {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+  }
+
+  .waitingStatus {
+    background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
   }
 
   .controls {
     gap: 12px;
-    margin-top: 16px;
+    margin-top: auto;
+    padding-top: 16px;
+    display: flex;
     flex-direction: column;
   }
 
   .stopButton,
   .nextPhaseButton {
     width: 100%;
-    padding: 14px 24px;
+    padding: 16px 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .stopButton {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  .nextPhaseButton {
+    background: linear-gradient(135deg, #0542fc 0%, #2563eb 100%);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(5, 66, 252, 0.4);
+    }
+
+    &:disabled {
+      background: #9ca3af;
+      box-shadow: none;
+    }
   }
 
   .resultSection {
@@ -1007,6 +1112,28 @@
   .measurementCanvas {
     left: 0 !important;
     width: 100% !important;
+  }
+
+  /* アニメーション */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes selectPulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 }
 
