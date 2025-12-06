@@ -1,7 +1,7 @@
 /**
  * 統一角度計算ライブラリ
  * クリーンアーキテクチャ: インフラ層
- * 
+ *
  * 3つの既存angle-calculatorから最適な機能を統合:
  * - mediapipe/angle-calculator.ts: 信頼度計算、詳細な型定義
  * - motion-capture/angle-calculator.ts: 平滑化機能、WristAngles/ThumbAngles型
@@ -52,7 +52,9 @@ export class AngleCalculator {
    * ベクトルの内積を計算
    */
   private dotProduct(vector1: Vector3D, vector2: Vector3D): number {
-    return vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z;
+    return (
+      vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z
+    );
   }
 
   /**
@@ -146,16 +148,16 @@ export class AngleCalculator {
 
   /**
    * 手首の掌屈・背屈角度を計算（改良版）
-   * 
+   *
    * 手のひらの法線ベクトルと前腕軸の角度を計算することで、
    * より正確な掌屈・背屈角度を測定します。
-   * 
+   *
    * 改善点:
    * 1. 手のひら平面の法線ベクトルを計算（外積使用）
    * 2. 前腕軸ベクトル（仮想）との角度を計算
    * 3. Z軸（奥行き）情報を適切に活用
    * 4. 掌屈（+）と背屈（-）を区別
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 掌屈・背屈角度（0-90度、掌屈は正の値）
    */
@@ -181,7 +183,7 @@ export class AngleCalculator {
     // Step 2: 手のひら上の2つのベクトルを計算（外積で法線を得るため）
     // ベクトル1: 人差し指付け根から小指付け根への方向（手のひらの横方向）
     const lateralVector = this.calculateVector(indexMcp, pinkyMcp);
-    
+
     // ベクトル2: 手首から手のひら中央への方向（手のひらの縦方向）
     const longitudinalVector = this.calculateVector(wrist, palmCenter);
 
@@ -197,7 +199,7 @@ export class AngleCalculator {
     // Step 5: 掌屈・背屈角度を計算
     // Z成分（奥行き）の変化量から角度を推定
     // MediaPipeの座標系: Z値が小さい = カメラに近い
-    
+
     // 手首から各MCP点へのZ軸方向の平均変化を計算
     const avgMcpZ = (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4;
     const zDifference = avgMcpZ - wrist.z;
@@ -223,9 +225,12 @@ export class AngleCalculator {
   }
 
   /**
-   * 手首の掌屈角度を計算（方向付き）
+   * 手首の掌屈角度を計算（小指側カメラ配置対応版）
    * 掌屈（手のひら側への曲げ）を正確に検出
-   * 
+   *
+   * カメラ配置: 小指側から手の側面を撮影
+   * この配置では、掌屈時に指先・MCP点のY座標が増加（画面下方向へ移動）
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 掌屈角度（0-90度、掌屈方向のみ）
    */
@@ -237,46 +242,49 @@ export class AngleCalculator {
     const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
     const ringMcp = landmarks[HAND_LANDMARKS.RING_FINGER_MCP];
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
+    const middleTip = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_TIP];
 
-    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp) return 0;
+    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp || !middleTip) return 0;
 
-    // MCP点のZ座標の平均
-    const avgMcpZ = (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4;
-    
-    // 掌屈判定: MCP点が手首より「手前」にある場合（Z値が小さい = カメラに近い）
-    // MediaPipeの座標系では、Z値が小さいほどカメラに近い
-    const zDifference = wrist.z - avgMcpZ;
+    // MCP点の平均Y座標
+    const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
 
-    if (zDifference <= 0) {
-      // 背屈方向または中立
+    // 掌屈判定（小指側カメラ配置）:
+    // 掌屈時は指先・MCP点が手首より下方に移動（Y値が大きくなる）
+    // MediaPipeの座標系: Y値が大きい = 画面下方
+    const yDifference = avgMcpY - wrist.y;
+
+    // 掌屈方向でない場合（MCP点が手首より上または同じ高さ）
+    if (yDifference <= 0.01) {
       return 0;
     }
 
-    // Y座標の変化も考慮（掌屈時は手のひらが下を向く傾向）
-    const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
-    const yDifference = avgMcpY - wrist.y;
-
-    // XY平面での距離
+    // 手首からMCP中央へのベクトル
     const palmCenter: Point3D = {
       id: -1,
       x: (indexMcp.x + middleMcp.x + ringMcp.x + pinkyMcp.x) / 4,
       y: avgMcpY,
-      z: avgMcpZ,
+      z: (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4,
     };
+
+    // 手首から手のひら中央への水平距離（X軸方向の変化が主）
+    const wristToPalmX = Math.abs(palmCenter.x - wrist.x);
     
-    const wristToPalmXY = Math.sqrt(
-      (palmCenter.x - wrist.x) ** 2 + (palmCenter.y - wrist.y) ** 2
-    );
+    // 小指側から見た場合、X軸方向が前腕の長軸方向に近い
+    // Y軸の変化（下方向への移動）から角度を計算
+    const horizontalDistance = Math.max(wristToPalmX, 0.01);
 
-    if (wristToPalmXY < 1e-10) return 0;
-
-    // Z差とXY距離から角度を計算
-    const angleRad = Math.atan2(zDifference, wristToPalmXY);
+    // arctan2を使用して角度を計算
+    // Y差（下方向への移動）とX方向の距離から角度を算出
+    const angleRad = Math.atan2(yDifference, horizontalDistance);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    // スケーリング係数（MediaPipeのZ値の特性に合わせて調整）
-    const scalingFactor = 2.5;
-    angleDeg = angleDeg * scalingFactor;
+    // 指先の位置も考慮（掌屈時は指先がさらに下方に来る）
+    const tipYDiff = middleTip.y - avgMcpY;
+    if (tipYDiff > 0.02) {
+      // 指先がMCPより下にある場合、角度を補正
+      angleDeg += tipYDiff * 30; // 補正係数
+    }
 
     // 0-90度の範囲に制限
     return Math.min(Math.max(angleDeg, 0), 90);
@@ -285,7 +293,7 @@ export class AngleCalculator {
   /**
    * 手首の尺屈・橈屈角度を計算
    * 手のひらの中心から手首までのベクトルと垂直ベクトルとの角度で測定
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 尺屈・橈屈角度
    */
@@ -333,18 +341,18 @@ export class AngleCalculator {
   /**
    * 手首の全角度を計算
    * 掌屈、背屈、尺屈、橈屈の4方向を計算
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 手首の4方向角度
    */
   /**
    * 手首の全角度を計算（改良版）
    * 掌屈、背屈、尺屈、橈屈の4方向を計算
-   * 
+   *
    * 改善点:
    * - 掌屈と背屈を個別のメソッドで計算
    * - Z軸（奥行き）情報を活用した精度向上
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 手首の4方向角度
    */
@@ -375,7 +383,7 @@ export class AngleCalculator {
 
     // 掌屈を計算（新しいアルゴリズム）
     const palmarFlexion = this.calculatePalmarFlexion(landmarks);
-    
+
     // 背屈を計算（掌屈と相反する方向）
     const dorsalFlexion = this.calculateDorsalFlexion(landmarks);
 
@@ -406,9 +414,12 @@ export class AngleCalculator {
   }
 
   /**
-   * 手首の背屈角度を計算
+   * 手首の背屈角度を計算（小指側カメラ配置対応版）
    * 背屈（手の甲側への曲げ）を正確に検出
-   * 
+   *
+   * カメラ配置: 小指側から手の側面を撮影
+   * この配置では、背屈時に指先・MCP点のY座標が減少（画面上方向へ移動）
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @returns 背屈角度（0-70度、背屈方向のみ）
    */
@@ -420,42 +431,49 @@ export class AngleCalculator {
     const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
     const ringMcp = landmarks[HAND_LANDMARKS.RING_FINGER_MCP];
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
+    const middleTip = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_TIP];
 
-    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp) return 0;
+    if (!wrist || !indexMcp || !middleMcp || !ringMcp || !pinkyMcp || !middleTip) return 0;
 
-    // MCP点のZ座標の平均
-    const avgMcpZ = (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4;
-    
-    // 背屈判定: MCP点が手首より「奥」にある場合（Z値が大きい = カメラから遠い）
-    const zDifference = avgMcpZ - wrist.z;
+    // MCP点の平均Y座標
+    const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
 
-    if (zDifference <= 0) {
-      // 掌屈方向または中立
+    // 背屈判定（小指側カメラ配置）:
+    // 背屈時は指先・MCP点が手首より上方に移動（Y値が小さくなる）
+    // MediaPipeの座標系: Y値が小さい = 画面上方
+    const yDifference = wrist.y - avgMcpY;
+
+    // 背屈方向でない場合（MCP点が手首より下または同じ高さ）
+    if (yDifference <= 0.01) {
       return 0;
     }
 
-    // XY平面での距離
-    const avgMcpY = (indexMcp.y + middleMcp.y + ringMcp.y + pinkyMcp.y) / 4;
+    // 手首からMCP中央へのベクトル
     const palmCenter: Point3D = {
       id: -1,
       x: (indexMcp.x + middleMcp.x + ringMcp.x + pinkyMcp.x) / 4,
       y: avgMcpY,
-      z: avgMcpZ,
+      z: (indexMcp.z + middleMcp.z + ringMcp.z + pinkyMcp.z) / 4,
     };
+
+    // 手首から手のひら中央への水平距離（X軸方向の変化が主）
+    const wristToPalmX = Math.abs(palmCenter.x - wrist.x);
     
-    const wristToPalmXY = Math.sqrt(
-      (palmCenter.x - wrist.x) ** 2 + (palmCenter.y - wrist.y) ** 2
-    );
+    // 小指側から見た場合、X軸方向が前腕の長軸方向に近い
+    // Y軸の変化（上方向への移動）から角度を計算
+    const horizontalDistance = Math.max(wristToPalmX, 0.01);
 
-    if (wristToPalmXY < 1e-10) return 0;
-
-    // Z差とXY距離から角度を計算
-    const angleRad = Math.atan2(zDifference, wristToPalmXY);
+    // arctan2を使用して角度を計算
+    // Y差（上方向への移動）とX方向の距離から角度を算出
+    const angleRad = Math.atan2(yDifference, horizontalDistance);
     let angleDeg = angleRad * (180 / Math.PI);
 
-    // スケーリング係数（MediaPipeのZ値の特性に合わせて調整）
-    const scalingFactor = 2.5;
-    angleDeg = angleDeg * scalingFactor;
+    // 指先の位置も考慮（背屈時は指先がさらに上方に来る）
+    const tipYDiff = avgMcpY - middleTip.y;
+    if (tipYDiff > 0.02) {
+      // 指先がMCPより上にある場合、角度を補正
+      angleDeg += tipYDiff * 25; // 補正係数
+    }
 
     // 0-70度の範囲に制限（背屈の生理的範囲）
     return Math.min(Math.max(angleDeg, 0), 70);
@@ -463,7 +481,7 @@ export class AngleCalculator {
 
   /**
    * 測定ステップに応じた角度を計算（改良版）
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
    * @param stepId 測定ステップID
    * @returns 計算された角度
@@ -486,7 +504,7 @@ export class AngleCalculator {
 
   /**
    * ランドマークデータの有効性をチェック
-   * 
+   *
    * @param landmarks MediaPipe Handsランドマーク配列
    * @returns 有効性フラグ
    */
