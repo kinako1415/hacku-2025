@@ -1,0 +1,324 @@
+/**
+ * 進捗チャートコンポーネントのスタイル
+ */
+
+.progressCharts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--background-color, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    gap: 20px;
+  }
+}
+
+/* ヘッダー */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #212121);
+  margin: 0;
+}
+
+/* 期間選択 */
+.periodSelector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.periodButton {
+  padding: 8px 16px;
+  border: 2px solid var(--border-color, #e0e0e0);
+  border-radius: 20px;
+  background: #ffffff;
+  color: var(--text-secondary, #757575);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--primary-color, #2196f3);
+    color: var(--primary-color, #2196f3);
+  }
+
+  &.active {
+    border-color: var(--primary-color, #2196f3);
+    background: var(--primary-color, #2196f3);
+    color: #ffffff;
+  }
+}
+
+/* チャートタイプ選択 */
+.chartTypeSelector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chartTypeButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border: 2px solid var(--border-color, #e0e0e0);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--text-secondary, #757575);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--primary-color, #2196f3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &.active {
+    border-color: var(--primary-color, #2196f3);
+    background: var(--primary-light, #f3f9ff);
+    color: var(--primary-color, #2196f3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+.chartIcon {
+  font-size: 1.5rem;
+
+  @media (max-width: 480px) {
+    margin-right: 8px;
+  }
+}
+
+/* 統計情報 */
+.statistics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border: 2px solid var(--border-light, #f0f0f0);
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #757575);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary, #212121);
+
+  &.trend-up {
+    color: var(--success-color, #4caf50);
+  }
+
+  &.trend-down {
+    color: var(--error-color, #f44336);
+  }
+
+  &.trend-stable {
+    color: var(--warning-color, #ff9800);
+  }
+}
+
+.changeRate {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* チャートセクション */
+.chartSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background: linear-gradient(135deg, #fafbfc, #ffffff);
+  border: 2px solid var(--border-light, #f0f0f0);
+  border-radius: 12px;
+  padding: 24px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    min-height: 250px;
+  }
+}
+
+.chartContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  max-width: 400px;
+
+  @media (max-width: 768px) {
+    max-width: 320px;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 280px;
+  }
+}
+
+.axisLabel {
+  font-size: 12px;
+  fill: var(--text-secondary, #757575);
+  font-weight: 500;
+}
+
+.xLabels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 40px;
+
+  @media (max-width: 768px) {
+    max-width: 240px;
+    padding: 0 20px;
+  }
+}
+
+.xLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #757575);
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* データなし表示 */
+.noData {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-secondary, #757575);
+  text-align: center;
+
+  span {
+    font-size: 3rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+/* サマリーセクション */
+.summary {
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border: 2px solid var(--border-light, #f0f0f0);
+  border-radius: 12px;
+  padding: 20px;
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary, #212121);
+    margin: 0 0 16px 0;
+  }
+}
+
+.summaryStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #757575);
+  font-weight: 500;
+}
+
+.summaryValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color, #2196f3);
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .chartContainer svg {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+  }
+
+  .statCard,
+  .summary {
+    background: linear-gradient(135deg, #2a2a2a, #1e1e1e);
+  }
+
+  .chartSection {
+    background: linear-gradient(135deg, #2a2a2a, #1e1e1e);
+  }
+}

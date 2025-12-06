@@ -1,0 +1,611 @@
+# @format
+
+openapi: 3.0.3
+info:
+  title: AI駆動手首・母指可動域リハビリアプリ API
+  description: カメラベース可動域測定とカレンダー記録管理API
+  version: 1.0.0
+
+paths:
+  /api/measurements:
+    post:
+      summary: 新しい可動域測定を保存
+      description: カメラで測定した可動域データを保存し、正常範囲との比較結果を含む
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMeasurementRequest"
+      responses:
+        "201":
+          description: 測定データ保存成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MotionMeasurement"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      summary: 測定履歴を取得
+      description: ユーザーの測定履歴を日付範囲で取得
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: 測定履歴取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  measurements:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MotionMeasurement"
+                  total:
+                    type: integer
+
+  /api/measurements/{id}:
+    get:
+      summary: 特定の測定データを取得
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 測定データ取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MotionMeasurement"
+        "404":
+          description: 測定データが見つからない
+
+  /api/calendar:
+    get:
+      summary: カレンダー記録を取得
+      description: 指定期間のカレンダー記録を取得
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: カレンダー記録取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CalendarRecord"
+
+    post:
+      summary: カレンダー記録を作成・更新
+      description: 日記メモや測定完了フラグを更新
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCalendarRecordRequest"
+      responses:
+        "201":
+          description: カレンダー記録保存成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarRecord"
+
+  /api/progress/{userId}:
+    get:
+      summary: 進捗統計データを取得
+      description: ユーザーの回復進捗、統計データを取得
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 進捗データ取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressData"
+
+  /api/users:
+    post:
+      summary: ユーザーを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: ユーザー作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/users/{id}:
+    get:
+      summary: ユーザー情報を取得
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ユーザー情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    put:
+      summary: ユーザー情報を更新
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: ユーザー情報更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        rehabStartDate:
+          type: string
+          format: date
+        currentSymptomLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        preferredHand:
+          type: string
+          enum: ["left", "right"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    MotionMeasurement:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        measurementDate:
+          type: string
+          format: date-time
+        wristFlexion:
+          type: number
+          minimum: 0
+          maximum: 90
+        wristExtension:
+          type: number
+          minimum: 0
+          maximum: 70
+        wristUlnarDeviation:
+          type: number
+          minimum: 0
+          maximum: 55
+        wristRadialDeviation:
+          type: number
+          minimum: 0
+          maximum: 25
+        thumbFlexion:
+          type: number
+          minimum: 0
+          maximum: 90
+        thumbExtension:
+          type: number
+          minimum: 0
+          maximum: 0
+        thumbAdduction:
+          type: number
+          minimum: 0
+          maximum: 0
+        thumbAbduction:
+          type: number
+          minimum: 0
+          maximum: 60
+        accuracyScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        handUsed:
+          type: string
+          enum: ["left", "right"]
+        comparisonResult:
+          $ref: "#/components/schemas/MotionComparisonResult"
+        createdAt:
+          type: string
+          format: date-time
+
+    MotionComparisonResult:
+      type: object
+      properties:
+        wristFlexion:
+          $ref: "#/components/schemas/ComparisonStatus"
+        wristExtension:
+          $ref: "#/components/schemas/ComparisonStatus"
+        wristUlnarDeviation:
+          $ref: "#/components/schemas/ComparisonStatus"
+        wristRadialDeviation:
+          $ref: "#/components/schemas/ComparisonStatus"
+        thumbFlexion:
+          $ref: "#/components/schemas/ComparisonStatus"
+        thumbExtension:
+          $ref: "#/components/schemas/ComparisonStatus"
+        thumbAdduction:
+          $ref: "#/components/schemas/ComparisonStatus"
+        thumbAbduction:
+          $ref: "#/components/schemas/ComparisonStatus"
+        overallStatus:
+          type: string
+          enum: ["normal", "below_normal", "above_normal"]
+
+    ComparisonStatus:
+      oneOf:
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: ["normal"]
+            within_range:
+              type: boolean
+              const: true
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: ["below_normal"]
+            deficit_degrees:
+              type: number
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: ["above_normal"]
+            excess_degrees:
+              type: number
+
+    CalendarRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        recordDate:
+          type: string
+          format: date
+        measurementCompleted:
+          type: boolean
+        measurementId:
+          type: string
+          nullable: true
+        physicalConditionNote:
+          type: string
+          maxLength: 500
+          nullable: true
+        moodNote:
+          type: string
+          maxLength: 300
+          nullable: true
+        rehabNote:
+          type: string
+          maxLength: 500
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProgressData:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        calculatedDate:
+          type: string
+          format: date-time
+        weeklyStats:
+          $ref: "#/components/schemas/WeeklyProgressStats"
+        monthlyStats:
+          $ref: "#/components/schemas/MonthlyProgressStats"
+        recoveryRate:
+          $ref: "#/components/schemas/RecoveryRateData"
+        predictedRecovery:
+          $ref: "#/components/schemas/PredictionData"
+        createdAt:
+          type: string
+          format: date-time
+
+    WeeklyProgressStats:
+      type: object
+      properties:
+        week_start:
+          type: string
+          format: date
+        measurement_count:
+          type: integer
+        average_accuracy:
+          type: number
+        improvement_trend:
+          type: string
+          enum: ["improving", "stable", "declining"]
+
+    MonthlyProgressStats:
+      type: object
+      properties:
+        month:
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+        measurement_count:
+          type: integer
+        compliance_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+        average_progress:
+          type: number
+
+    RecoveryRateData:
+      type: object
+      properties:
+        overall_recovery_percentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        per_joint_recovery:
+          type: object
+          properties:
+            wrist_flexion:
+              type: number
+            wrist_extension:
+              type: number
+            wrist_ulnar:
+              type: number
+            wrist_radial:
+              type: number
+            thumb_flexion:
+              type: number
+            thumb_abduction:
+              type: number
+
+    PredictionData:
+      type: object
+      properties:
+        estimated_full_recovery_date:
+          type: string
+          format: date
+          nullable: true
+        confidence_level:
+          type: number
+          minimum: 0
+          maximum: 1
+        next_milestone_target:
+          type: object
+          properties:
+            joint:
+              type: string
+            target_angle:
+              type: number
+            estimated_achievement_date:
+              type: string
+              format: date
+
+    CreateMeasurementRequest:
+      type: object
+      required:
+        - userId
+        - wristFlexion
+        - wristExtension
+        - wristUlnarDeviation
+        - wristRadialDeviation
+        - thumbFlexion
+        - thumbExtension
+        - thumbAdduction
+        - thumbAbduction
+        - accuracyScore
+        - handUsed
+      properties:
+        userId:
+          type: string
+        wristFlexion:
+          type: number
+          minimum: 0
+          maximum: 90
+        wristExtension:
+          type: number
+          minimum: 0
+          maximum: 70
+        wristUlnarDeviation:
+          type: number
+          minimum: 0
+          maximum: 55
+        wristRadialDeviation:
+          type: number
+          minimum: 0
+          maximum: 25
+        thumbFlexion:
+          type: number
+          minimum: 0
+          maximum: 90
+        thumbExtension:
+          type: number
+          minimum: 0
+          maximum: 0
+        thumbAdduction:
+          type: number
+          minimum: 0
+          maximum: 0
+        thumbAbduction:
+          type: number
+          minimum: 0
+          maximum: 60
+        accuracyScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        handUsed:
+          type: string
+          enum: ["left", "right"]
+
+    CreateCalendarRecordRequest:
+      type: object
+      required:
+        - userId
+        - recordDate
+      properties:
+        userId:
+          type: string
+        recordDate:
+          type: string
+          format: date
+        measurementCompleted:
+          type: boolean
+          default: false
+        measurementId:
+          type: string
+          nullable: true
+        physicalConditionNote:
+          type: string
+          maxLength: 500
+          nullable: true
+        moodNote:
+          type: string
+          maxLength: 300
+          nullable: true
+        rehabNote:
+          type: string
+          maxLength: 500
+          nullable: true
+
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - rehabStartDate
+        - currentSymptomLevel
+        - preferredHand
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        rehabStartDate:
+          type: string
+          format: date
+        currentSymptomLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        preferredHand:
+          type: string
+          enum: ["left", "right"]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        currentSymptomLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        preferredHand:
+          type: string
+          enum: ["left", "right"]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true

@@ -1,0 +1,20 @@
+.calendarPage {
+  display: flex;
+  gap: 20px;
+  width: 1200px;
+  height: 682px;
+  align-items: center;
+  justify-content: center;
+  margin: 28px auto 0px auto;
+  padding: 0;
+  height: 100vh;
+  box-sizing: border-box;
+  overscroll-behavior-y: none;
+}
+
+/* 左サイドバー */
+.leftSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

@@ -1,0 +1,950 @@
+/**
+ * 測定ページのスタイル - 添付画像のUIに合わせたデザイン
+ */
+
+.measurementPage {
+  display: flex;
+  flex-direction: column;
+  background: #e9effe;
+  margin: 12px 16px;
+  height: calc(100vh - 24px);
+}
+
+/* メインコンテンツエリア */
+.mainContent {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  min-height: calc(100vh - 120px);
+}
+
+/* 左側コンテンツ */
+.leftContent {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow-y: auto;
+  margin-top: 76px;
+  border-radius: 36px;
+}
+
+/* 右側コンテンツ */
+.rightContent {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  background: #64748b; /* グレー背景を維持 */
+  position: relative;
+  border-radius: 36px; /* 右側のみ角丸 */
+}
+
+.leftSection {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+
+// /* 左側：説明セクション */
+// .leftSection {
+//   flex: 1;
+//   max-width: 50%;
+//   padding: 32px 40px;
+//   background: white;
+//   overflow-y: auto;
+// }
+
+// /* 右側：カメラセクション */
+// .rightSection {
+//   flex: 1;
+//   max-width: 50%;
+//   display: flex;
+//   flex-direction: column;
+//   background: #64748b;
+//   position: relative;
+// }
+
+/* カメラヘッダー */
+.cameraHeader {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+}
+
+.statusBadge {
+  background: white;
+  color: #0542fc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.instructionItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.instructionsContent {
+  box-sizing: border-box;
+  gap: 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px 16px;
+  border: 1px solid #e9e9e9;
+  border-radius: 24px;
+
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: white;
+  color: #0542fc;
+  border: 2px solid #0542fc;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #494949;
+}
+
+.stepDescription {
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 19px;
+  color: #494949;
+}
+
+/* 説明セクションの次へボタン */
+.instructionsNext {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.instructionsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nextButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 24px;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* 手首選択セクション */
+.handSelectionSection {
+  padding: 32px 24px 16px 24px;
+}
+
+.selectionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #494949;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.selectionNote {
+  align-items: center;
+  font-size: 14px;
+  color: #ef4444;
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.handCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+  height: 316px;
+}
+
+.handCard {
+  border: 2px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    border-color: #0542fc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: #0542fc;
+    background: #0542fc;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+}
+
+.handTitle {
+  font-size: 36px;
+  font-weight: 700;
+  color: #494949;
+
+  .handCard.selected & {
+    color: white;
+  }
+}
+
+.handDescription {
+  font-size: 14px;
+  color: #808080;
+  opacity: 0.8;
+
+  .handCard.selected & {
+    color: #87acff;
+  }
+}
+
+.movementTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag {
+  background-color: #0542fc;
+  padding: 4px 12px;
+  border-radius: 36px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+
+  .handCard.selected & {
+    background: #fff;
+    color: #0542fc;
+  }
+}
+
+/* 測定情報セクション */
+.measurementInfoSection {
+  padding: 0px 24px 24px 24px;
+}
+
+.infoSectionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #494949;
+  margin-bottom: 16px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.infoItem {
+  border: 1px solid #e9e9e9;
+  border-radius: 24px;
+  padding: 20px 26px;
+}
+
+.infoItemTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #494949;
+  margin-bottom: 8px;
+}
+
+.infoItemText {
+  font-size: 14px;
+  color: #808080;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* カメラコンテナ */
+.cameraContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* パディングを削除 */
+  height: 100%;
+  position: relative;
+  width: 100%;
+
+  /* 測定開始前のオーバーレイ */
+  &.inactive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6); /* 薄い灰色のオーバーレイ */
+    z-index: 100; /* dashedFrameより上に配置 */
+    border-radius: 36px;
+    pointer-events: none;
+  }
+}
+
+.cameraFrame {
+  position: relative;
+  width: 100%;
+  height: 100%; /* 全体の高さに */
+  border: none; /* ボーダーを削除 */
+  border-radius: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* 点線の枠（absolute配置） */
+.dashedFrame {
+  position: absolute;
+  inset: 140px 100px;
+  border: 3px dashed rgba(5, 66, 252, 0.8); /* 透明度を追加 */
+  border-radius: 24px;
+  pointer-events: none; /* クリックイベントを通す */
+  z-index: 10;
+  box-shadow: 0 0 20px rgba(5, 66, 252, 0.3); /* グロー効果を追加 */
+}
+
+.frameInner {
+  width: 100%;
+  height: 100%;
+  border-radius: 36px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 背景カメラ（測定用カメラと同じアスペクト比で自然に延長） */
+.backgroundCameraVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 画面全体をカバーして全画面表示 */
+  z-index: 2;
+  border-radius: 36px;
+  transform: scaleX(-1); // ← 追加：キャンバスもミラー表示
+}
+
+/* 測定用カメラ（適切なアスペクト比保持） */
+.measurementCameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* アスペクト比を保持して測定精度を確保 */
+  background: transparent; /* 背景を透明に */
+  border-radius: 36px;
+  z-index: 1;
+  box-shadow: none; /* 影を除去してシームレスに */
+}
+
+/* 測定用キャンバス（MediaPipe描画用） */
+.measurementCanvas {
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 80vw; /* 測定用カメラと同じサイズ */
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* 隠れたビデオコンテナ（MediaPipe処理用） */
+.hiddenVideoContainer {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 640px;
+  height: 480px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hiddenVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hiddenCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.instructionsSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 32px 24px 24px;
+  gap: 16px;
+
+  width: 100%;
+  height: 100%;
+  left: 16px;
+  top: 81px;
+
+  background: #ffffff;
+  border-radius: 36px;
+}
+
+.cameraPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
+  font-weight: 500;
+  border-radius: 36px;
+}
+
+.frameInstruction {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5, 66, 252, 0.9); /* 透明度を追加 */
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 24px;
+  z-index: 15; /* 点線枠より上に */
+  backdrop-filter: blur(10px); /* 背景ぼかし効果 */
+  box-shadow: 0 4px 20px rgba(5, 66, 252, 0.3); /* 影を追加 */
+}
+
+.cameraError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* 測定実行画面 */
+.measurementExecution {
+  display: flex;
+  flex-direction: column;
+  padding: 32px 40px;
+  height: 100%;
+  gap: 24px;
+  position: relative;
+}
+
+/* 測定部位タグ */
+.measurementTags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.measurementTag {
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: #0542fc;
+    color: white;
+  }
+
+  &.completed {
+    background: #10b981;
+    color: white;
+  }
+}
+
+/* 現在のステップ表示 */
+.currentStep {
+  margin-bottom: 16px;
+}
+
+.stepLabel {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* 角度表示 */
+.angleDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px 0;
+}
+
+.angleValue {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #0542fc;
+  line-height: 1;
+}
+
+/* 指示テキスト */
+.instructionText {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.mainInstruction {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subInstruction {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+}
+
+.cameraInstruction {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ステータス表示 */
+.statusContainer {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.loadingStatus {
+  background: #fef3c7;
+  color: #d97706;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.detectedStatus {
+  background: #d1fae5;
+  color: #065f46;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.waitingStatus {
+  background: #fef2f2;
+  color: #dc2626;
+  margin: 0;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* 次のフェーズボタン */
+.nextPhase {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.nextPhaseButton {
+  background: #0542fc;
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+  }
+}
+
+/* 戻るボタン */
+.backButton {
+  position: absolute;
+  top: 32px;
+  left: 40px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+}
+
+/* 下部セクション */
+.bottomSection {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  position: relative;
+  background: white;
+  margin-top: 9%;
+}
+
+.testButton,
+.startButton {
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  min-width: 160px;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.testButton {
+  background: white;
+  color: #0542fc;
+  border: 2px solid #0542fc;
+
+  &:hover:not(:disabled) {
+    background: #0542fc;
+    color: white;
+  }
+}
+
+.startButton {
+  background: #f4f4f4;
+  color: #808080;
+
+  &:not(:disabled) {
+    background: #0542fc;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .leftSection,
+  .rightSection {
+    max-width: 100%;
+  }
+
+  .rightSection {
+    min-height: 400px;
+  }
+
+  .instructionsSection {
+    max-width: 100%;
+  }
+
+  .stepNumber {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .stepTitle {
+    font-size: 1rem;
+  }
+
+  .stepDescription {
+    font-size: 0.8rem;
+  }
+
+  .handCards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .bottomSection {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .testButton,
+  .startButton {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .cameraFrame {
+    max-width: 360px;
+  }
+
+  .frameInstruction {
+    font-size: 0.875rem;
+  }
+}
+
+/* 測定実行時のビデオコンテナ */
+.videoContainer {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.video {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* コントロールボタン */
+.controls {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.stopButton {
+  padding: 12px 24px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #dc2626;
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.nextPhaseButton {
+  padding: 12px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+/* 測定結果セクション */
+.resultSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  height: 100%;
+  gap: 32px;
+}
+
+.resultTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.resultSummary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.resultItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.resultName {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.resultAngle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0542fc;
+}
+
+.resultControls {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.retryButton,
+.saveButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.retryButton {
+  background: #e5e7eb;
+  color: #374151;
+
+  &:hover {
+    background: #d1d5db;
+  }
+}
+
+.saveButton {
+  background: #0542fc;
+  color: white;
+
+  &:hover {
+    background: #2563eb;
+  }
+}

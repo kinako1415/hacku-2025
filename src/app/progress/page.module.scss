@@ -1,0 +1,644 @@
+/**
+ * 進捗ページのスタイル
+ */
+
+/* サンプルデータ使用時のバナー */
+.sampleDataBanner {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 -24px 0 -24px;
+  border-radius: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
+
+.progressPage {
+  min-height: 100vh;
+  background: #e9effe; /* rootページと同じ背景色 */
+  display: flex;
+  flex-direction: column;
+  // padding: 0 24px;
+}
+
+/* ページヘッダー（共通ヘッダーとは別） */
+.pageHeader {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 0 24px 0; /* 上部に余白を追加 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    padding: 60px 0 16px 0; /* モバイルでも上部に余白 */
+  }
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2.5rem; /* より大きく */
+  font-weight: 700;
+  color: #0542fc; /* ブルーカラー */
+  margin: 0;
+}
+
+.titleIcon {
+  font-size: 2rem;
+}
+
+.navigation {
+  display: flex;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 16px;
+  }
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #4a5568;
+  font-weight: 500;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+}
+
+/* エラー表示 */
+.errorContainer {
+  padding: 16px 24px;
+}
+
+.errorMessage {
+  background: #fed7d7;
+  border: 1px solid #feb2b2;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.errorIcon {
+  font-size: 1.5rem;
+}
+
+.errorResetButton {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #c53030;
+  }
+}
+
+/* メインコンテンツ */
+.mainContent {
+  flex: 1;
+  width: 100%; /* 画面いっぱいに */
+  max-width: none; /* max-widthを削除 */
+  margin: 0;
+  padding: 0 16px 24px 16px; /* 左右16pxの余白 */
+  display: flex;
+  flex-direction: row; /* 横並びレイアウト */
+  gap: 16px; /* 左右のギャップを16pxに */
+
+  @media (max-width: 768px) {
+    padding: 0 16px 16px 16px;
+    flex-direction: column; /* モバイルでは縦並び */
+    gap: 16px;
+  }
+}
+
+/* 左側コラム（期間選択 + 統計情報） */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: calc(50% - 8px); /* 画面の半分から8px（ギャップの半分）を引く */
+  flex-shrink: 0; /* サイズ固定 */
+  margin-top: 86px;
+  height: stretch;
+
+  @media (max-width: 768px) {
+    width: 100%; /* モバイルでは全幅 */
+  }
+}
+
+/* 右側コラム（可動域推移グラフ） */
+.rightColumn {
+  width: calc(50% - 8px); /* 画面の半分から8px（ギャップの半分）を引く */
+  flex-shrink: 0; /* サイズ固定 */
+  min-width: 0; /* flex shrinkingを有効にする */
+  margin-top: 16px;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    width: 100%; /* モバイルでは全幅 */
+  }
+}
+
+/* 期間選択 */
+.periodSelector {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #f0f0f0;
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 16px 0;
+  }
+}
+
+.periodButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.periodButton {
+  padding: 10px 16px;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  font-size: 0.9rem;
+
+  &.active {
+    background: #0542fc;
+    border: none;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 60px;
+    flex: 1;
+    text-align: center;
+  }
+}
+
+.periodButton.active {
+  background: #0542fc;
+  border: none;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* 手の選択 */
+.handSelector {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #f0f0f0;
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 16px 0;
+  }
+}
+
+.handButtons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+}
+
+.handButton {
+  padding: 10px 16px;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  font-size: 0.9rem;
+
+  &:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+    color: #2d3748;
+  }
+
+  &.active {
+    background: #4299e1;
+    border-color: #3182ce;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-width: 60px;
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* 統計セクション */
+.statsSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* セクション内のギャップ */
+  height: stretch;
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* モバイルでは2列 */
+  gap: 16px; /* 縦のギャップ */
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr); /* モバイルでは2列 */
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column; /* 小画面では縦並び */
+  }
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 16px; /* 少し小さく */
+  padding: 20px 16px; /* パディング調整 */
+  /* box-shadow を削除 */
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+
+  &:hover {
+    transform: translateY(-3px); /* 動きを小さく */
+    /* box-shadow を削除 */
+  }
+
+  h3 {
+    font-size: 1rem; /* 少し小さく */
+    color: #808080;
+    margin: 0 0 8px 0; /* マージン調整 */
+    font-weight: 500;
+  }
+}
+
+.statIcon {
+  font-size: 2.5rem;
+  opacity: 0.8;
+  min-width: 50px;
+  text-align: center;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.statValue {
+  font-size: 2rem; /* 少し小さく */
+  font-weight: 700;
+  color: #0542fc;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.statDescription {
+  font-size: 0.9rem;
+  color: #808080;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* 最新測定カード */
+.latestMeasurement {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+
+  h3 {
+    font-size: 1rem;
+    color: #495057;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+  }
+}
+
+.latestMeasurementContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.latestMeasurementItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+
+  .label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .value {
+    color: #0542fc;
+    font-weight: 600;
+  }
+}
+
+/* チャートセクション */
+.chartsSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+  height: fit-content; /* 内容に応じた高さ */
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 20px 0;
+  }
+}
+
+.chartsContainer {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  /* box-shadow を削除 */
+  border: 1px solid #f0f0f0;
+}
+
+.progressCharts {
+  width: 100%;
+}
+
+/* インサイトセクション */
+.insightsSection {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  /* box-shadow を削除 */
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.insightCards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insightCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0fff4, #e6fffa);
+  border: 2px solid #9ae6b4;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    /* box-shadow を削除 */
+  }
+}
+
+.insightIcon {
+  font-size: 2rem;
+  min-width: 40px;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.insightContent {
+  flex: 1;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #22543d;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #2f855a;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+/* ローディング */
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9effe; /* rootページと同じ背景色 */
+}
+
+.loadingSpinner {
+  text-align: center;
+  color: #2d3748; /* ダークテキスト色に変更 */
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid rgba(45, 55, 72, 0.2); /* 明るい背景用のボーダー色 */
+  border-top: 5px solid #0542fc; /* ブルーのアクセント色 */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 24px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingSpinner h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.loadingSpinner p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* フッター */
+.footer {
+  background: #2d3748;
+  color: #e2e8f0;
+  padding: 32px 24px;
+  margin-top: auto;
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+
+  a {
+    color: #81e6d9;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #4fd1c7;
+    }
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* レスポンシブ調整 */
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .periodSelector,
+  .statsSection,
+  .chartsSection,
+  .insightsSection {
+    padding: 16px;
+  }
+
+  .insightCard {
+    padding: 16px;
+  }
+
+  .insightIcon {
+    font-size: 1.5rem;
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .statIcon {
+    font-size: 2rem;
+    min-width: 40px;
+  }
+
+  .statValue {
+    font-size: 1.2rem;
+  }
+
+  .periodButton {
+    flex: 1;
+    text-align: center;
+  }
+}

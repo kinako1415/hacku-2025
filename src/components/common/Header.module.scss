@@ -1,0 +1,69 @@
+/* Header Component Styles */
+.header {
+  top: 0;
+  z-index: 100;
+  width: 48%;
+  position: fixed;
+  left: 16px;
+  top: 12px;
+  text-decoration: none;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+}
+
+.simpleHeaderContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 8px 24px 8px 24px;
+  text-decoration: none;
+}
+
+.simpleTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #0542fc;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.simpleNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.simpleNavLink {
+  color: #494949;
+  text-decoration: none;
+  text-align: center;
+  padding: 8px 16px;
+}
+
+.simpleActionButton {
+  text-decoration: none;
+  background-color: #0542fc;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  padding: fit-content;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a.hover {
+  color: #808080;
+}

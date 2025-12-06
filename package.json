@@ -1,0 +1,48 @@
+{
+  "name": "ai-rehabilitation-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:e2e": "playwright test",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1675466862",
+    "@mediapipe/hands": "^0.4.1675469240",
+    "@mediapipe/pose": "^0.5.1646424915",
+    "dayjs": "^1.11.18",
+    "dexie": "^3.2.4",
+    "jotai": "^2.14.0",
+    "lucide-react": "^0.544.0",
+    "next": "14.2.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rechart": "^0.0.1",
+    "recharts": "^3.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.32",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.2.5",
+    "sass": "^1.77.0",
+    "typescript": "^5.4.0"
+  }
+}
