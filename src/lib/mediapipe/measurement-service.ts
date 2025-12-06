@@ -392,18 +392,25 @@ export class MeasurementService {
       return null;
     }
 
-    // 複数の手が検出された場合、信頼度の高い方または指定された手を選択
-    if (this.currentSession?.targetHand === 'left') {
-      return (
-        handResult.hands.find((hand) => hand.handedness === 'Left') || null
-      );
-    } else if (this.currentSession?.targetHand === 'right') {
-      return (
-        handResult.hands.find((hand) => hand.handedness === 'Right') || null
+    // MediaPipeのhandednessはカメラ視点（鏡像）なので、実際の左右を判定する
+    // カメラに映った「Right」は実際には左手、「Left」は実際には右手
+    const targetHandedness = this.currentSession?.targetHand === 'left' ? 'Right' : 'Left';
+
+    // 指定された手のみを検出
+    if (this.currentSession?.targetHand === 'left' || this.currentSession?.targetHand === 'right') {
+      const targetHands = handResult.hands.filter((hand) => hand.handedness === targetHandedness);
+
+      if (targetHands.length === 0) {
+        return null;
+      }
+
+      // 複数検出された場合は最も信頼度の高いものを返す
+      return targetHands.reduce((best, current) =>
+        current.confidence > best.confidence ? current : best
       );
     }
 
-    // 最も信頼度の高い手を返す
+    // autoモード：最も信頼度の高い手を返す
     return handResult.hands.reduce((best, current) =>
       current.confidence > best.confidence ? current : best
     );
