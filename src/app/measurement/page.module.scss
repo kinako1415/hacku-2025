@@ -1484,7 +1484,6 @@
 
 .overlayButton {
   position: absolute;
-  right: 24%;
   z-index: 20;
 
   /* タブレット対応 */
@@ -1585,7 +1584,7 @@
   /* モバイル対応 */
   @media (max-width: 768px) {
     left: 5%;
-    top: 20%;
+    top: 10%;
     transform: none;
     font-size: 16px;
     max-width: 90%;
