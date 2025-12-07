@@ -201,6 +201,36 @@ const measurementSteps: MeasurementStep[] = [
     ],
     videoPath: '/radial-deviation.mp4',
   },
+  {
+    id: 'pronation',
+    name: '回内',
+    instruction: '手のひらを下に向けて前腕を回してください',
+    description:
+      '肘ゐ90°に曲げて脇につけ、小指側をカメラに向けてから測定を開始してください。（正常関節可動域 : 90°）',
+    targetAngle: 90,
+    videoInstructions: [
+      '肘ゐ90°に曲げ、脇につけます',
+      '小指側がカメラに見えるように手を置きます',
+      'ゲージが表示されたら、前腕を内側に回します',
+      '手のひらが下を向くように90°近くまで回してください',
+    ],
+    videoPath: '',
+  },
+  {
+    id: 'supination',
+    name: '回外',
+    instruction: '手のひらを上に向けて前腕を回してください',
+    description:
+      '肘ゐ90°に曲げて脇につけ、小指側をカメラに向けてから測定を開始してください。（正常関節可動域 : 90°）',
+    targetAngle: 90,
+    videoInstructions: [
+      '回内と同じく、肘ゐ90°に曲げ、脇につけます',
+      '小指側がカメラに見えるように手を置きます',
+      'ゲージが表示されたら、前腕を外側に回します',
+      '手のひらが上を向くように90°近くまで回してください',
+    ],
+    videoPath: '',
+  },
 ];
 
 /**
@@ -247,7 +277,7 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>測定動作</h3>
             </div>
             <p className={styles.stepDescription}>
-              画面の指示に従い、手首(掌屈・背屈・尺屈・橈屈）をゆっくり最大まで動かしてください。
+              画面の指示に従い、手首(掌屈・背屈・尺屈・橈屈・回内・回外）をゆっくり最大まで動かしてください。
               <br />
               測定中はカメラから手が外れないよう注意してください。
             </p>
@@ -302,6 +332,8 @@ const HandSelectionSection: React.FC<{
             <span className={styles.tag}>背屈</span>
             <span className={styles.tag}>尺屈</span>
             <span className={styles.tag}>橈屈</span>
+            <span className={styles.tag}>回内</span>
+            <span className={styles.tag}>回外</span>
           </div>
         </div>
         <div
@@ -315,6 +347,8 @@ const HandSelectionSection: React.FC<{
             <span className={styles.tag}>背屈</span>
             <span className={styles.tag}>尺屈</span>
             <span className={styles.tag}>橈屈</span>
+            <span className={styles.tag}>回内</span>
+            <span className={styles.tag}>回外</span>
           </div>
         </div>
       </div>

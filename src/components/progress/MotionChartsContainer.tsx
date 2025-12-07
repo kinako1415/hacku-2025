@@ -40,6 +40,16 @@ const MOTION_TYPES: { type: MotionType; label: string; description: string }[] =
       description: '手首を親指側に曲げる可動域',
     },
     { type: 'ulnar', label: '尺屈', description: '手首を小指側に曲げる可動域' },
+    {
+      type: 'pronation',
+      label: '回内',
+      description: '前腕を内側にひねる可動域',
+    },
+    {
+      type: 'supination',
+      label: '回外',
+      description: '前腕を外側にひねる可動域',
+    },
   ];
 
 /**
