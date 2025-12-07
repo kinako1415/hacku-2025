@@ -37,7 +37,7 @@ export class StartMeasurementUseCase {
       hand: input.hand,
       startTime: new Date(),
       status: 'active',
-      totalSteps: 4, // 掌屈、背屈、尺屈、橈屈
+      totalSteps: 6, // 掌屈、背屈、尺屈、橈屈、回内、回外
       completedSteps: 0,
     };
 
