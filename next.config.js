@@ -30,6 +30,16 @@ const nextConfig = {
       ...config.resolve.fallback,
       fs: false,
     };
+
+    // 動画ファイル（.mp4）の処理設定
+    config.module.rules.push({
+      test: /\.(mp4|webm|ogg)$/,
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/media/[name].[hash][ext]',
+      },
+    });
+
     return config;
   },
 };
