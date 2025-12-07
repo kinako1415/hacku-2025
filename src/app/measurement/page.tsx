@@ -277,7 +277,7 @@ const InstructionsSection: React.FC<{
               <h3 className={styles.stepTitle}>測定動作</h3>
             </div>
             <p className={styles.stepDescription}>
-              画面の指示に従い、手首(掌屈・背屈・尺屈・橈屈）をゆっくり最大まで動かしてください。
+              画面の指示に従い、手首(掌屈・背屈・尺屈・橈屈・回内・回外）をゆっくり最大まで動かしてください。
               <br />
               測定中はカメラから手が外れないよう注意してください。
             </p>
@@ -332,6 +332,8 @@ const HandSelectionSection: React.FC<{
             <span className={styles.tag}>背屈</span>
             <span className={styles.tag}>尺屈</span>
             <span className={styles.tag}>橈屈</span>
+            <span className={styles.tag}>回内</span>
+            <span className={styles.tag}>回外</span>
           </div>
         </div>
         <div
@@ -345,6 +347,8 @@ const HandSelectionSection: React.FC<{
             <span className={styles.tag}>背屈</span>
             <span className={styles.tag}>尺屈</span>
             <span className={styles.tag}>橈屈</span>
+            <span className={styles.tag}>回内</span>
+            <span className={styles.tag}>回外</span>
           </div>
         </div>
       </div>
