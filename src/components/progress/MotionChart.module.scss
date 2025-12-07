@@ -206,7 +206,7 @@
     }
 
     &__chartContainer {
-      height: 250px;
+      height: 300px; /* 横軸が見えるように高さを増やす */
     }
   }
 
@@ -226,11 +226,22 @@
     }
 
     &__stats {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr); /* 2x2グリッドを維持 */
+      gap: 0.5rem;
     }
 
     &__chartContainer {
-      height: 220px;
+      height: 280px; /* 横軸が見えるように高さを増やす */
+    }
+  }
+
+  .stat {
+    &__label {
+      font-size: 0.65rem;
+    }
+
+    &__value {
+      font-size: 0.9rem;
     }
   }
 }

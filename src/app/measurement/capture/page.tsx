@@ -203,7 +203,7 @@ const MeasurementCaptureContent: React.FC = () => {
 
       // より保守的な設定を使用
       handsDetector.setOptions({
-        maxNumHands: 1,
+        maxNumHands: 2, // 両手を検出して対象の手を選択
         modelComplexity: 0, // 最軽量モデル
         minDetectionConfidence: 0.8,
         minTrackingConfidence: 0.5,
@@ -245,6 +245,77 @@ const MeasurementCaptureContent: React.FC = () => {
   }, []);
 
   /**
+   * 手の描画
+   */
+  const drawHand = useCallback(
+    (ctx: CanvasRenderingContext2D, landmarks: NormalizedLandmark[]) => {
+      const canvas = ctx.canvas;
+
+      // ランドマーク描画
+      landmarks.forEach((landmark, index) => {
+        const x = landmark.x * canvas.width;
+        const y = landmark.y * canvas.height;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#4299e1';
+        ctx.fill();
+
+        // インデックス表示（デバッグ用）
+        if (index % 4 === 0) {
+          ctx.fillStyle = '#2d3748';
+          ctx.font = '12px Arial';
+          ctx.fillText(index.toString(), x + 8, y - 8);
+        }
+      });
+
+      // 接続線描画
+      const connections = [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4], // 親指
+        [0, 5],
+        [5, 6],
+        [6, 7],
+        [7, 8], // 人差し指
+        [0, 9],
+        [9, 10],
+        [10, 11],
+        [11, 12], // 中指
+        [0, 13],
+        [13, 14],
+        [14, 15],
+        [15, 16], // 薬指
+        [0, 17],
+        [17, 18],
+        [18, 19],
+        [19, 20], // 小指
+      ];
+
+      ctx.strokeStyle = '#4299e1';
+      ctx.lineWidth = 2;
+      connections.forEach(([start, end]) => {
+        if (
+          start !== undefined &&
+          end !== undefined &&
+          landmarks[start] &&
+          landmarks[end]
+        ) {
+          const startPoint = landmarks[start];
+          const endPoint = landmarks[end];
+
+          ctx.beginPath();
+          ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
+          ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
+          ctx.stroke();
+        }
+      });
+    },
+    []
+  );
+
+  /**
    * MediaPipe結果処理
    */
   const handleResults = useCallback(
@@ -260,15 +331,28 @@ const MeasurementCaptureContent: React.FC = () => {
 
       // 手が検出された場合
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
-        const handedness = results.multiHandedness?.[0]?.label || 'Right';
+        // 複数の手から対象の手を探す
+        let targetHandIndex = -1;
+        for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+          const handedness = results.multiHandedness?.[i]?.label || 'Right';
 
-        // 選択した手と一致するかチェック
-        const detectedHand = handedness === 'Right' ? 'right' : 'left';
-        if (detectedHand !== selectedHand) {
+          // MediaPipeのhandednessはカメラ視点（鏡像）なので、実際の左右を判定する
+          // カメラに映った「Right」は実際には左手、「Left」は実際には右手
+          const detectedHand = handedness === 'Right' ? 'left' : 'right';
+
+          if (detectedHand === selectedHand) {
+            targetHandIndex = i;
+            break;
+          }
+        }
+
+        // 対象の手が見つからない場合
+        if (targetHandIndex === -1) {
           setMeasurementState((prev) => ({ ...prev, handDetected: false }));
           return;
         }
+
+        const landmarks = results.multiHandLandmarks[targetHandIndex];
 
         // 角度計算
         const wristAngles = calculateWristAngles(landmarks as any);
@@ -279,7 +363,7 @@ const MeasurementCaptureContent: React.FC = () => {
           thumb: thumbAngles,
         };
 
-        // 手描画
+        // 対象の手のみを描画
         drawHand(ctx, landmarks as NormalizedLandmark[]);
 
         // 状態更新
@@ -293,79 +377,8 @@ const MeasurementCaptureContent: React.FC = () => {
         setMeasurementState((prev) => ({ ...prev, handDetected: false }));
       }
     },
-    [selectedHand]
+    [selectedHand, drawHand]
   );
-
-  /**
-   * 手の描画
-   */
-  const drawHand = (
-    ctx: CanvasRenderingContext2D,
-    landmarks: NormalizedLandmark[]
-  ) => {
-    const canvas = ctx.canvas;
-
-    // ランドマーク描画
-    landmarks.forEach((landmark, index) => {
-      const x = landmark.x * canvas.width;
-      const y = landmark.y * canvas.height;
-
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = '#4299e1';
-      ctx.fill();
-
-      // インデックス表示（デバッグ用）
-      if (index % 4 === 0) {
-        ctx.fillStyle = '#2d3748';
-        ctx.font = '12px Arial';
-        ctx.fillText(index.toString(), x + 8, y - 8);
-      }
-    });
-
-    // 接続線描画
-    const connections = [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4], // 親指
-      [0, 5],
-      [5, 6],
-      [6, 7],
-      [7, 8], // 人差し指
-      [0, 9],
-      [9, 10],
-      [10, 11],
-      [11, 12], // 中指
-      [0, 13],
-      [13, 14],
-      [14, 15],
-      [15, 16], // 薬指
-      [0, 17],
-      [17, 18],
-      [18, 19],
-      [19, 20], // 小指
-    ];
-
-    ctx.strokeStyle = '#4299e1';
-    ctx.lineWidth = 2;
-    connections.forEach(([start, end]) => {
-      if (
-        start !== undefined &&
-        end !== undefined &&
-        landmarks[start] &&
-        landmarks[end]
-      ) {
-        const startPoint = landmarks[start];
-        const endPoint = landmarks[end];
-
-        ctx.beginPath();
-        ctx.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
-        ctx.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
-        ctx.stroke();
-      }
-    });
-  };
 
   /**
    * フレーム処理
