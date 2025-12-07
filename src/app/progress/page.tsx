@@ -39,7 +39,7 @@ let cachedSampleData: {
 } | null = null;
 // 疑似乱数生成器（シード固定）
 function seededRandom(seed: number) {
-  let x = Math.sin(seed) * 10000;
+  const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 }
 
@@ -77,6 +77,14 @@ const generateSampleData = (
       wristRadialDeviation: Math.max(
         5,
         Math.min(25, 10 + baseProgressR * 12 + randomVariationR * 5)
+      ),
+      wristPronation: Math.max(
+        20,
+        Math.min(90, 35 + baseProgressR * 40 + randomVariationR * 18)
+      ),
+      wristSupination: Math.max(
+        20,
+        Math.min(90, 35 + baseProgressR * 40 + randomVariationR * 18)
       ),
       thumbFlexion: Math.max(
         20,
@@ -129,6 +137,14 @@ const generateSampleData = (
       wristRadialDeviation: Math.max(
         3,
         Math.min(20, 8 + baseProgressL * 10 + randomVariationL * 3)
+      ),
+      wristPronation: Math.max(
+        15,
+        Math.min(80, 30 + baseProgressL * 35 + randomVariationL * 15)
+      ),
+      wristSupination: Math.max(
+        15,
+        Math.min(80, 30 + baseProgressL * 35 + randomVariationL * 15)
       ),
       thumbFlexion: Math.max(
         15,
@@ -506,6 +522,12 @@ const aggregateDataByWeek = (
           (sum, m) => sum + (m.wristRadialDeviation || 0),
           0
         ) / count,
+      wristPronation:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristPronation || 0), 0) /
+        count,
+      wristSupination:
+        weekMeasurements.reduce((sum, m) => sum + (m.wristSupination || 0), 0) /
+        count,
       thumbFlexion:
         weekMeasurements.reduce((sum, m) => sum + (m.thumbFlexion || 0), 0) /
         count,
@@ -602,6 +624,16 @@ const aggregateDataByBiWeek = (
       wristRadialDeviation:
         biWeekMeasurements.reduce(
           (sum, m) => sum + (m.wristRadialDeviation || 0),
+          0
+        ) / count,
+      wristPronation:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristPronation || 0),
+          0
+        ) / count,
+      wristSupination:
+        biWeekMeasurements.reduce(
+          (sum, m) => sum + (m.wristSupination || 0),
           0
         ) / count,
       thumbFlexion:

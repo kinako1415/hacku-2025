@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
 import { Button } from '@/components/common';
@@ -698,7 +699,7 @@ const InstructionModal: React.FC<{
     }
   };
 
-  return (
+  const modalContent = (
     <div className={styles.modalOverlay} onClick={onClose}>
       {step === 'intro' ? (
         // 導入画面（初回のみ表示）
@@ -764,6 +765,10 @@ const InstructionModal: React.FC<{
       )}
     </div>
   );
+
+  return typeof window !== 'undefined'
+    ? ReactDOM.createPortal(modalContent, document.body)
+    : null;
 };
 
 /**

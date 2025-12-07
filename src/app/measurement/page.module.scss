@@ -342,7 +342,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6); /* 薄い灰色のオーバーレイ */
     z-index: 100; /* dashedFrameより上に配置 */
     border-radius: 36px;
     pointer-events: none;
@@ -764,6 +763,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    z-index: 1;
   }
 
   .mainContent {
@@ -854,14 +854,7 @@
   .handCard {
     padding: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-    &:active {
-      transform: scale(0.98);
-    }
-
     &.selected {
-      box-shadow: 0 8px 24px rgba(5, 66, 252, 0.25);
       animation: selectPulse 0.5s ease;
     }
   }
@@ -1146,6 +1139,16 @@
     width: 100% !important;
   }
 
+  /* モーダルオーバーレイのz-index強制 */
+  .modalOverlay {
+    position: fixed !important;
+    z-index: 99999 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+
   /* アニメーション */
   @keyframes pulse {
     0%,
@@ -1297,7 +1300,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 99999 !important;
   padding: 20px;
   animation: fadeIn 0.2s ease;
 }
@@ -1481,7 +1484,6 @@
 
 .overlayButton {
   position: absolute;
-  right: 24%;
   z-index: 20;
 
   /* タブレット対応 */
@@ -1582,7 +1584,7 @@
   /* モバイル対応 */
   @media (max-width: 768px) {
     left: 5%;
-    top: 20%;
+    top: 10%;
     transform: none;
     font-size: 16px;
     max-width: 90%;
@@ -1703,7 +1705,7 @@
 .introText {
   text-align: center;
   color: white;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 1.5;
   margin-bottom: 40px;
