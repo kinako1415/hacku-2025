@@ -10,7 +10,9 @@ export type StepId =
   | 'palmar-flexion'    // 掌屈
   | 'dorsal-flexion'    // 背屈
   | 'ulnar-deviation'   // 尺屈
-  | 'radial-deviation'; // 橈屈
+  | 'radial-deviation'  // 橈屈
+  | 'pronation'         // 回内
+  | 'supination';       // 回外
 
 /**
  * 測定セッション
@@ -35,8 +37,8 @@ export interface MeasurementSession {
   /** セッション状態 */
   status: 'active' | 'completed' | 'cancelled';
   
-  /** 総ステップ数（常に4） */
-  totalSteps: 4;
+  /** 総ステップ数（常に6） */
+  totalSteps: 6;
   
   /** 完了したステップ数 */
   completedSteps: number;

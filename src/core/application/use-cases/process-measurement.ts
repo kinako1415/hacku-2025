@@ -108,6 +108,8 @@ export class ProcessMeasurementUseCase {
       'dorsal-flexion': '背屈',
       'ulnar-deviation': '尺屈',
       'radial-deviation': '橈屈',
+      'pronation': '回内',
+      'supination': '回外',
     };
     return stepNames[stepId];
   }
@@ -121,6 +123,8 @@ export class ProcessMeasurementUseCase {
       'dorsal-flexion': 70,
       'ulnar-deviation': 45,
       'radial-deviation': 45,
+      'pronation': 90,
+      'supination': 90,
     };
     return targetAngles[stepId];
   }

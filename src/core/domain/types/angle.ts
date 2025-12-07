@@ -60,6 +60,12 @@ export interface WristAngles {
   
   /** 橈屈角度（0-45度） */
   radialDeviation: number;
+  
+  /** 回内角度（0-90度）- 手のひらを下に向ける動作 */
+  pronation?: number;
+  
+  /** 回外角度（0-90度）- 手のひらを上に向ける動作 */
+  supination?: number;
 }
 
 /**
