@@ -35,6 +35,8 @@ export interface MotionMeasurement {
   wristExtension: number; // 背屈 0-70°
   wristUlnarDeviation: number; // 尺屈 0-55°
   wristRadialDeviation: number; // 橈屈 0-25°
+  wristPronation?: number; // 回内 0-90°
+  wristSupination?: number; // 回外 0-90°
 
   // 母指可動域 (degrees)
   thumbFlexion: number; // 屈曲 0-90°
@@ -59,6 +61,8 @@ export interface CreateMeasurementInput {
   wristExtension: number;
   wristUlnarDeviation: number;
   wristRadialDeviation: number;
+  wristPronation?: number;
+  wristSupination?: number;
   thumbFlexion: number;
   thumbExtension: number;
   thumbAdduction: number;
@@ -76,6 +80,8 @@ export const NORMAL_RANGES = {
     extension: { min: 0, max: 70 }, // 背屈
     ulnarDeviation: { min: 0, max: 90 }, // 尺屈（制限なし、垂直から90度まで）
     radialDeviation: { min: 0, max: 90 }, // 橈屈（制限なし、垂直から90度まで）
+    pronation: { min: 0, max: 90 }, // 回内
+    supination: { min: 0, max: 90 }, // 回外
   },
   thumb: {
     flexion: { min: 0, max: 90 }, // 屈曲
