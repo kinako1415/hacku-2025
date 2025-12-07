@@ -1601,6 +1601,8 @@
   @media (max-width: 480px) {
     font-size: 14px;
     max-width: 95%;
+    position: absolute;
+    top: 10%;
 
     .stepTitle {
       font-size: 18px;
