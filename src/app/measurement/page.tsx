@@ -9,10 +9,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.scss';
 import { Button } from '@/components/common';
-import palmarFlexionVideo from '@/assets/palmar-flexion.mp4';
-import dorsalFlexionVideo from '@/assets/dorsal-flexion.mp4';
-import ulnarDeviationVideo from '@/assets/ulnar-deviation.mp4';
-import radialDeviationVideo from '@/assets/radial-deviation.mp4';
 import {
   db,
   MeasurementSession as DBMeasurementSession,
@@ -158,7 +154,7 @@ const measurementSteps: MeasurementStep[] = [
       'ゲージが表示されたら、手首を手のひら側に最大限曲げます',
       '指が下を向くようにし、手首で90°近くまで曲げてください',
     ],
-    videoPath: palmarFlexionVideo,
+    videoPath: '/palmar-flexion.mp4',
   },
   {
     id: 'dorsal-flexion',
@@ -173,7 +169,7 @@ const measurementSteps: MeasurementStep[] = [
       'ゲージが表示されたら、手首を手の甲側に最大限曲げます',
       '指が上を向くようにし、手首で70°近くまで反らせてください',
     ],
-    videoPath: dorsalFlexionVideo,
+    videoPath: '/dorsal-flexion.mp4',
   },
   {
     id: 'ulnar-deviation',
@@ -188,7 +184,7 @@ const measurementSteps: MeasurementStep[] = [
       'ゲージが表示されたら、手首を小指側に最大限曲げます',
       '指先が小指側に傾くように、手首で55°近くまで曲げてください',
     ],
-    videoPath: ulnarDeviationVideo,
+    videoPath: '/ulnar-deviation.mp4',
   },
   {
     id: 'radial-deviation',
@@ -203,7 +199,7 @@ const measurementSteps: MeasurementStep[] = [
       'ゲージが表示されたら、手首を親指側に最大限曲げます',
       '指先が親指側に傾くように、手首で25°近くまで曲げてください',
     ],
-    videoPath: radialDeviationVideo,
+    videoPath: '/radial-deviation.mp4',
   },
 ];
 
