@@ -10,7 +10,13 @@ export type StepId =
   | 'palmar-flexion' // 掌屈
   | 'dorsal-flexion' // 背屈
   | 'ulnar-deviation' // 尺屈
+<<<<<<< HEAD
   | 'radial-deviation'; // 橈屈
+=======
+  | 'radial-deviation' // 橈屈
+  | 'pronation' // 回内
+  | 'supination'; // 回外
+>>>>>>> 001-ai-mediapipe-google
 
 /**
  * 測定セッション
@@ -35,8 +41,13 @@ export interface MeasurementSession {
   /** セッション状態 */
   status: 'active' | 'completed' | 'cancelled';
 
+<<<<<<< HEAD
   /** 総ステップ数 */
   totalSteps: number;
+=======
+  /** 総ステップ数（常に6） */
+  totalSteps: 6;
+>>>>>>> 001-ai-mediapipe-google
 
   /** 完了したステップ数 */
   completedSteps: number;

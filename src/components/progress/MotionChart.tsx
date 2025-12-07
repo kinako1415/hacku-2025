@@ -22,7 +22,13 @@ import styles from './MotionChart.module.scss';
 /**
  * 可動域の種類
  */
-export type MotionType = 'flexion' | 'extension' | 'radial' | 'ulnar';
+export type MotionType =
+  | 'flexion'
+  | 'extension'
+  | 'radial'
+  | 'ulnar'
+  | 'pronation'
+  | 'supination';
 
 /**
  * チャートデータポイント
@@ -78,6 +84,22 @@ const MOTION_CONFIG = {
     description: '手首を小指側に曲げる可動域',
     normalRange: { min: 0, max: 55 },
     getValueFromMeasurement: (m: MotionMeasurement) => m.wristUlnarDeviation,
+  },
+  pronation: {
+    label: '回内',
+    color: '#8B5CF6',
+    unit: '°',
+    description: '前腕を内側にひねる可動域',
+    normalRange: { min: 0, max: 90 },
+    getValueFromMeasurement: (m: MotionMeasurement) => m.wristPronation ?? 0,
+  },
+  supination: {
+    label: '回外',
+    color: '#EC4899',
+    unit: '°',
+    description: '前腕を外側にひねる可動域',
+    normalRange: { min: 0, max: 90 },
+    getValueFromMeasurement: (m: MotionMeasurement) => m.wristSupination ?? 0,
   },
 } as const;
 

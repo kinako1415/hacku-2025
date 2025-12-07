@@ -496,6 +496,140 @@ export class AngleCalculator {
   }
 
   /**
+   * 前腕の回内角度を計算
+   * 回内 = 手のひらがカメラに映る方向への回転
+   *
+   * 初期位置: 中指が天井を向き、小指側がカメラを向く
+   * 回内時の変化:
+   * - 手のひらがカメラ側を向く（法線ベクトルのZ成分が負になる）
+   * - 人差し指側がカメラに近づく
+   *
+   * @param landmarks MediaPipe Handsランドマーク配列（21点）
+   * @returns 回内角度（0度以上、回内方向のみ）
+   */
+  public calculatePronation(landmarks: Point3D[]): number {
+    if (landmarks.length < 21) return 0;
+
+    const wrist = landmarks[HAND_LANDMARKS.WRIST];
+    const indexMcp = landmarks[HAND_LANDMARKS.INDEX_FINGER_MCP];
+    const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
+    const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
+
+    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp) return 0;
+
+    // 手のひらの法線ベクトルを計算
+    // 人差し指MCP → 小指MCPのベクトル（手の幅方向）
+    const indexToPinky = this.calculateVector(indexMcp, pinkyMcp);
+    // 手首 → 中指MCPのベクトル（手の長さ方向、上向き）
+    const wristToMiddle = this.calculateVector(wrist, middleMcp);
+
+    // 外積で手のひらの法線を計算
+    // 右手の場合、この外積は手のひら側を向く
+    const palmNormal = this.crossProduct(wristToMiddle, indexToPinky);
+    const normalizedPalmNormal = this.normalizeVector(palmNormal);
+
+    // 回内判定:
+    // 回内すると手のひらがカメラを向く = 法線がカメラ方向を向く
+    // MediaPipeの座標系: Z値が小さい = カメラに近い
+    // したがって、法線のZ成分が負になると手のひらがカメラを向いている
+
+    const normalZComponent = normalizedPalmNormal.z;
+
+    // 人差し指と小指のZ座標の差で回転を検出
+    // 回内すると人差し指がカメラに近づく（Z値が小さくなる）
+    const indexPinkyZDiff = pinkyMcp.z - indexMcp.z; // 回内で正になる
+
+    // 回内方向でない場合
+    if (normalZComponent >= -0.05 && indexPinkyZDiff <= 0.01) {
+      return 0;
+    }
+
+    // 角度計算
+    let angleDeg = 0;
+
+    // 法線のZ成分から角度を計算（カメラを向くほど回内が大きい）
+    if (normalZComponent < 0) {
+      const angleFromNormal =
+        Math.asin(Math.min(Math.abs(normalZComponent), 1.0)) * (180 / Math.PI);
+      angleDeg = angleFromNormal;
+    }
+
+    // 人差し指・小指のZ差からも補正
+    if (indexPinkyZDiff > 0.01) {
+      angleDeg += indexPinkyZDiff * 100; // スケーリング係数
+    }
+
+    // マイナス制限のみ（上限なし）
+    return Math.max(angleDeg, 0);
+  }
+
+  /**
+   * 前腕の回外角度を計算
+   * 回外 = 手の甲がカメラに映る方向への回転
+   *
+   * 初期位置: 中指が天井を向き、小指側がカメラを向く
+   * 回外時の変化:
+   * - 手の甲がカメラ側を向く（法線ベクトルのZ成分が正になる）
+   * - 人差し指側がカメラから遠ざかる
+   *
+   * @param landmarks MediaPipe Handsランドマーク配列（21点）
+   * @returns 回外角度（0度以上、回外方向のみ）
+   */
+  public calculateSupination(landmarks: Point3D[]): number {
+    if (landmarks.length < 21) return 0;
+
+    const wrist = landmarks[HAND_LANDMARKS.WRIST];
+    const indexMcp = landmarks[HAND_LANDMARKS.INDEX_FINGER_MCP];
+    const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
+    const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
+
+    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp) return 0;
+
+    // 手のひらの法線ベクトルを計算
+    // 人差し指MCP → 小指MCPのベクトル（手の幅方向）
+    const indexToPinky = this.calculateVector(indexMcp, pinkyMcp);
+    // 手首 → 中指MCPのベクトル（手の長さ方向、上向き）
+    const wristToMiddle = this.calculateVector(wrist, middleMcp);
+
+    // 外積で手のひらの法線を計算
+    const palmNormal = this.crossProduct(wristToMiddle, indexToPinky);
+    const normalizedPalmNormal = this.normalizeVector(palmNormal);
+
+    // 回外判定:
+    // 回外すると手の甲がカメラを向く = 法線がカメラと反対方向を向く
+    // 法線のZ成分が正になると手の甲がカメラを向いている
+
+    const normalZComponent = normalizedPalmNormal.z;
+
+    // 人差し指と小指のZ座標の差で回転を検出
+    // 回外すると人差し指がカメラから遠ざかる（Z値が大きくなる）
+    const indexPinkyZDiff = indexMcp.z - pinkyMcp.z; // 回外で正になる
+
+    // 回外方向でない場合
+    if (normalZComponent <= 0.05 && indexPinkyZDiff <= 0.01) {
+      return 0;
+    }
+
+    // 角度計算
+    let angleDeg = 0;
+
+    // 法線のZ成分から角度を計算（カメラと反対向きほど回外が大きい）
+    if (normalZComponent > 0) {
+      const angleFromNormal =
+        Math.asin(Math.min(normalZComponent, 1.0)) * (180 / Math.PI);
+      angleDeg = angleFromNormal;
+    }
+
+    // 人差し指・小指のZ差からも補正
+    if (indexPinkyZDiff > 0.01) {
+      angleDeg += indexPinkyZDiff * 100; // スケーリング係数
+    }
+
+    // マイナス制限のみ（上限なし）
+    return Math.max(angleDeg, 0);
+  }
+
+  /**
    * 測定ステップに応じた角度を計算（改良版）
    *
    * @param landmarks MediaPipe Handsランドマーク配列（21点）
@@ -513,6 +647,12 @@ export class AngleCalculator {
       case 'ulnar-deviation':
       case 'radial-deviation':
         return this.calculateRadialUlnarDeviation(landmarks);
+      case 'pronation':
+        // 回内専用の計算メソッドを使用
+        return this.calculatePronation(landmarks);
+      case 'supination':
+        // 回外専用の計算メソッドを使用
+        return this.calculateSupination(landmarks);
       default:
         return 0;
     }

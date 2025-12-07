@@ -58,11 +58,11 @@ export class ProcessMeasurementUseCase {
     const landmark0 = input.landmarks[0];
     const landmark5 = input.landmarks[5];
     const landmark9 = input.landmarks[9];
-    
+
     if (!landmark0 || !landmark5 || !landmark9) {
       throw new Error('必要なランドマークが見つかりません');
     }
-    
+
     const angleResult = angleCalculator.calculateAngle3Points(
       landmark0,
       landmark5,
@@ -108,6 +108,8 @@ export class ProcessMeasurementUseCase {
       'dorsal-flexion': '背屈',
       'ulnar-deviation': '尺屈',
       'radial-deviation': '橈屈',
+      pronation: '回内',
+      supination: '回外',
     };
     return stepNames[stepId];
   }
@@ -121,6 +123,8 @@ export class ProcessMeasurementUseCase {
       'dorsal-flexion': 70,
       'ulnar-deviation': 45,
       'radial-deviation': 45,
+      pronation: 90,
+      supination: 90,
     };
     return targetAngles[stepId];
   }
@@ -128,7 +132,10 @@ export class ProcessMeasurementUseCase {
   /**
    * 達成率を計算
    */
-  private calculateAchievement(angleValue: number, targetAngle: number): number {
+  private calculateAchievement(
+    angleValue: number,
+    targetAngle: number
+  ): number {
     const achievement = (angleValue / targetAngle) * 100;
     return Math.min(Math.round(achievement * 10) / 10, 100); // 小数点1桁、最大100%
   }
