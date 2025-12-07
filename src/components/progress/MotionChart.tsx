@@ -22,7 +22,13 @@ import styles from './MotionChart.module.scss';
 /**
  * 可動域の種類
  */
-export type MotionType = 'flexion' | 'extension' | 'radial' | 'ulnar' | 'pronation' | 'supination';
+export type MotionType =
+  | 'flexion'
+  | 'extension'
+  | 'radial'
+  | 'ulnar'
+  | 'pronation'
+  | 'supination';
 
 /**
  * チャートデータポイント
