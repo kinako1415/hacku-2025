@@ -12,4 +12,10 @@ declare global {
   var JSX: any;
 }
 
+// 動画ファイルのモジュール宣言
+declare module '*.mp4' {
+  const src: string;
+  export default src;
+}
+
 export {};
