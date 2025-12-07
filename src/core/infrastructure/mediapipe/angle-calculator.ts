@@ -515,8 +515,7 @@ export class AngleCalculator {
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
     const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
 
-    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp)
-      return 0;
+    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp) return 0;
 
     // 手のひらの法線ベクトルを計算
     // 人差し指MCP → 小指MCPのベクトル（手の幅方向）
@@ -550,7 +549,8 @@ export class AngleCalculator {
 
     // 法線のZ成分から角度を計算（カメラを向くほど回内が大きい）
     if (normalZComponent < 0) {
-      const angleFromNormal = Math.asin(Math.min(Math.abs(normalZComponent), 1.0)) * (180 / Math.PI);
+      const angleFromNormal =
+        Math.asin(Math.min(Math.abs(normalZComponent), 1.0)) * (180 / Math.PI);
       angleDeg = angleFromNormal;
     }
 
@@ -583,8 +583,7 @@ export class AngleCalculator {
     const pinkyMcp = landmarks[HAND_LANDMARKS.PINKY_MCP];
     const middleMcp = landmarks[HAND_LANDMARKS.MIDDLE_FINGER_MCP];
 
-    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp)
-      return 0;
+    if (!wrist || !indexMcp || !pinkyMcp || !middleMcp) return 0;
 
     // 手のひらの法線ベクトルを計算
     // 人差し指MCP → 小指MCPのベクトル（手の幅方向）
@@ -616,7 +615,8 @@ export class AngleCalculator {
 
     // 法線のZ成分から角度を計算（カメラと反対向きほど回外が大きい）
     if (normalZComponent > 0) {
-      const angleFromNormal = Math.asin(Math.min(normalZComponent, 1.0)) * (180 / Math.PI);
+      const angleFromNormal =
+        Math.asin(Math.min(normalZComponent, 1.0)) * (180 / Math.PI);
       angleDeg = angleFromNormal;
     }
 

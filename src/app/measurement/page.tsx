@@ -436,7 +436,8 @@ const MeasurementExecution: React.FC<{
             <p className={styles.detectedStatus}>✓ 手を検出中 - 測定中</p>
           ) : (
             <p className={styles.waitingStatus}>
-              {setup.selectedHand === 'left' ? '左' : '右'}手をカメラに向けてください
+              {setup.selectedHand === 'left' ? '左' : '右'}
+              手をカメラに向けてください
             </p>
           )}
         </div>
